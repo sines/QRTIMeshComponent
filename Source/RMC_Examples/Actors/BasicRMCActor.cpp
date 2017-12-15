@@ -2,7 +2,6 @@
 
 #include "RMC_Examples.h"
 #include "BasicRMCActor.h"
-
 #include "RuntimeMeshLibrary.h"
 
 
@@ -34,4 +33,18 @@ void ABasicRMCActor::OnConstruction(const FTransform& Transform)
 	TArray<int32> ConeTriangles;
 	URuntimeMeshLibrary::BuildConeVerts(Angle, Angle, scale, XOffset, numsides, ConeVertices, ConeTriangles);
 	RuntimeMesh->CreateMeshSection(1, ConeVertices, ConeTriangles, ConeNormals, TextureCoordinates, TArray<FColor>(), Tangents, true, EUpdateFrequency::Infrequent);
+	QuVRCoordinateAxis = new FQuVRCoordinateAxis();
+	
+}
+
+void ABasicRMCActor::Destroyed()
+{
+	delete QuVRCoordinateAxis;
+	QuVRCoordinateAxis = 0;
+}
+
+
+void ABasicRMCActor::GetXXX(FSceneView* InView, const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
+{
+	QuVRCoordinateAxis->AbsoluteTranslationConvertMouseMovementToAxisMovement(InView, InLocation, InMousePosition, OutDrag, OutRotation, OutScale);
 }
