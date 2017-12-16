@@ -6,6 +6,11 @@
 #include "QuVRCoordinateAxis.h"
 #include "BasicRMCActor.generated.h"
 
+UENUM(BlueprintType)
+enum class EUpdateState : EAxisList::Type
+{
+	
+};
 /**
  * 
  */
@@ -21,7 +26,14 @@ public:
 
 	FQuVRCoordinateAxis* QuVRCoordinateAxis;
 
-//	UFUNCTION(BlueprintCallable, Category = "xxx", meta = (AutoCreateRefTerm = "xxx"))
-//	void GetXXX(FSceneView* InView, const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+	UFUNCTION(BlueprintCallable, Category = "Components|CreateXXX")
+	void CreateXXX();
 	
+	UFUNCTION(BlueprintCallable, Category = "Components|GetXXX")
+	void GetXXX(const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+	
+
+	UFUNCTION(BlueprintCallable, Category = "Components|SetxxType")
+		void SetXXXType(EUpdateState::Type xxxtype);
+
 };
