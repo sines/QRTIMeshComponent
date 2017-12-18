@@ -40,6 +40,12 @@ void ABasicRMCActor::Destroyed()
 {
 	delete QuVRCoordinateAxis;
 	QuVRCoordinateAxis = 0;
+
+	delete world;
+	world = 0;
+
+	delete localPlayer;
+	localPlayer = 0;
 }
 
 
@@ -47,18 +53,59 @@ void ABasicRMCActor::CreateXXX()
 {
 	QuVRCoordinateAxis = new FQuVRCoordinateAxis();
 }
-void ABasicRMCActor::SetXXXType(EAxisList::Type xxxtype)
+void ABasicRMCActor::SetXXXType(ECoordinateAxisType axisType)
 {
-	QuVRCoordinateAxis->SetCurrentAxis(xxxtype);
+	world = GetWorld();
+	check(world);
+	APlayerCameraManager* cameraManager = world->GetFirstPlayerController()->PlayerCameraManager;
+	localPlayer = world->GetFirstLocalPlayerFromController();
+	QuVRCoordinateAxis->SetSnapEnabled(false);
+
+	//////////////////////////////////////////////////////////////////////////
+
+	EAxisList::Type InCurrentAxis = EAxisList::Type::None;
+	switch (axisType)
+	{
+	case ECoordinateAxisType::None:
+		InCurrentAxis = EAxisList::None;
+		break;
+	case ECoordinateAxisType::X:
+		InCurrentAxis = EAxisList::X;
+		break;
+	case ECoordinateAxisType::Y:
+		InCurrentAxis = EAxisList::Y;
+		break;
+	case ECoordinateAxisType::XY:
+		InCurrentAxis = EAxisList::XY;
+		break;
+	case ECoordinateAxisType::Z:
+		InCurrentAxis = EAxisList::Z;
+		break;
+	case ECoordinateAxisType::XZ:
+		InCurrentAxis = EAxisList::XZ;
+		break;
+	case ECoordinateAxisType::YZ:
+		InCurrentAxis = EAxisList::YZ;
+		break;
+	case ECoordinateAxisType::XYZ:
+		InCurrentAxis = EAxisList::XYZ;
+		break;
+	case ECoordinateAxisType::Screen:
+		InCurrentAxis = EAxisList::Screen;
+		break;
+	case ECoordinateAxisType::All:
+		InCurrentAxis = EAxisList::All;
+		break;
+	default:
+		InCurrentAxis = EAxisList::None;
+		break;
+	}
+
+	QuVRCoordinateAxis->SetCurrentAxis(InCurrentAxis);
 }
 
 void ABasicRMCActor::GetXXX(const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
 {
-
-	UWorld* world = GetWorld();
-	check(world);
-	APlayerCameraManager* cameraManager = world->GetFirstPlayerController()->PlayerCameraManager;
-	ULocalPlayer* localPlayer = world->GetFirstLocalPlayerFromController();
 	FSceneViewFamilyContext viewFamily(
 		FSceneViewFamily::ConstructionValues(
 			localPlayer->ViewportClient->Viewport,

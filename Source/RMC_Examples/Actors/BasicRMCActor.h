@@ -7,10 +7,34 @@
 #include "BasicRMCActor.generated.h"
 
 UENUM(BlueprintType)
-enum class EUpdateState : EAxisList::Type
+enum class ECoordinateAxisType: uint8
 {
+
+	None = 0,
+	X = 1,
+	Y = 2,
+
+	XY = 3,
 	
+	Z = 4,
+
+	XZ = 5,
+
+	YZ = 6,
+//	ZRotation = 6,
+
+	XYZ = 7,
+	Screen = 8,
+//	Rotate2D = 8,
+
+
+	All = 15,
+
+
+	// alias over Screen since it isn't used when the 2d translate rotate widget is being use
 };
+
+
 /**
  * 
  */
@@ -34,6 +58,8 @@ public:
 	
 
 	UFUNCTION(BlueprintCallable, Category = "Components|SetxxType")
-		void SetXXXType(EUpdateState::Type xxxtype);
+		void SetXXXType(ECoordinateAxisType xxxtype);
 
+	UWorld* world;
+	ULocalPlayer* localPlayer;
 };
