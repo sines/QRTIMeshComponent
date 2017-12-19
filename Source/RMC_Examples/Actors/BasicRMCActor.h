@@ -51,14 +51,17 @@ public:
 	FQuVRCoordinateAxis* QuVRCoordinateAxis;
 
 	UFUNCTION(BlueprintCallable, Category = "Components|CreateXXX")
-	void CreateXXX();
+	void CreateQuVRCoordinateAxis();
 	
 	UFUNCTION(BlueprintCallable, Category = "Components|GetXXX")
-	void GetXXX(const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+	void GetQuVRCoordinateAxis(const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
 	
 
 	UFUNCTION(BlueprintCallable, Category = "Components|SetxxType")
-		void SetXXXType(ECoordinateAxisType xxxtype);
+		void SetQuVRCoordinateAxisType(ECoordinateAxisType xxxtype);
+
+	UFUNCTION(BlueprintCallable, Category = "Components|CreateXXX")
+		void GetAxisFloor(FPlane& outPlane);
 
 	UWorld* world;
 	ULocalPlayer* localPlayer;

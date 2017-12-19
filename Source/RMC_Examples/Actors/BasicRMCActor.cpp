@@ -49,11 +49,17 @@ void ABasicRMCActor::Destroyed()
 }
 
 
-void ABasicRMCActor::CreateXXX()
+void ABasicRMCActor::CreateQuVRCoordinateAxis()
 {
 	QuVRCoordinateAxis = new FQuVRCoordinateAxis();
 }
-void ABasicRMCActor::SetXXXType(ECoordinateAxisType axisType)
+
+void ABasicRMCActor::GetAxisFloor(FPlane& outPlane)
+{
+	outPlane = QuVRCoordinateAxis->plane;
+}
+
+void ABasicRMCActor::SetQuVRCoordinateAxisType(ECoordinateAxisType axisType)
 {
 	world = GetWorld();
 	check(world);
@@ -104,7 +110,7 @@ void ABasicRMCActor::SetXXXType(ECoordinateAxisType axisType)
 	QuVRCoordinateAxis->SetCurrentAxis(InCurrentAxis);
 }
 
-void ABasicRMCActor::GetXXX(const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
+void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
 {
 	FSceneViewFamilyContext viewFamily(
 		FSceneViewFamily::ConstructionValues(
