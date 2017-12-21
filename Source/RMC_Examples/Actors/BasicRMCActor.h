@@ -54,7 +54,7 @@ public:
 	void CreateQuVRCoordinateAxis();
 	
 	UFUNCTION(BlueprintCallable, Category = "Components|GetXXX")
-	void GetQuVRCoordinateAxis(const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+	void GetQuVRCoordinateAxis(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
 	
 
 	UFUNCTION(BlueprintCallable, Category = "Components|SetxxType")

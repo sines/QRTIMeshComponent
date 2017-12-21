@@ -110,8 +110,14 @@ void ABasicRMCActor::SetQuVRCoordinateAxisType(ECoordinateAxisType axisType)
 	QuVRCoordinateAxis->SetCurrentAxis(InCurrentAxis);
 }
 
-void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
+void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
 {
+	OutDrag = FVector::ZeroVector;
+	OutRotation = FRotator::ZeroRotator;
+	OutScale = FVector::ZeroVector;
+
+	check(localPlayer->ViewportClient->Viewport);
+
 	FSceneViewFamilyContext viewFamily(
 		FSceneViewFamily::ConstructionValues(
 			localPlayer->ViewportClient->Viewport,
@@ -121,8 +127,17 @@ void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, const FVec
 	FRotator ViewRotation;
 	FSceneView* SceneView = localPlayer->CalcSceneView(&viewFamily, ViewLocation, ViewRotation, localPlayer->ViewportClient->Viewport);
 	
+	FVector2D MousePosition = FVector2D(localPlayer->ViewportClient->Viewport->GetMouseX(), localPlayer->ViewportClient->Viewport->GetMouseY());
 	//calculate mouse position
 	check(localPlayer->ViewportClient->Viewport);
 	//////////////////////////////////////////////////////////////////////////
-	QuVRCoordinateAxis->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, InLocation, InMousePosition, OutDrag, OutRotation, OutScale);
+	QuVRCoordinateAxis->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, InLocation, MousePosition, OutDrag, OutRotation, OutScale);
+	float delta_mousex = 0;
+	float delta_mousey = 0;
+	world->GetFirstPlayerController()->GetInputMouseDelta(delta_mousex, delta_mousey);
+
+	OutDrag *= fabs(delta_mousex);
+	OutDrag *= fabs(delta_mousey);
+
+	localPlayer->ViewportClient-
 }
