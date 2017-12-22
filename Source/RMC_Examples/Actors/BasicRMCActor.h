@@ -60,6 +60,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Components|SetxxType")
 		void SetQuVRCoordinateAxisType(ECoordinateAxisType xxxtype);
 
+	UFUNCTION(BlueprintCallable, Category = "Components|SetxxType")
+		ECoordinateAxisType GetQuVRCoordinateAxisType();
+
+
 	UFUNCTION(BlueprintCallable, Category = "Components|CreateXXX")
 		void GetAxisFloor(FPlane& outPlane);
 

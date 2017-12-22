@@ -58,6 +58,32 @@ void ABasicRMCActor::GetAxisFloor(FPlane& outPlane)
 {
 	outPlane = QuVRCoordinateAxis->plane;
 }
+ECoordinateAxisType ABasicRMCActor::GetQuVRCoordinateAxisType()
+{
+	switch (QuVRCoordinateAxis->GetCurrentAxis())
+	{
+	case EAxisList::X:
+		return ECoordinateAxisType::X;
+		break;
+
+	case EAxisList::Y:
+		return ECoordinateAxisType::Y;
+		break;
+	case EAxisList::Z:
+		return ECoordinateAxisType::Z;
+		break;
+	case EAxisList::XY:
+		return ECoordinateAxisType::XY;
+		break;
+	default:
+	case EAxisList::XZ:
+		return ECoordinateAxisType::XZ;
+		break;
+	case EAxisList::XYZ:
+		return ECoordinateAxisType::XYZ;
+		break;
+	}
+}
 
 void ABasicRMCActor::SetQuVRCoordinateAxisType(ECoordinateAxisType axisType)
 {
@@ -65,7 +91,7 @@ void ABasicRMCActor::SetQuVRCoordinateAxisType(ECoordinateAxisType axisType)
 	check(world);
 	APlayerCameraManager* cameraManager = world->GetFirstPlayerController()->PlayerCameraManager;
 	localPlayer = world->GetFirstLocalPlayerFromController();
-	QuVRCoordinateAxis->SetSnapEnabled(false);
+	QuVRCoordinateAxis->SetSnapEnabled(true);
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -132,12 +158,24 @@ void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, FVector& O
 	check(localPlayer->ViewportClient->Viewport);
 	//////////////////////////////////////////////////////////////////////////
 	QuVRCoordinateAxis->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, InLocation, MousePosition, OutDrag, OutRotation, OutScale);
+	
+#if 0
+
 	float delta_mousex = 0;
 	float delta_mousey = 0;
 	world->GetFirstPlayerController()->GetInputMouseDelta(delta_mousex, delta_mousey);
 	FVector mouseDelta(delta_mousex, delta_mousey, 0);
-	if (mouseDelta.IsNearlyZero())
+	if (!mouseDelta.IsNearlyZero() && !OutDrag.IsNearlyZero())
+	{
+		FVector outdir;
+		float lenght;
+		mouseDelta.ToDirectionAndLength(outdir, lenght);
+		OutDrag *= lenght;
+	}
+	else
 	{
 		OutDrag = FVector::ZeroVector;
 	}
+
+#endif
 }
