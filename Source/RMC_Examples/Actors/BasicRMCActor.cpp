@@ -135,9 +135,9 @@ void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, FVector& O
 	float delta_mousex = 0;
 	float delta_mousey = 0;
 	world->GetFirstPlayerController()->GetInputMouseDelta(delta_mousex, delta_mousey);
-
-	OutDrag *= fabs(delta_mousex);
-	OutDrag *= fabs(delta_mousey);
-
-	localPlayer->ViewportClient-
+	FVector mouseDelta(delta_mousex, delta_mousey, 0);
+	if (mouseDelta.IsNearlyZero())
+	{
+		OutDrag = FVector::ZeroVector;
+	}
 }
