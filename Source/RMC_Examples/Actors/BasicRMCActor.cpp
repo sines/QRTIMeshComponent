@@ -54,8 +54,29 @@ void ABasicRMCActor::CreateQuVRCoordinateAxis()
 	QuVRCoordinateAxis = new FQuVRCoordinateAxis();
 }
 
-void ABasicRMCActor::GetAxisFloor(FPlane& outPlane)
+void ABasicRMCActor::GetAxisFloor(const FVector& inPos, FPlane& outPlane)
 {
+	FVector OutDrag = FVector::ZeroVector;
+	FRotator OutRotation = FRotator::ZeroRotator;
+	FVector OutScale = FVector::ZeroVector;
+
+	check(localPlayer->ViewportClient->Viewport);
+
+	FSceneViewFamilyContext viewFamily(
+		FSceneViewFamily::ConstructionValues(
+			localPlayer->ViewportClient->Viewport,
+			world->Scene,
+			localPlayer->ViewportClient->EngineShowFlags).SetRealtimeUpdate(true));
+	FVector ViewLocation;
+	FRotator ViewRotation;
+	FSceneView* SceneView = localPlayer->CalcSceneView(&viewFamily, ViewLocation, ViewRotation, localPlayer->ViewportClient->Viewport);
+
+	FVector2D MousePosition = FVector2D(localPlayer->ViewportClient->Viewport->GetMouseX(), localPlayer->ViewportClient->Viewport->GetMouseY());
+	//calculate mouse position
+	check(localPlayer->ViewportClient->Viewport);
+	//////////////////////////////////////////////////////////////////////////
+	QuVRCoordinateAxis->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, inPos, MousePosition, OutDrag, OutRotation, OutScale);
+
 	outPlane = QuVRCoordinateAxis->plane;
 }
 ECoordinateAxisType ABasicRMCActor::GetQuVRCoordinateAxisType()
@@ -178,4 +199,21 @@ void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, FVector& O
 	}
 
 #endif
+}
+
+
+void ABasicRMCActor::StartTracking()
+{
+	
+	if (QuVRCoordinateAxis)
+	{
+		QuVRCoordinateAxis->ResetInitialTranslationOffset();
+		QuVRCoordinateAxis->ResetDeltaRotation();
+	}
+	
+}
+
+void ABasicRMCActor::EndTracking()
+{
+	
 }

@@ -90,9 +90,8 @@ FQuViewportCursorLocation::FQuViewportCursorLocation(const FSceneView* View, int
 
 	const float ScreenX = ScreenPos.X;
 	const float ScreenY = ScreenPos.Y;
-
 	
-	if (View->IsPerspectiveProjection())
+	if (true)//View->IsPerspectiveProjection())
 	{
 		Origin = View->ViewMatrices.GetViewOrigin();
 		Direction = InvViewMatrix.TransformVector(FVector(InvProjMatrix.TransformFVector4(FVector4(ScreenX * GNearClippingPlane, ScreenY * GNearClippingPlane, 0.0f, GNearClippingPlane)))).GetSafeNormal();
@@ -131,6 +130,8 @@ FQuVRCoordinateAxis::FQuVRCoordinateAxis()
 
 	CurrentAxisMaterial = UMaterialInstanceDynamic::Create(AxisMaterialBase, NULL);
 	CurrentAxisMaterial->SetVectorParameterValue("GizmoColor", CurrentColor);
+
+
 
 	OpaquePlaneMaterialXY = UMaterialInstanceDynamic::Create(AxisMaterialBase, NULL);
 	OpaquePlaneMaterialXY->SetVectorParameterValue("GizmoColor", FLinearColor::White);
@@ -185,7 +186,7 @@ void FQuVRCoordinateAxis::QuVRSnapPointToGrid(FVector& Point, const FVector& Gri
 {
 	if (true)
 	{
-		Point = (Point - GridBase).GridSnap(5) + GridBase;
+		Point = (Point - GridBase).GridSnap(1) + GridBase;
 	}
 }
 
@@ -499,6 +500,7 @@ void FQuVRCoordinateAxis::AbsoluteTranslationConvertMouseMovementToAxisMovement(
 
 		//Rotate about the y-axis
 		case EAxisList::Rotate2D:
+
 		{
 			//no position snapping, we'll handle the rotation snapping elsewhere
 			Params.bPositionSnapping = false;
@@ -659,11 +661,11 @@ FVector FQuVRCoordinateAxis::GetAbsoluteTranslationDelta(const FQuVRAbsoluteMove
 	}
 
 	//the they requested position snapping and we're not moving with the camera
-	if (InParams.bPositionSnapping && !InParams.bMovementLockedToCamera && true)//bSnapEnabled)
+	if (InParams.bPositionSnapping && !InParams.bMovementLockedToCamera && bSnapEnabled)//bSnapEnabled)
 	{
 		FVector MovementAlongAxis = FVector(OutDrag | InParams.XAxis, OutDrag | InParams.YAxis, OutDrag | InParams.ZAxis);
 		//translation (either xy plane or z)
-		QuVRSnapPointToGrid(MovementAlongAxis, FVector(5));
+		QuVRSnapPointToGrid(MovementAlongAxis, FVector(1));
 		OutDrag = MovementAlongAxis.X*InParams.XAxis + MovementAlongAxis.Y*InParams.YAxis + MovementAlongAxis.Z*InParams.ZAxis;
 	}
 	UE_LOG(LogEngine, Log, TEXT("OutDrag- LockedToCamera:%s"), *OutDrag.ToString());

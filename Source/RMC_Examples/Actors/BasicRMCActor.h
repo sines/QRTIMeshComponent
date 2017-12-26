@@ -50,23 +50,31 @@ public:
 
 	FQuVRCoordinateAxis* QuVRCoordinateAxis;
 
-	UFUNCTION(BlueprintCallable, Category = "Components|CreateXXX")
+	UFUNCTION(BlueprintCallable, Category = "ABasicRMCActor|CreateXXX")
 	void CreateQuVRCoordinateAxis();
 	
-	UFUNCTION(BlueprintCallable, Category = "Components|GetXXX")
+	UFUNCTION(BlueprintCallable, Category = "ABasicRMCActor|GetXXX")
 	void GetQuVRCoordinateAxis(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
 	
 
-	UFUNCTION(BlueprintCallable, Category = "Components|SetxxType")
+	UFUNCTION(BlueprintCallable, Category = "ABasicRMCActor|SetxxType")
 		void SetQuVRCoordinateAxisType(ECoordinateAxisType xxxtype);
 
-	UFUNCTION(BlueprintCallable, Category = "Components|SetxxType")
+	UFUNCTION(BlueprintCallable, Category = "ABasicRMCActor|SetxxType")
 		ECoordinateAxisType GetQuVRCoordinateAxisType();
 
 
-	UFUNCTION(BlueprintCallable, Category = "Components|CreateXXX")
-		void GetAxisFloor(FPlane& outPlane);
+	UFUNCTION(BlueprintCallable, Category = "ABasicRMCActor|CreateXXX")
+		void GetAxisFloor(const FVector& inPos, FPlane& outPlane);
 
+
+	UFUNCTION(BlueprintCallable, Category = "ABasicRMCActor|CreateXXX")
+		void StartTracking();
+
+
+	UFUNCTION(BlueprintCallable, Category = "ABasicRMCActor|CreateXXX")
+		void EndTracking();
+	
 	UWorld* world;
 	ULocalPlayer* localPlayer;
 };
