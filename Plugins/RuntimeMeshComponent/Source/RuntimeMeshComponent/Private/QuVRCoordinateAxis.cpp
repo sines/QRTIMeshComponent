@@ -18,8 +18,8 @@ static const float TWOD_AXIS_CIRCLE_RADIUS = 10.0f;
 static const float INNER_AXIS_CIRCLE_RADIUS = 48.0f;
 static const float OUTER_AXIS_CIRCLE_RADIUS = 56.0f;
 static const float ROTATION_TEXT_RADIUS = 75.0f;
+static const float AXIS_GRUDSIZE = 5.0f;
 static const int32 AXIS_CIRCLE_SIDES = 24;
-
 
 uint8 LargeInnerAlpha = 0x3f;
 uint8 SmallInnerAlpha = 0x0f;
@@ -184,15 +184,15 @@ void FQuVRCoordinateAxis::AddReferencedObjects(FReferenceCollector& Collector)
 
 void FQuVRCoordinateAxis::QuVRSnapPointToGrid(FVector& Point, const FVector& GridBase)
 {
-	if (true)
+	if (bSnapEnabled)
 	{
-		Point = (Point - GridBase).GridSnap(1) + GridBase;
+		Point = (Point - GridBase).GridSnap(AXIS_GRUDSIZE) + GridBase;
 	}
 }
 
 void FQuVRCoordinateAxis::QuVRSnapRotatorToGrid(FRotator& Rotation)
 {
-	if (true)
+	if (bSnapEnabled)
 	{
 		Rotation = Rotation.GridSnap(FRotator(0.1, 0.1, 0.1));
 	}
@@ -243,8 +243,7 @@ void FQuVRCoordinateAxis::ConvertMouseMovementToAxisMovement(bool bInUsedDragMod
 
 			// Snap to grid in widget axis space
 			//<---------------------------------->
-			const FVector GridSize = FVector(5);
-			QuVRSnapPointToGrid(OutDrag, GridSize);
+			QuVRSnapPointToGrid(OutDrag, FVector(AXIS_GRUDSIZE));
 
 			// Convert to effective screen space delta, and replace input delta, adjusted for inverted screen space Y axis
 			const FVector2D EffectiveDelta = OutDrag.X * XAxisDir + OutDrag.Y * YAxisDir + OutDrag.Z * ZAxisDir;
@@ -368,8 +367,7 @@ void FQuVRCoordinateAxis::ConvertMouseMovementToAxisMovement(bool bInUsedDragMod
 			);
 
 			// Snap to grid in widget axis space
-			const FVector GridSize = FVector(5);
-			QuVRSnapPointToGrid(OutDrag, GridSize);
+			QuVRSnapPointToGrid(OutDrag, FVector(AXIS_GRUDSIZE));
 
 			// Convert to effective screen space delta, and replace input delta, adjusted for inverted screen space Y axis
 			const FVector2D EffectiveDelta = OutDrag.X * XAxisDir + OutDrag.Y * YAxisDir + OutDrag.Z * ZAxisDir;
@@ -411,8 +409,7 @@ void FQuVRCoordinateAxis::ConvertMouseMovementToAxisMovement(bool bInUsedDragMod
 			);
 
 			// Snap to grid in widget axis space
-			const FVector GridSize = FVector(5);
-			QuVRSnapPointToGrid(OutDrag, GridSize);
+			QuVRSnapPointToGrid(OutDrag, FVector(AXIS_GRUDSIZE));
 
 			// Convert to effective screen space delta, and replace input delta, adjusted for inverted screen space Y axis
 			const FVector2D EffectiveDelta = OutDrag.X * XAxisDir + OutDrag.Y * YAxisDir + OutDrag.Z * ZAxisDir;
@@ -661,11 +658,11 @@ FVector FQuVRCoordinateAxis::GetAbsoluteTranslationDelta(const FQuVRAbsoluteMove
 	}
 
 	//the they requested position snapping and we're not moving with the camera
-	if (InParams.bPositionSnapping && !InParams.bMovementLockedToCamera && bSnapEnabled)//bSnapEnabled)
+	if (InParams.bPositionSnapping && !InParams.bMovementLockedToCamera && bSnapEnabled)
 	{
 		FVector MovementAlongAxis = FVector(OutDrag | InParams.XAxis, OutDrag | InParams.YAxis, OutDrag | InParams.ZAxis);
 		//translation (either xy plane or z)
-		QuVRSnapPointToGrid(MovementAlongAxis, FVector(1));
+		QuVRSnapPointToGrid(MovementAlongAxis, FVector(AXIS_GRUDSIZE));
 		OutDrag = MovementAlongAxis.X*InParams.XAxis + MovementAlongAxis.Y*InParams.YAxis + MovementAlongAxis.Z*InParams.ZAxis;
 	}
 	UE_LOG(LogEngine, Log, TEXT("OutDrag- LockedToCamera:%s"), *OutDrag.ToString());
