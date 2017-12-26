@@ -1,4 +1,4 @@
-// // By luis
+// QUVRTransformAlgorithm By luis
 
 #pragma once
 
@@ -26,7 +26,7 @@ private:
 };
 
 /*FQuVRCoordinateAxis */
-class RUNTIMEMESHCOMPONENT_API FQuVRCoordinateAxis :public FGCObject
+class RUNTIMEMESHCOMPONENT_API FQuVRTransformAlgorithm :public FGCObject
 {
 public:
 	
@@ -110,7 +110,7 @@ private:
 		float OuterRadius;
 	};
 public:
-	FQuVRCoordinateAxis();
+	FQuVRTransformAlgorithm();
 
 
 public:

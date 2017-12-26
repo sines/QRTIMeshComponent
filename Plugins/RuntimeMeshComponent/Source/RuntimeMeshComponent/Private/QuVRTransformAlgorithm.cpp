@@ -1,5 +1,5 @@
 #include "RuntimeMeshComponentPluginPrivatePCH.h"
-#include "QuVRCoordinateAxis.h"
+#include "QuVRTransformAlgorithm.h"
 
 #include "GCObject.h"
 #include "CanvasTypes.h"
@@ -104,7 +104,7 @@ FQuViewportCursorLocation::FQuViewportCursorLocation(const FSceneView* View, int
 }
 
 
-FQuVRCoordinateAxis::FQuVRCoordinateAxis()
+FQuVRTransformAlgorithm::FQuVRTransformAlgorithm()
 {
 
 	TotalDeltaRotation = 0;
@@ -171,7 +171,7 @@ FQuVRCoordinateAxis::FQuVRCoordinateAxis()
 *
 * @param Ar	FArchive to serialize with
 */
-void FQuVRCoordinateAxis::AddReferencedObjects(FReferenceCollector& Collector)
+void FQuVRTransformAlgorithm::AddReferencedObjects(FReferenceCollector& Collector)
 {
 	Collector.AddReferencedObject(AxisMaterialX);
 	Collector.AddReferencedObject(AxisMaterialY);
@@ -182,7 +182,7 @@ void FQuVRCoordinateAxis::AddReferencedObjects(FReferenceCollector& Collector)
 	Collector.AddReferencedObject(CurrentAxisMaterial);
 }
 
-void FQuVRCoordinateAxis::QuVRSnapPointToGrid(FVector& Point, const FVector& GridBase)
+void FQuVRTransformAlgorithm::QuVRSnapPointToGrid(FVector& Point, const FVector& GridBase)
 {
 	if (bSnapEnabled)
 	{
@@ -190,7 +190,7 @@ void FQuVRCoordinateAxis::QuVRSnapPointToGrid(FVector& Point, const FVector& Gri
 	}
 }
 
-void FQuVRCoordinateAxis::QuVRSnapRotatorToGrid(FRotator& Rotation)
+void FQuVRTransformAlgorithm::QuVRSnapRotatorToGrid(FRotator& Rotation)
 {
 	if (bSnapEnabled)
 	{
@@ -202,7 +202,7 @@ void FQuVRCoordinateAxis::QuVRSnapRotatorToGrid(FRotator& Rotation)
 * Converts mouse movement on the screen to widget axis movement/rotation.
 */
 
-void FQuVRCoordinateAxis::ConvertMouseMovementToAxisMovement(bool bInUsedDragModifier, FVector& InDiff, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
+void FQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bInUsedDragModifier, FVector& InDiff, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
 {
 	OutDrag = FVector::ZeroVector;
 	OutRotation = FRotator::ZeroRotator;
@@ -232,7 +232,7 @@ void FQuVRCoordinateAxis::ConvertMouseMovementToAxisMovement(bool bInUsedDragMod
 
 	switch (MoveModeType)
 	{
-	case FQuVRCoordinateAxis::WM_Translate:
+	case FQuVRTransformAlgorithm::WM_Translate:
 		{
 			// Get drag delta in widget axis space
 			OutDrag = FVector(
@@ -253,7 +253,7 @@ void FQuVRCoordinateAxis::ConvertMouseMovementToAxisMovement(bool bInUsedDragMod
 			OutDrag = CustomCoordSystem.TransformPosition(OutDrag);
 		}
 		break;
-	case FQuVRCoordinateAxis::WM_Rotate:
+	case FQuVRTransformAlgorithm::WM_Rotate:
 		{
 			FRotator Rotation;
 			FVector2D EffectiveDelta;
@@ -302,7 +302,7 @@ void FQuVRCoordinateAxis::ConvertMouseMovementToAxisMovement(bool bInUsedDragMod
 				OutRotation = (CustomCoordSystem.Inverse() * FRotationMatrix(Rotation) * CustomCoordSystem).Rotator();
 			}
 		break;
-	case FQuVRCoordinateAxis::WM_Scale:
+	case FQuVRTransformAlgorithm::WM_Scale:
 	{
 		FVector2D AxisDir = FVector2D::ZeroVector;
 
@@ -427,7 +427,7 @@ void FQuVRCoordinateAxis::ConvertMouseMovementToAxisMovement(bool bInUsedDragMod
 }
 
 
-void FQuVRCoordinateAxis::AbsoluteTranslationConvertMouseMovementToAxisMovement(FSceneView* InView, const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
+void FQuVRTransformAlgorithm::AbsoluteTranslationConvertMouseMovementToAxisMovement(FSceneView* InView, const FVector& InLocation, const FVector2D& InMousePosition, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
 {
 	// Compute a world space ray from the screen space mouse coordinates
 	FQuViewportCursorLocation MouseViewportRay(InView, InMousePosition.X, InMousePosition.Y);
@@ -611,7 +611,7 @@ void FQuVRCoordinateAxis::AbsoluteTranslationConvertMouseMovementToAxisMovement(
 	}
 }
 
-FVector FQuVRCoordinateAxis::GetAbsoluteTranslationDelta(const FQuVRAbsoluteMovementParams& InParams)
+FVector FQuVRTransformAlgorithm::GetAbsoluteTranslationDelta(const FQuVRAbsoluteMovementParams& InParams)
 {
 
 	FPlane MovementPlane(InParams.Position, InParams.PlaneNormal);
@@ -687,7 +687,7 @@ FVector FQuVRCoordinateAxis::GetAbsoluteTranslationDelta(const FQuVRAbsoluteMove
 /**
 * Returns the offset from the initial selection point
 */
-FVector FQuVRCoordinateAxis::GetAbsoluteTranslationInitialOffset(const FVector& InNewPosition, const FVector& InCurrentPosition)
+FVector FQuVRTransformAlgorithm::GetAbsoluteTranslationInitialOffset(const FVector& InNewPosition, const FVector& InCurrentPosition)
 {
 	if (!bAbsoluteTranslationInitialOffsetCached)
 	{
@@ -703,12 +703,12 @@ FVector FQuVRCoordinateAxis::GetAbsoluteTranslationInitialOffset(const FVector& 
 /**
 * Returns true if we're in Local Space editing mode
 */
-bool FQuVRCoordinateAxis::IsRotationLocalSpace() const
+bool FQuVRTransformAlgorithm::IsRotationLocalSpace() const
 {
 	return (CustomCoordSystemSpace == COORD_Local);
 }
 
-void FQuVRCoordinateAxis::UpdateDeltaRotation()
+void FQuVRTransformAlgorithm::UpdateDeltaRotation()
 {
 	TotalDeltaRotation += CurrentDeltaRotation;
 	if ((TotalDeltaRotation <= -360.f) || (TotalDeltaRotation >= 360.f))
@@ -720,7 +720,7 @@ void FQuVRCoordinateAxis::UpdateDeltaRotation()
 /**
 * Returns the angle in degrees representation of how far we have just rotated
 */
-float FQuVRCoordinateAxis::GetDeltaRotation() const
+float FQuVRTransformAlgorithm::GetDeltaRotation() const
 {
 	return TotalDeltaRotation;
 }

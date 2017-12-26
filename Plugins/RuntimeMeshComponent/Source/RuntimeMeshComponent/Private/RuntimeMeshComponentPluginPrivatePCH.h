@@ -8,7 +8,7 @@
 
 #include "RuntimeMeshComponentPlugin.h"
 
-#include "QuVRCoordinateAxis.h"
+#include "QuVRTransformAlgorithm.h"
 #include "RuntimeMeshComponent.h"
 #include "PhysicsEngine/BodySetup.h"
 

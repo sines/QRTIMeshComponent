@@ -38,8 +38,8 @@ void ABasicRMCActor::OnConstruction(const FTransform& Transform)
 
 void ABasicRMCActor::Destroyed()
 {
-	delete QuVRCoordinateAxis;
-	QuVRCoordinateAxis = 0;
+	delete QuVRTransformAlgorithm;
+	QuVRTransformAlgorithm = 0;
 
 	delete world;
 	world = 0;
@@ -51,7 +51,7 @@ void ABasicRMCActor::Destroyed()
 
 void ABasicRMCActor::CreateQuVRCoordinateAxis()
 {
-	QuVRCoordinateAxis = new FQuVRCoordinateAxis();
+	QuVRTransformAlgorithm = new FQuVRTransformAlgorithm();
 }
 
 void ABasicRMCActor::GetAxisFloor(const FVector& inPos, FPlane& outPlane)
@@ -75,13 +75,13 @@ void ABasicRMCActor::GetAxisFloor(const FVector& inPos, FPlane& outPlane)
 	//calculate mouse position
 	check(localPlayer->ViewportClient->Viewport);
 	//////////////////////////////////////////////////////////////////////////
-	QuVRCoordinateAxis->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, inPos, MousePosition, OutDrag, OutRotation, OutScale);
+	QuVRTransformAlgorithm->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, inPos, MousePosition, OutDrag, OutRotation, OutScale);
 
-	outPlane = QuVRCoordinateAxis->plane;
+	outPlane = QuVRTransformAlgorithm->plane;
 }
 ECoordinateAxisType ABasicRMCActor::GetQuVRCoordinateAxisType()
 {
-	switch (QuVRCoordinateAxis->GetCurrentAxis())
+	switch (QuVRTransformAlgorithm->GetCurrentAxis())
 	{
 	case EAxisList::X:
 		return ECoordinateAxisType::X;
@@ -112,7 +112,7 @@ void ABasicRMCActor::SetQuVRCoordinateAxisType(ECoordinateAxisType axisType)
 	check(world);
 	APlayerCameraManager* cameraManager = world->GetFirstPlayerController()->PlayerCameraManager;
 	localPlayer = world->GetFirstLocalPlayerFromController();
-	QuVRCoordinateAxis->SetSnapEnabled(true);
+	QuVRTransformAlgorithm->SetSnapEnabled(true);
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -154,7 +154,7 @@ void ABasicRMCActor::SetQuVRCoordinateAxisType(ECoordinateAxisType axisType)
 		break;
 	}
 
-	QuVRCoordinateAxis->SetCurrentAxis(InCurrentAxis);
+	QuVRTransformAlgorithm->SetCurrentAxis(InCurrentAxis);
 }
 
 void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
@@ -178,7 +178,7 @@ void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, FVector& O
 	//calculate mouse position
 	check(localPlayer->ViewportClient->Viewport);
 	//////////////////////////////////////////////////////////////////////////
-	QuVRCoordinateAxis->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, InLocation, MousePosition, OutDrag, OutRotation, OutScale);
+	QuVRTransformAlgorithm->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, InLocation, MousePosition, OutDrag, OutRotation, OutScale);
 	
 #if 0
 
@@ -205,10 +205,10 @@ void ABasicRMCActor::GetQuVRCoordinateAxis(const FVector& InLocation, FVector& O
 void ABasicRMCActor::StartTracking()
 {
 	
-	if (QuVRCoordinateAxis)
+	if (QuVRTransformAlgorithm)
 	{
-		QuVRCoordinateAxis->ResetInitialTranslationOffset();
-		QuVRCoordinateAxis->ResetDeltaRotation();
+		QuVRTransformAlgorithm->ResetInitialTranslationOffset();
+		QuVRTransformAlgorithm->ResetDeltaRotation();
 	}
 	
 }

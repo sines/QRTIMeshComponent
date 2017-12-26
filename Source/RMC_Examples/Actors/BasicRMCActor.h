@@ -3,7 +3,7 @@
 #pragma once
 
 #include "RuntimeMeshObjectBase.h"
-#include "QuVRCoordinateAxis.h"
+#include "QuVRTransformAlgorithm.h"
 #include "BasicRMCActor.generated.h"
 
 UENUM(BlueprintType)
@@ -48,7 +48,7 @@ public:
 	
 	virtual void Destroyed();
 
-	FQuVRCoordinateAxis* QuVRCoordinateAxis;
+	FQuVRTransformAlgorithm* QuVRTransformAlgorithm;
 
 	UFUNCTION(BlueprintCallable, Category = "ABasicRMCActor|CreateXXX")
 	void CreateQuVRCoordinateAxis();
