@@ -50,9 +50,8 @@ private:
 	FRuntimeQuVRTransformAlgorithm*  QuVRTransformAlgorithm;
 	
 	// Get GWorld
-	UWorld* world;
-
+	UWorld* QuVRWorld;
 	// Current LocalPlayer
-	ULocalPlayer* localPlayer;
+	ULocalPlayer* QuVRLocalPlayer;
 
 };

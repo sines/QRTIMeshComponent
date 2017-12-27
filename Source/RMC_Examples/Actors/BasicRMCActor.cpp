@@ -215,5 +215,9 @@ void ABasicRMCActor::StartTracking()
 
 void ABasicRMCActor::EndTracking()
 {
-	
+	if (QuVRTransformAlgorithm)
+	{
+		QuVRTransformAlgorithm->SetDragging(false);
+		QuVRTransformAlgorithm->ResetDeltaRotation();
+	}
 }

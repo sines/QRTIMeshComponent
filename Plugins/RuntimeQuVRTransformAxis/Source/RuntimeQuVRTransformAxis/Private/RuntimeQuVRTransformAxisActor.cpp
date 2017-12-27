@@ -21,7 +21,15 @@ void ARuntimeQuVRTransformAxisActor::BeginPlay()
 	Super::BeginPlay();
 
 	QuVRTransformAlgorithm = new FRuntimeQuVRTransformAlgorithm();
+	QuVRWorld = GetWorld();
+	check(QuVRWorld);
+
+	APlayerCameraManager* cameraManager = QuVRWorld->GetFirstPlayerController()->PlayerCameraManager;
+	QuVRLocalPlayer = QuVRWorld->GetFirstLocalPlayerFromController();
 	
+	APlayerController* PlayController = QuVRLocalPlayer->GetPlayerController(QuVRWorld);
+	EnableInput(true);
+
 }
 
 // Called every frame
@@ -36,11 +44,11 @@ void ARuntimeQuVRTransformAxisActor::Destroyed()
 	delete QuVRTransformAlgorithm;
 	QuVRTransformAlgorithm = 0;
 
-	delete world;
-	world = 0;
+	delete QuVRWorld;
+	QuVRWorld = 0;
 
-	delete localPlayer;
-	localPlayer = 0;
+	delete QuVRLocalPlayer;
+	QuVRLocalPlayer = 0;
 }
 
 void ARuntimeQuVRTransformAxisActor::StartTracking()
