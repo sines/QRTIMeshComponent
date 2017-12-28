@@ -28,8 +28,10 @@ void ARuntimeQuVRTransformAxisActor::BeginPlay()
 	QuVRLocalPlayer = QuVRWorld->GetFirstLocalPlayerFromController();
 	
 	APlayerController* PlayController = QuVRLocalPlayer->GetPlayerController(QuVRWorld);
-	EnableInput(true);
-
+	check(PlayController);
+	EnableInput(PlayController);
+	PlayController->InputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Pressed, this, &ARuntimeQuVRTransformAxisActor::ButtonPressed);
+	PlayController->InputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Released, this, &ARuntimeQuVRTransformAxisActor::ButtonReleased);
 }
 
 // Called every frame
@@ -69,4 +71,15 @@ void ARuntimeQuVRTransformAxisActor::EndTracking()
 		QuVRTransformAlgorithm->SetDragging(false);
 		QuVRTransformAlgorithm->ResetDeltaRotation();
 	}
+}
+
+void ARuntimeQuVRTransformAxisActor::ButtonPressed()
+{
+	StartTracking();
+
+}
+
+void ARuntimeQuVRTransformAxisActor::ButtonReleased()
+{
+	EndTracking();
 }

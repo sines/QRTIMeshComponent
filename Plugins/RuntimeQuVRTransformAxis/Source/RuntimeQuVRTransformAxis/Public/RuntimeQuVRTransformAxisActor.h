@@ -7,6 +7,21 @@
 #include "RuntimeQuVRTransformAxisActor.generated.h"
 
 class FRuntimeQuVRTransformAlgorithm;
+
+/**
+* Displays measurements along the bounds of selected objects
+*/
+USTRUCT()
+struct FQuVRTransformGizmoMeasurement
+{
+	GENERATED_BODY()
+
+		/** The text that displays the actual measurement and units */
+		UPROPERTY()
+		class UTextRenderComponent* MeasurementText;
+};
+
+
 UCLASS()
 class RUNTIMEQUVRTRANSFORMAXIS_API ARuntimeQuVRTransformAxisActor : public AActor
 {
@@ -36,6 +51,12 @@ protected:
 	* Adds delta movement into the tracker.
 	*/
 	void  AddDelta(const int32 InDelta, bool InNudge);
+
+	// Input  Pressed Event
+	void ButtonPressed();
+
+	// Input Released Event
+	void ButtonReleased();
 
 public:	
 	// construction

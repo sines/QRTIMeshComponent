@@ -634,11 +634,6 @@ FVector FRuntimeQuVRTransformAlgorithm::GetAbsoluteTranslationDelta(const FQuVRA
 	FVector InitialOffset = GetAbsoluteTranslationInitialOffset(RequestedPosition, InParams.Position);
 
 	// Log
-	UE_LOG(LogEngine, Log, TEXT("OutDrag- InParams.Position :%s"), *InParams.Position.ToString());
-	UE_LOG(LogEngine, Log, TEXT("OutDrag- RequestedPosition :%s"), *RequestedPosition.ToString());
-	UE_LOG(LogEngine, Log, TEXT("OutDrag- DeltaPosition :%s"), *DeltaPosition.ToString());
-	UE_LOG(LogEngine, Log, TEXT("OutDrag- InitialOffset :%s"), *InitialOffset.ToString());
-
 	//subtract off the initial offset (where the widget was clicked) to prevent popping
 	DeltaPosition -= InitialOffset;
 
@@ -646,7 +641,6 @@ FVector FRuntimeQuVRTransformAlgorithm::GetAbsoluteTranslationDelta(const FQuVRA
 	//remove the component along the normal we want to mute
 	float MovementAlongMutedAxis = DeltaPosition | InParams.NormalToRemove;
 	FVector OutDrag = DeltaPosition - (InParams.NormalToRemove*MovementAlongMutedAxis);
-	UE_LOG(LogEngine, Log, TEXT("OutDrag- Drag :%s"), *OutDrag.ToString());
 	if (InParams.bMovementLockedToCamera)
 	{
 		//DAMPEN ABSOLUTE MOVEMENT when the camera is locked to the object
@@ -664,7 +658,6 @@ FVector FRuntimeQuVRTransformAlgorithm::GetAbsoluteTranslationDelta(const FQuVRA
 		QuVRSnapPointToGrid(MovementAlongAxis, FVector(AXIS_GRUDSIZE));
 		OutDrag = MovementAlongAxis.X*InParams.XAxis + MovementAlongAxis.Y*InParams.YAxis + MovementAlongAxis.Z*InParams.ZAxis;
 	}
-	UE_LOG(LogEngine, Log, TEXT("OutDrag- LockedToCamera:%s"), *OutDrag.ToString());
 	//get the distance from the original position to the new proposed position 
 	FVector DeltaFromStart = InParams.Position + OutDrag - InitialTranslationPosition;
 

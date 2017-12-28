@@ -41,6 +41,7 @@ public class RuntimeQuVRTransformAxis : ModuleRules
 			{
                 "Core",
                 "CoreUObject",
+                "InputCore",
                 "Engine",
                 "RenderCore",
                 "ShaderCore",
