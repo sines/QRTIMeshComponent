@@ -197,6 +197,8 @@ public:
 
 	/** Gets the GizmoType for this Gizmo handle */
 	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const override;
+
+//	URuntimeQuVRHandleMeshComponent* GetMeshComponent(FString);
 };
 
 

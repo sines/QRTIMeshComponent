@@ -76,14 +76,17 @@ FString URuntimeQuVRGizmoHandleGroup::MakeHandleName(const FQuVRTransformGizmoHa
 			switch (AxisIndex)
 			{
 			case 0:
+				EAxisList::X;
 				HandleName += (HandleDirection == EQuVRTransformGizmoHandleDirection::QUVR_Negative) ? TEXT("Back") : TEXT("Front");
 				break;
 
 			case 1:
+				EAxisList::Y;
 				HandleName += (HandleDirection == EQuVRTransformGizmoHandleDirection::QUVR_Negative) ? TEXT("Left") : TEXT("Right");
 				break;
 
 			case 2:
+				EAxisList::Z;
 				HandleName += (HandleDirection == EQuVRTransformGizmoHandleDirection::QUVR_Negative) ? TEXT("Bottom") : TEXT("Top");
 				break;
 			}
@@ -203,40 +206,45 @@ void URuntimeQuVRGizmoHandleGroup::UpdateHandleColor(const int32 AxisIndex, FQuV
 	}
 	UMaterialInstanceDynamic* MID0 = CastChecked<UMaterialInstanceDynamic>(HandleMesh->GetMaterial(0));
 	UMaterialInstanceDynamic* MID1 = CastChecked<UMaterialInstanceDynamic>(HandleMesh->GetMaterial(1));
-#if 0
-	ABaseTransformGizmo* GizmoActor = CastChecked<ABaseTransformGizmo>(GetOwner());
+
+	FLinearColor AxisColorX = FLinearColor(0.594f, 0.0197f, 0.0f);
+	FLinearColor AxisColorY = FLinearColor(0.1349f, 0.3959f, 0.0f);
+	FLinearColor AxisColorZ = FLinearColor(0.0251f, 0.207f, 0.85f);
+
+#if 1
+//	ABaseTransformGizmo* GizmoActor = CastChecked<ABaseTransformGizmo>(GetOwner());
 
 
-	if (GizmoActor)
+	if (true)//GizmoActor)
 	{
-		UViewportWorldInteraction* WorldInteraction = GizmoActor->GetOwnerWorldInteraction();
-		if (WorldInteraction)
+		//UViewportWorldInteraction* WorldInteraction = GizmoActor->GetOwnerWorldInteraction();
+		if (true)//WorldInteraction)
 		{
-			FLinearColor HandleColor = WorldInteraction->GetColor(UViewportWorldInteraction::EColors::DefaultColor);
+			FLinearColor HandleColor = FLinearColor::Blue; //WorldInteraction->GetColor(UViewportWorldInteraction::EColors::DefaultColor);
 			if (HandleMesh == DraggingHandle)
 			{
-				HandleColor = WorldInteraction->GetColor(UViewportWorldInteraction::EColors::GizmoDragging);
+			//	HandleColor = WorldInteraction->GetColor(UViewportWorldInteraction::EColors::GizmoDragging);
 			}
 			else if (AxisIndex != INDEX_NONE)
 			{
 				switch (AxisIndex)
 				{
 				case 0:
-					HandleColor = WorldInteraction->GetColor(UViewportWorldInteraction::EColors::Forward);
+					HandleColor = AxisColorX;// WorldInteraction->GetColor(UViewportWorldInteraction::EColors::Forward);
 					break;
 
 				case 1:
-					HandleColor = WorldInteraction->GetColor(UViewportWorldInteraction::EColors::Right);
+					HandleColor = AxisColorY;// WorldInteraction->GetColor(UViewportWorldInteraction::EColors::Right);
 					break;
 
 				case 2:
-					HandleColor = WorldInteraction->GetColor(UViewportWorldInteraction::EColors::Up);
+					HandleColor = AxisColorZ;// WorldInteraction->GetColor(UViewportWorldInteraction::EColors::Up);
 					break;
 				}
 
 				if (HoveringOverHandles.Contains(HandleMesh))
 				{
-					HandleColor = FLinearColor::LerpUsingHSV(HandleColor, WorldInteraction->GetColor(UViewportWorldInteraction::EColors::GizmoHover), Handle.HoverAlpha);
+					// HandleColor = FLinearColor::LerpUsingHSV(HandleColor, WorldInteraction->GetColor(UViewportWorldInteraction::EColors::GizmoHover), Handle.HoverAlpha);
 				}
 			}
 
@@ -405,7 +413,8 @@ void URuntimeQuVRAxisGizmoHandleGroup::UpdateHandlesRelativeTransformOnAxis(cons
 				const FVector GizmoSpaceViewLocation = GetOwner()->GetTransform().InverseTransformPosition(ViewLocation);
 				if (GizmoSpaceViewLocation[FacingAxisIndex] < 0)
 				{
-					GizmoSpaceFacingAxisVector[FacingAxisIndex] *= -1.0f;
+					GizmoSpaceFacingAxisVector[FacingAxisIndex] *= 1.0f;
+				//	GizmoSpaceFacingAxisVector[FacingAxisIndex] *= -1.0f;
 				}
 
 				const FTransform GizmoOriginToFacingAxisRotation(GizmoSpaceFacingAxisVector.ToOrientationQuat());
@@ -539,7 +548,7 @@ EQuVRGizmoHandleTypes URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup::GetHand
 }
 
 /************************************************************************/
-/* URuntimeQuVRStretchGizmoHandleGroup	                                                */
+/* URuntimeQuVRStretchGizmoHandleGroup									*/
 /************************************************************************/
 
 URuntimeQuVRStretchGizmoHandleGroup::URuntimeQuVRStretchGizmoHandleGroup()

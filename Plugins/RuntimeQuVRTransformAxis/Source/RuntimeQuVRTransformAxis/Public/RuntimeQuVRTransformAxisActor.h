@@ -62,8 +62,10 @@ protected:
 public:	
 	// construction
 	void OnConstruction(const FTransform& Transform) override;
+
 	void CrateHandleGroups();
 	float GetAnimationAlpha();
+	void OnNewObjectsSelected();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -100,6 +102,9 @@ private:
 	/** All gizmo components */
 	UPROPERTY()
 	TArray< class URuntimeQuVRGizmoHandleGroup* > AllHandleGroups;
+
+	/** Real time that the gizmo was last attached to a selected set of objects.  This is used for animation transitions */
+	FTimespan SelectedAtTime;
 
 
 };

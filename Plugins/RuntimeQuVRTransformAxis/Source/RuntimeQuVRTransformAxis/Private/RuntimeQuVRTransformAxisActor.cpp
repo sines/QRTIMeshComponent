@@ -45,10 +45,11 @@ void ARuntimeQuVRTransformAxisActor::BeginPlay()
 
 	//////////////////////////////////////////////////////////////////////////
 	FTransform InLocalToWorld = FTransform::Identity;
-	FBox InLocalBounds(16.0f);
-	FVector InViewLocation(0, 0, 0);
+//	InLocalToWorld.SetRotation();
+	FBox InLocalBounds(32.0f);
+	FVector InViewLocation= InLocalToWorld.GetLocation();
 	bool bInAllHandlesVisible = true;
-	bool AnimationAlpha = GetAnimationAlpha();
+	float AnimationAlpha = GetAnimationAlpha();
 	float InGizmoHoverScale = 1.0f;
 	float InGizmoHoverAnimationDuration = 0.10f;
 	static TArray< UActorComponent* > HoveringOverHandles;
@@ -132,12 +133,15 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 	TranslationGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
 	TranslationGizmoHandleGroup->SetupAttachment(SceneComponent);
 	AllHandleGroups.Add(TranslationGizmoHandleGroup);
-
 	PlaneTranslationGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup>(TEXT("PlaneTranslationHandles"), true);
 	PlaneTranslationGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
 	PlaneTranslationGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
 	PlaneTranslationGizmoHandleGroup->SetupAttachment(SceneComponent);
 	AllHandleGroups.Add(PlaneTranslationGizmoHandleGroup);
+
+//	TArray<FQuVRGizmoHandle>&hands = TranslationGizmoHandleGroup->GetHandles();
+	
+//	hands[0].HandleMesh->OnBeginCursorOver.Add();
 /*
 	StretchGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRStretchGizmoHandleGroup>(TEXT("StretchHandles"), true);
 	StretchGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
@@ -173,6 +177,12 @@ float ARuntimeQuVRTransformAxisActor::GetAnimationAlpha()
 
 	return AnimationAlpha;
 }
+
+void ARuntimeQuVRTransformAxisActor::OnNewObjectsSelected()
+{
+	SelectedAtTime = FTimespan::FromSeconds(FApp::GetCurrentTime());
+}
+
 
 /*
 FTransform InLocalToWorld = FTransform::Identity;
