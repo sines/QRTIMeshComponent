@@ -1,6 +1,7 @@
 // QUVRTransformAlgorithm By luis
 
 #pragma once
+#include "RuntimeQuVRTransformType.h"
 
 class UMaterialInterface;
 class FSceneView;
@@ -30,34 +31,10 @@ private:
 class FRuntimeQuVRTransformAlgorithm :public FGCObject
 {
 public:
-	
-	enum EQuVRMode
-	{
-		WM_None = -1,
-		WM_Translate,
-		WM_TranslateRotateZ,
-		WM_2D,
-		WM_Rotate,
-		WM_Scale,
-		WM_Max,
-	};
-
-
 	enum
 	{
 		AXIS_ARROW_SEGMENTS = 16
 	};
-
-
-	/** Coordinate system identifiers. */
-	enum EQuVRCoordSystem
-	{
-		COORD_None = -1,
-		COORD_World,
-		COORD_Local,
-		COORD_Max,
-	};
-
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// STRUCT DATA
@@ -136,7 +113,7 @@ public:
 	}
 
 	/** Only some modes support Absolute Translation Movement.  Check current mode */
-	static bool AllowsAbsoluteTranslationMovement(EQuVRMode WidgetMode);
+	static bool AllowsAbsoluteTranslationMovement(RuntimeQuVRtransformType::EQuVRMode WidgetMode);
 
 	/**
 	* Sets the default visibility of the widget, if it is not overridden by an active editor mode tool.
@@ -334,7 +311,7 @@ private:
 	/************************************************************************/
 	/*Axis 	WM_None,WM_Translate,WM_TranslateRotateZ,						*/
 	/************************************************************************/
-	EQuVRMode  MoveModeType;
+	RuntimeQuVRtransformType::EQuVRMode  MoveModeType;
 
 	/**
 	* An extra matrix to apply to the widget before drawing it (allows for local/custom coordinate systems).
@@ -342,7 +319,7 @@ private:
 	FMatrix CustomCoordSystem;
 
 	/** The space of the custom coord system */
-	EQuVRCoordSystem CustomCoordSystemSpace;
+	RuntimeQuVRtransformType::EQuVRCoordSystem CustomCoordSystemSpace;
 
 	//location in the viewport to render the hud string
 	FVector2D HUDInfoPos;

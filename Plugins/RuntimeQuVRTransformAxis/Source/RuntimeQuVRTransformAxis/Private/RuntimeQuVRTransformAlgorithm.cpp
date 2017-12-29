@@ -1,11 +1,12 @@
 #include "RuntimeQuVRTransformAlgorithm.h"
-
 #include "GCObject.h"
 #include "CanvasTypes.h"
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "EngineGlobals.h"
 #include "SceneView.h"
+
+using namespace RuntimeQuVRtransformType;
 
 #define CAMERA_LOCK_DAMPING_FACTOR 0.1f
 #define MAX_CAMERA_MOVEMENT_SPEED 512.0f
@@ -146,7 +147,7 @@ FRuntimeQuVRTransformAlgorithm::FRuntimeQuVRTransformAlgorithm()
 	CurrentAxis = EAxisList::X;
 
 	CustomCoordSystem = FMatrix::Identity;
-	CustomCoordSystemSpace = COORD_World;
+	CustomCoordSystemSpace = EQuVRCoordSystem::QuVR_COORD_World;
 
 	bAbsoluteTranslationInitialOffsetCached = false;
 	InitialTranslationOffset = FVector::ZeroVector;
@@ -162,7 +163,7 @@ FRuntimeQuVRTransformAlgorithm::FRuntimeQuVRTransformAlgorithm()
 	YAxisDir = FVector2D::ZeroVector;
 	ZAxisDir = FVector2D::ZeroVector;
 	DragStartPos = FVector2D::ZeroVector;
-	MoveModeType = EQuVRMode::WM_Translate;
+	MoveModeType = RuntimeQuVRtransformType::EQuVRMode::QuVR_WM_Translate;
 }
 
 /**
@@ -207,7 +208,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 	OutRotation = FRotator::ZeroRotator;
 	OutScale = FVector::ZeroVector;
 
-	MoveModeType = EQuVRMode::WM_Translate;
+	MoveModeType = EQuVRMode::QuVR_WM_Translate;
 
 	// Get input Delta as 2D vector, adjusted for inverted screen space y axis
 	const FVector2D DragDir = FVector2D(InDiff.X, -InDiff.Y);
@@ -231,7 +232,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 
 	switch (MoveModeType)
 	{
-	case FRuntimeQuVRTransformAlgorithm::WM_Translate:
+	case EQuVRMode::QuVR_WM_Translate:
 		{
 			// Get drag delta in widget axis space
 			OutDrag = FVector(
@@ -252,7 +253,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 			OutDrag = CustomCoordSystem.TransformPosition(OutDrag);
 		}
 		break;
-	case FRuntimeQuVRTransformAlgorithm::WM_Rotate:
+	case EQuVRMode::QuVR_WM_Rotate:
 		{
 			FRotator Rotation;
 			FVector2D EffectiveDelta;
@@ -301,7 +302,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 				OutRotation = (CustomCoordSystem.Inverse() * FRotationMatrix(Rotation) * CustomCoordSystem).Rotator();
 			}
 		break;
-	case FRuntimeQuVRTransformAlgorithm::WM_Scale:
+	case EQuVRMode::QuVR_WM_Scale:
 	{
 		FVector2D AxisDir = FVector2D::ZeroVector;
 
@@ -341,7 +342,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 		InDiff = FVector(EffectiveDelta.X, -EffectiveDelta.Y, 0.0f);
 	}
 		break;
-	case WM_TranslateRotateZ:
+	case EQuVRMode::QuVR_WM_TranslateRotateZ:
 	{
 		if (CurrentAxis == EAxisList::ZRotation)
 		{
@@ -378,7 +379,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 	}
 	break;
 
-	case WM_2D:
+	case EQuVRMode::QuVR_WM_2D:
 	{
 		if (CurrentAxis == EAxisList::Rotate2D)
 		{
@@ -448,7 +449,7 @@ void FRuntimeQuVRTransformAlgorithm::AbsoluteTranslationConvertMouseMovementToAx
 
 	switch (MoveModeType)
 	{
-	case WM_Translate:
+	case EQuVRMode::QuVR_WM_Translate:
 	{
 		switch (CurrentAxis)
 		{
@@ -471,7 +472,7 @@ void FRuntimeQuVRTransformAlgorithm::AbsoluteTranslationConvertMouseMovementToAx
 		break;
 	}
 
-	case WM_2D:
+	case EQuVRMode::QuVR_WM_2D:
 	{
 		switch (CurrentAxis)
 		{
@@ -535,7 +536,7 @@ void FRuntimeQuVRTransformAlgorithm::AbsoluteTranslationConvertMouseMovementToAx
 		break;
 	}
 
-	case WM_TranslateRotateZ:
+	case EQuVRMode::QuVR_WM_TranslateRotateZ:
 	{
 		FVector LineToUse;
 		switch (CurrentAxis)
@@ -604,8 +605,8 @@ void FRuntimeQuVRTransformAlgorithm::AbsoluteTranslationConvertMouseMovementToAx
 		}
 	}
 
-	case WM_Rotate:
-	case WM_Scale:
+	case EQuVRMode::QuVR_WM_Rotate:
+	case EQuVRMode::QuVR_WM_Scale:
 		break;
 	}
 }
@@ -697,7 +698,7 @@ FVector FRuntimeQuVRTransformAlgorithm::GetAbsoluteTranslationInitialOffset(cons
 */
 bool FRuntimeQuVRTransformAlgorithm::IsRotationLocalSpace() const
 {
-	return (CustomCoordSystemSpace == COORD_Local);
+	return (CustomCoordSystemSpace == EQuVRCoordSystem::QuVR_COORD_Local);
 }
 
 void FRuntimeQuVRTransformAlgorithm::UpdateDeltaRotation()

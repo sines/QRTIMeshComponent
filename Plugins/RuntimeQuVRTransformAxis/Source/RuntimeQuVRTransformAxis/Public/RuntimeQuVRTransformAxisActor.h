@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "RuntimeQuVRGizmoHandleGroup.h"
 #include "RuntimeQuVRTransformAxisActor.generated.h"
 
 class FRuntimeQuVRTransformAlgorithm;
@@ -61,18 +62,44 @@ protected:
 public:	
 	// construction
 	void OnConstruction(const FTransform& Transform) override;
-
+	void CrateHandleGroups();
+	float GetAnimationAlpha();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 
 private:
-	// RuntimeQuVRtransformAlgorithm instance
-	FRuntimeQuVRTransformAlgorithm*  QuVRTransformAlgorithm;
-	
 	// Get GWorld
 	UWorld* QuVRWorld;
 	// Current LocalPlayer
 	ULocalPlayer* QuVRLocalPlayer;
+
+	//////////////////////////////////////////////////////////////////////////
+	// RuntimeQuVRtransformAlgorithm instance
+	FRuntimeQuVRTransformAlgorithm*  QuVRTransformAlgorithm;
+
+	/** Current gizmo type */
+	RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType;
+
+	/** Translation handle group component */
+	UPROPERTY()
+	class URuntimeQuVRPivotTranslationGizmoHandleGroup* TranslationGizmoHandleGroup;
+
+	/** Plane translation handle group component */
+	UPROPERTY()
+	class  URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup* PlaneTranslationGizmoHandleGroup;
+
+	/** Stretch handle group component */
+	UPROPERTY()
+	class URuntimeQuVRStretchGizmoHandleGroup* StretchGizmoHandleGroup;
+
+	/** Scene component root of this actor */
+	UPROPERTY()
+	USceneComponent* SceneComponent;
+
+	/** All gizmo components */
+	UPROPERTY()
+	TArray< class URuntimeQuVRGizmoHandleGroup* > AllHandleGroups;
+
 
 };

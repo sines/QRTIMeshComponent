@@ -6,38 +6,12 @@
 #include "Components/SceneComponent.h"
 #include "UnrealWidget.h"
 #include "UObject/ObjectMacros.h"
+#include "RuntimeQuVRTransformType.h"
 #include "RuntimeQuVRGizmoHandleGroup.generated.h"
 
 class UMaterialInterface;
 class UStaticMesh;
-enum class EGizmoHandleTypes : uint8;
 class UActorComponent;
-
-/** Coordinate system identifiers. */
-enum EQuVRCoordSystem
-{
-	COORD_None = -1,
-	COORD_World,
-	COORD_Local,
-	COORD_Max,
-};
-
-/* Directions that a transform handle can face along any given axis */
-enum class EQuVRTransformGizmoHandleDirection
-{
-	Negative,
-	Center,
-	Positive,
-};
-
-UENUM()
-enum class EQuVRGizmoHandleTypes : uint8
-{
-	All = 0,
-	Translate = 1,
-	Rotate = 2,
-	Scale = 3
-};
 
 /** Placement of a handle in pivot space */
 USTRUCT()
@@ -46,7 +20,7 @@ struct RUNTIMEQUVRTRANSFORMAXIS_API FQuVRTransformGizmoHandlePlacement
 	GENERATED_BODY()
 
 		/* Handle direction in X, Y and Z */
-		ETransformGizmoHandleDirection Axes[3];
+		RuntimeQuVRtransformType::EQuVRTransformGizmoHandleDirection Axes[3];
 
 
 	/** Finds the center handle count and facing axis index.  The center handle count is simply the number
@@ -95,14 +69,14 @@ public:
 	FString MakeHandleName(const FQuVRTransformGizmoHandlePlacement HandlePlacement) const;
 
 	/** Static: Given an axis (0-2) and a facing direction, returns the vector normal for that axis */
-	static FVector GetAxisVector(const int32 AxisIndex, const EQuVRTransformGizmoHandleDirection HandleDirection);
+	static FVector GetAxisVector(const int32 AxisIndex, const RuntimeQuVRtransformType::EQuVRTransformGizmoHandleDirection HandleDirection);
 
 	/** Updates the Gizmo handles, needs to be implemented by derived classes */
 	virtual void UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles,
 		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup);
 
 	/** Default setting the visibility and collision for all the handles in this group */
-	void UpdateVisibilityAndCollision(const EQuVRGizmoHandleTypes GizmoType, const EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle);
+	void UpdateVisibilityAndCollision(const RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType, const RuntimeQuVRtransformType::EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle);
 
 //	class UViewportDragOperationComponent* GetDragOperationComponent();
 
@@ -116,10 +90,10 @@ public:
 	void SetTranslucentGizmoMaterial(UMaterialInterface* Material);
 
 	/** Gets all the handles */
-	TArray< FGizmoHandle >& GetHandles();
+	TArray< FQuVRGizmoHandle >& GetHandles();
 
 	/** Gets the GizmoType for this Gizmo handle */
-	virtual EQuVRGizmoHandleTypes GetHandleType() const;
+	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const;
 
 	/** Returns true if this type of handle is allowed with world space gizmos */
 	virtual bool SupportsWorldCoordinateSpace() const
@@ -132,9 +106,11 @@ public:
 
 	/** Gets if this handlegroup will be visible with the universal gizmo */
 	bool GetShowOnUniversalGizmo() const;
+/*
 
-	/** Sets the owning transform gizmo for this handle group*/
+	/ ** Sets the owning transform gizmo for this handle group* /
 	void SetOwningTransformGizmo(class ABaseTransformGizmo* TransformGizmo);
+*/
 
 protected:
 	/** Updates the colors of the dynamic material instances for the handle passed using its axis index */
@@ -144,7 +120,7 @@ protected:
 	class URuntimeQuVRHandleMeshComponent* CreateMeshHandle(class UStaticMesh* HandleMesh, const FString& ComponentName);
 
 	/** Creates handle meshcomponent and adds it to the Handles list */
-	class URuntimeQuVRHandleMeshComponent* CreateAndAddMeshHandle(class UStaticMesh* HandleMesh, const FString& ComponentName, const FTransformGizmoHandlePlacement& HandlePlacement);
+	class URuntimeQuVRHandleMeshComponent* CreateAndAddMeshHandle(class UStaticMesh* HandleMesh, const FString& ComponentName, const FQuVRTransformGizmoHandlePlacement& HandlePlacement);
 
 	/** Adds the HandleMeshComponent to the Handles list */
 	void AddMeshToHandles(class URuntimeQuVRHandleMeshComponent* HandleMeshComponent, const FQuVRTransformGizmoHandlePlacement& HandlePlacement);
@@ -200,4 +176,72 @@ protected:
 	*/
 	void UpdateHandlesRelativeTransformOnAxis(const FTransform& HandleToCenter, const float AnimationAlpha, const float GizmoScale, const float GizmoHoverScale,
 		const FVector& ViewLocation, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles);
+};
+
+/**
+* Axis Gizmo handle for translating
+*/
+UCLASS()
+class  URuntimeQuVRPivotTranslationGizmoHandleGroup : public URuntimeQuVRAxisGizmoHandleGroup
+{
+	GENERATED_BODY()
+
+public:
+
+	/** Default constructor that sets up CDO properties */
+	URuntimeQuVRPivotTranslationGizmoHandleGroup();
+
+	/** Updates the gizmo handles */
+	virtual void UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles,
+		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
+
+	/** Gets the GizmoType for this Gizmo handle */
+	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const override;
+};
+
+
+/**
+* Axis Gizmo handle for plane translation
+*/
+UCLASS()
+class URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup : public URuntimeQuVRAxisGizmoHandleGroup
+{
+	GENERATED_BODY()
+
+public:
+
+	/** Default constructor that sets up CDO properties */
+	URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup();
+
+	/** Updates the gizmo handles */
+	virtual void UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles,
+		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
+
+	/** Gets the GizmoType for this Gizmo handle */
+	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes  GetHandleType() const override;
+};
+
+
+/**
+* Gizmo handle for stretching/scaling
+*/
+UCLASS()
+class RUNTIMEQUVRTRANSFORMAXIS_API URuntimeQuVRStretchGizmoHandleGroup : public URuntimeQuVRGizmoHandleGroup
+{
+	GENERATED_BODY()
+
+public:
+
+	/** Default constructor that sets up CDO properties */
+	URuntimeQuVRStretchGizmoHandleGroup();
+
+	/** Updates the Gizmo handles */
+	virtual void UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles,
+		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
+
+	/** Gets the GizmoType for this Gizmo handle */
+	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes  GetHandleType() const override;
+
+	/** Returns true if this type of handle is allowed with world space gizmos */
+	virtual bool SupportsWorldCoordinateSpace() const override;
 };
