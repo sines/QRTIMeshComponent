@@ -59,7 +59,7 @@ int32 URuntimeQuVRGizmoHandleGroup::MakeHandleIndex(const FQuVRTransformGizmoHan
 	return HandleIndex;
 }
 
-FString URuntimeQuVRGizmoHandleGroup::MakeHandleName(const FQuVRTransformGizmoHandlePlacement HandlePlacement) const
+FString URuntimeQuVRGizmoHandleGroup::MakeHandleName(const FQuVRTransformGizmoHandlePlacement HandlePlacement, EAxisList::Type& out_type) const
 {
 	FString HandleName;
 	int32 CenteredAxisCount = 0;
@@ -76,18 +76,18 @@ FString URuntimeQuVRGizmoHandleGroup::MakeHandleName(const FQuVRTransformGizmoHa
 			switch (AxisIndex)
 			{
 			case 0:
-				EAxisList::X;
 				HandleName += (HandleDirection == EQuVRTransformGizmoHandleDirection::QUVR_Negative) ? TEXT("Back") : TEXT("Front");
+				out_type = EAxisList::X;
 				break;
 
 			case 1:
-				EAxisList::Y;
 				HandleName += (HandleDirection == EQuVRTransformGizmoHandleDirection::QUVR_Negative) ? TEXT("Left") : TEXT("Right");
+				out_type = EAxisList::Y;
 				break;
 
 			case 2:
-				EAxisList::Z;
 				HandleName += (HandleDirection == EQuVRTransformGizmoHandleDirection::QUVR_Negative) ? TEXT("Bottom") : TEXT("Top");
+				out_type = EAxisList::Z;
 				break;
 			}
 		}
@@ -312,21 +312,23 @@ class URuntimeQuVRHandleMeshComponent* URuntimeQuVRGizmoHandleGroup::CreateMeshH
 	return HandleComponent;
 }
 
-URuntimeQuVRHandleMeshComponent* URuntimeQuVRGizmoHandleGroup::CreateAndAddMeshHandle(UStaticMesh* HandleMesh, const FString& ComponentName, const FQuVRTransformGizmoHandlePlacement& HandlePlacement)
+URuntimeQuVRHandleMeshComponent* URuntimeQuVRGizmoHandleGroup::CreateAndAddMeshHandle(UStaticMesh* HandleMesh, const FString& ComponentName, const FQuVRTransformGizmoHandlePlacement& HandlePlacement, const EAxisList::Type& type)
 {
 	URuntimeQuVRHandleMeshComponent* HandleComponent = CreateMeshHandle(HandleMesh, ComponentName);
-	AddMeshToHandles(HandleComponent, HandlePlacement);
+	AddMeshToHandles(HandleComponent, HandlePlacement, type);
 	return HandleComponent;
 }
 
-void URuntimeQuVRGizmoHandleGroup::AddMeshToHandles(URuntimeQuVRHandleMeshComponent* HandleMeshComponent, const FQuVRTransformGizmoHandlePlacement& HandlePlacement)
+void URuntimeQuVRGizmoHandleGroup::AddMeshToHandles(URuntimeQuVRHandleMeshComponent* HandleMeshComponent, const FQuVRTransformGizmoHandlePlacement& HandlePlacement, const EAxisList::Type& type)
 {
+
 	int32 HandleIndex = MakeHandleIndex(HandlePlacement);
 	if (Handles.Num() < (HandleIndex + 1))
 	{
 		Handles.SetNumZeroed(HandleIndex + 1);
 	}
 	Handles[HandleIndex].HandleMesh = HandleMeshComponent;
+	Handles[HandleIndex].HandleType = type;
 }
 
 FQuVRTransformGizmoHandlePlacement URuntimeQuVRGizmoHandleGroup::GetHandlePlacement(const int32 X, const int32 Y, const int32 Z) const
@@ -374,14 +376,15 @@ void URuntimeQuVRAxisGizmoHandleGroup::CreateHandles(UStaticMesh* HandleMesh, co
 				// Don't allow translation/stretching/rotation from the origin
 				if (CenterHandleCount < 3)
 				{
-					const FString HandleName = MakeHandleName(HandlePlacement);
+					EAxisList::Type type = EAxisList::None;
+					const FString HandleName = MakeHandleName(HandlePlacement, type);
 
 					// Only happens on the center of an axis. And we only bother drawing one for the "positive" direction.
 					if (CenterHandleCount == 2 && HandlePlacement.Axes[FacingAxisIndex] == EQuVRTransformGizmoHandleDirection::QUVR_Positive)
 					{
 						// Plane translation handle
 						FString ComponentName = HandleName + HandleName;
-						CreateAndAddMeshHandle(HandleMesh, ComponentName, HandlePlacement);
+						CreateAndAddMeshHandle(HandleMesh, ComponentName, HandlePlacement, type);
 					}
 				}
 			}
@@ -455,7 +458,6 @@ void URuntimeQuVRAxisGizmoHandleGroup::UpdateHandlesRelativeTransformOnAxis(cons
 	}
 }
 
-
 /**
 * FQuVRTransformGizmoHandlePlacement GetCenterHandleCountAndFacingAxisIndex
 */
@@ -518,6 +520,25 @@ void URuntimeQuVRPivotTranslationGizmoHandleGroup::UpdateGizmoHandleGroup(const 
 EQuVRGizmoHandleTypes URuntimeQuVRPivotTranslationGizmoHandleGroup::GetHandleType() const
 {
 	return EQuVRGizmoHandleTypes::QUVR_Translate;
+}
+
+void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisX(class UPrimitiveComponent* OtherComp)
+{
+
+}
+
+class URuntimeQuVRHandleMeshComponent* URuntimeQuVRPivotTranslationGizmoHandleGroup::GetHandleMesh(const EAxisList::Type type)
+{
+	for (int32 HandleIndex = 0; HandleIndex < Handles.Num(); ++HandleIndex)
+	{
+		FQuVRGizmoHandle& Handle = Handles[HandleIndex];
+		if (Handle.HandleType == type)
+		{
+			return Handle.HandleMesh;
+		}
+		
+	}
+	return NULL;
 }
 
 
@@ -591,7 +612,8 @@ URuntimeQuVRStretchGizmoHandleGroup::URuntimeQuVRStretchGizmoHandleGroup()
 				// Don't allow translation/stretching/rotation from the origin
 				if (CenterHandleCount < 3)
 				{
-					const FString HandleName = MakeHandleName(HandlePlacement);
+					EAxisList::Type type;
+					const FString HandleName = MakeHandleName(HandlePlacement, type);
 
 					// Stretching handle
 					if (CenterHandleCount != 1)	// @todo vreditor: Remove this line if we want to re-enable support for edge stretching handles (rather than only corners).  We disabled this because they sort of got in the way of the rotation gizmo, and weren't very popular to use.

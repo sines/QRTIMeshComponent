@@ -106,5 +106,6 @@ private:
 	/** Real time that the gizmo was last attached to a selected set of objects.  This is used for animation transitions */
 	FTimespan SelectedAtTime;
 
-
+	UFUNCTION()
+		void OnHover_AxisX(class UPrimitiveComponent* OtherComp);
 };

@@ -6,6 +6,7 @@
 #include "Components/SceneComponent.h"
 #include "UnrealWidget.h"
 #include "UObject/ObjectMacros.h"
+#include "Math/Axis.h"
 #include "RuntimeQuVRTransformType.h"
 #include "RuntimeQuVRGizmoHandleGroup.generated.h"
 
@@ -42,6 +43,9 @@ struct RUNTIMEQUVRTRANSFORMAXIS_API FQuVRGizmoHandle
 
 	/** Scalar that will advance toward 1.0 over time as we hover over the gizmo handle */
 	float HoverAlpha;
+
+	// Handle Type
+	EAxisList::Type HandleType;
 };
 
 
@@ -66,7 +70,7 @@ public:
 	int32 MakeHandleIndex(const FQuVRTransformGizmoHandlePlacement HandlePlacement) const;
 
 	/** Makes up a name string for a handle */
-	FString MakeHandleName(const FQuVRTransformGizmoHandlePlacement HandlePlacement) const;
+	FString MakeHandleName(const FQuVRTransformGizmoHandlePlacement HandlePlacement, EAxisList::Type& out_type) const;
 
 	/** Static: Given an axis (0-2) and a facing direction, returns the vector normal for that axis */
 	static FVector GetAxisVector(const int32 AxisIndex, const RuntimeQuVRtransformType::EQuVRTransformGizmoHandleDirection HandleDirection);
@@ -120,10 +124,10 @@ protected:
 	class URuntimeQuVRHandleMeshComponent* CreateMeshHandle(class UStaticMesh* HandleMesh, const FString& ComponentName);
 
 	/** Creates handle meshcomponent and adds it to the Handles list */
-	class URuntimeQuVRHandleMeshComponent* CreateAndAddMeshHandle(class UStaticMesh* HandleMesh, const FString& ComponentName, const FQuVRTransformGizmoHandlePlacement& HandlePlacement);
+	class URuntimeQuVRHandleMeshComponent* CreateAndAddMeshHandle(class UStaticMesh* HandleMesh, const FString& ComponentName, const FQuVRTransformGizmoHandlePlacement& HandlePlacement, const EAxisList::Type& type = EAxisList::None);
 
 	/** Adds the HandleMeshComponent to the Handles list */
-	void AddMeshToHandles(class URuntimeQuVRHandleMeshComponent* HandleMeshComponent, const FQuVRTransformGizmoHandlePlacement& HandlePlacement);
+	void AddMeshToHandles(class URuntimeQuVRHandleMeshComponent* HandleMeshComponent, const FQuVRTransformGizmoHandlePlacement& HandlePlacement, const EAxisList::Type& type=EAxisList::None);
 
 	/** Gets the handleplacement axes */
 	FQuVRTransformGizmoHandlePlacement GetHandlePlacement(const int32 X, const int32 Y, const int32 Z) const;
@@ -154,6 +158,7 @@ private:
 
 	/** If this handlegroup will be visible with the universal gizmo */
 	bool bShowOnUniversalGizmo;
+
 };
 
 /**
@@ -176,6 +181,8 @@ protected:
 	*/
 	void UpdateHandlesRelativeTransformOnAxis(const FTransform& HandleToCenter, const float AnimationAlpha, const float GizmoScale, const float GizmoHoverScale,
 		const FVector& ViewLocation, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles);
+
+
 };
 
 /**
@@ -198,7 +205,11 @@ public:
 	/** Gets the GizmoType for this Gizmo handle */
 	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const override;
 
-//	URuntimeQuVRHandleMeshComponent* GetMeshComponent(FString);
+public:
+	class URuntimeQuVRHandleMeshComponent* GetHandleMesh(const EAxisList::Type type);
+
+	UFUNCTION()
+		void OnHover_AxisX(class UPrimitiveComponent* OtherComp);
 };
 
 

@@ -139,9 +139,10 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 	PlaneTranslationGizmoHandleGroup->SetupAttachment(SceneComponent);
 	AllHandleGroups.Add(PlaneTranslationGizmoHandleGroup);
 
-//	TArray<FQuVRGizmoHandle>&hands = TranslationGizmoHandleGroup->GetHandles();
+
+	URuntimeQuVRHandleMeshComponent* mesh = TranslationGizmoHandleGroup->GetHandleMesh(EAxisList::X);
+	mesh->OnBeginCursorOver.AddDynamic(this,&ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
 	
-//	hands[0].HandleMesh->OnBeginCursorOver.Add();
 /*
 	StretchGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRStretchGizmoHandleGroup>(TEXT("StretchHandles"), true);
 	StretchGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
@@ -153,7 +154,10 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 
 
 }
+void ARuntimeQuVRTransformAxisActor::OnHover_AxisX(class UPrimitiveComponent* OtherComp)
+{
 
+}
 float ARuntimeQuVRTransformAxisActor::GetAnimationAlpha()
 {
 	// Update animation
