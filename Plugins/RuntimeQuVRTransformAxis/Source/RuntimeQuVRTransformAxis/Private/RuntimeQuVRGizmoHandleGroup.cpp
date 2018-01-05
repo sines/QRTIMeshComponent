@@ -273,7 +273,8 @@ void URuntimeQuVRGizmoHandleGroup::UpdateVisibilityAndCollision(const EQuVRGizmo
 			Handle.HandleMesh->SetVisibility(bShowIt);
 
 			// Never allow ray queries to impact hidden handles
-			Handle.HandleMesh->SetCollisionEnabled(bShowIt ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+			Handle.HandleMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		//	Handle.HandleMesh->SetCollisionEnabled(bShowIt ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 		}
 	}
 }
@@ -297,12 +298,14 @@ class URuntimeQuVRHandleMeshComponent* URuntimeQuVRGizmoHandleGroup::CreateMeshH
 	HandleComponent->SetupAttachment(this);
 
 	HandleComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	HandleComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
+	HandleComponent->SetSimulatePhysics(false);
+//	HandleComponent->SetCollisionResponseToAllChannels(ECR_Block);    
+//	HandleComponent->SetCollisionResponseToAllChannels(ECR_Ignore);
 	HandleComponent->SetCollisionResponseToChannel(COLLISION_GIZMO, ECollisionResponse::ECR_Block);
 	HandleComponent->SetCollisionObjectType(COLLISION_GIZMO);
 
-	HandleComponent->bGenerateOverlapEvents = false;
-	HandleComponent->SetCanEverAffectNavigation(false);
+	HandleComponent->bGenerateOverlapEvents = true;
+//	HandleComponent->SetCanEverAffectNavigation(true);
 	HandleComponent->bCastDynamicShadow = bAllowGizmoLighting;
 	HandleComponent->bCastStaticShadow = false;
 	HandleComponent->bAffectDistanceFieldLighting = bAllowGizmoLighting;
@@ -358,6 +361,12 @@ void URuntimeQuVRGizmoHandleGroup::UpdateHoverAnimation(UActorComponent* Draggin
 		}
 		Handle.HoverAlpha = FMath::Clamp(Handle.HoverAlpha, 0.0f, 1.0f);
 	}
+}
+
+void URuntimeQuVRAxisGizmoHandleGroup::OnHover_AxisX(class UPrimitiveComponent* OtherComp)
+{
+	//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnHover_AxisX"),TEXT("OnHover_AxisX"));
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX "));
 }
 
 void URuntimeQuVRAxisGizmoHandleGroup::CreateHandles(UStaticMesh* HandleMesh, const FString& HandleComponentName)
@@ -520,11 +529,6 @@ void URuntimeQuVRPivotTranslationGizmoHandleGroup::UpdateGizmoHandleGroup(const 
 EQuVRGizmoHandleTypes URuntimeQuVRPivotTranslationGizmoHandleGroup::GetHandleType() const
 {
 	return EQuVRGizmoHandleTypes::QUVR_Translate;
-}
-
-void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisX(class UPrimitiveComponent* OtherComp)
-{
-
 }
 
 class URuntimeQuVRHandleMeshComponent* URuntimeQuVRPivotTranslationGizmoHandleGroup::GetHandleMesh(const EAxisList::Type type)

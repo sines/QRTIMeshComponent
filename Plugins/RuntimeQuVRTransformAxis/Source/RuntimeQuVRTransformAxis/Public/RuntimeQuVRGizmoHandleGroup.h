@@ -15,7 +15,7 @@ class UStaticMesh;
 class UActorComponent;
 
 /** Placement of a handle in pivot space */
-USTRUCT()
+USTRUCT(Blueprintable)
 struct RUNTIMEQUVRTRANSFORMAXIS_API FQuVRTransformGizmoHandlePlacement
 {
 	GENERATED_BODY()
@@ -33,12 +33,13 @@ struct RUNTIMEQUVRTRANSFORMAXIS_API FQuVRTransformGizmoHandlePlacement
 };
 
 
-USTRUCT()
+USTRUCT(Blueprintable)
 struct RUNTIMEQUVRTRANSFORMAXIS_API FQuVRGizmoHandle
 {
 	GENERATED_BODY()
 
 	/** Static mesh for this handle */
+	UPROPERTY(EditAnywhere)
 	class URuntimeQuVRHandleMeshComponent* HandleMesh;
 
 	/** Scalar that will advance toward 1.0 over time as we hover over the gizmo handle */
@@ -53,7 +54,7 @@ struct RUNTIMEQUVRTRANSFORMAXIS_API FQuVRGizmoHandle
 /**
 * Base class for gizmo handles
 */
-UCLASS(ABSTRACT)
+UCLASS(Blueprintable)//ABSTRACT)
 class RUNTIMEQUVRTRANSFORMAXIS_API URuntimeQuVRGizmoHandleGroup : public USceneComponent
 {
 	GENERATED_BODY()
@@ -165,7 +166,7 @@ private:
 * Base class for gizmo handles on axis
 */
 
-UCLASS(ABSTRACT)
+UCLASS(Blueprintable)//ABSTRACT)
 class RUNTIMEQUVRTRANSFORMAXIS_API URuntimeQuVRAxisGizmoHandleGroup : public URuntimeQuVRGizmoHandleGroup
 {
 	GENERATED_BODY()
@@ -188,7 +189,7 @@ protected:
 /**
 * Axis Gizmo handle for translating
 */
-UCLASS()
+UCLASS(Blueprintable)
 class  URuntimeQuVRPivotTranslationGizmoHandleGroup : public URuntimeQuVRAxisGizmoHandleGroup
 {
 	GENERATED_BODY()
@@ -210,6 +211,7 @@ public:
 
 	UFUNCTION()
 		void OnHover_AxisX(class UPrimitiveComponent* OtherComp);
+
 };
 
 

@@ -28,21 +28,20 @@ ARuntimeQuVRTransformAxisActor::ARuntimeQuVRTransformAxisActor()
 // Called when the game starts or when spawned
 void ARuntimeQuVRTransformAxisActor::BeginPlay()
 {
-	Super::BeginPlay();
-
 	QuVRTransformAlgorithm = new FRuntimeQuVRTransformAlgorithm();
 	QuVRWorld = GetWorld();
 	check(QuVRWorld);
 
 	APlayerCameraManager* cameraManager = QuVRWorld->GetFirstPlayerController()->PlayerCameraManager;
 	QuVRLocalPlayer = QuVRWorld->GetFirstLocalPlayerFromController();
-	
+
 	APlayerController* PlayController = QuVRLocalPlayer->GetPlayerController(QuVRWorld);
 	check(PlayController);
+	PlayController->bEnableMouseOverEvents = true;
+	PlayController->bShowMouseCursor = true;
 	EnableInput(PlayController);
 	PlayController->InputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Pressed, this, &ARuntimeQuVRTransformAxisActor::ButtonPressed);
 	PlayController->InputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Released, this, &ARuntimeQuVRTransformAxisActor::ButtonReleased);
-
 	//////////////////////////////////////////////////////////////////////////
 	FTransform InLocalToWorld = FTransform::Identity;
 //	InLocalToWorld.SetRotation();
@@ -69,6 +68,7 @@ void ARuntimeQuVRTransformAxisActor::BeginPlay()
 		InGizmoHoverAnimationDuration,
 		bIsHoveringOrDraggingThisHandleGroup
 	);
+	Super::BeginPlay();
 }
 
 // Called every frame
@@ -131,18 +131,34 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 	TranslationGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRPivotTranslationGizmoHandleGroup>(TEXT("TranslationHandles"), true);
 	TranslationGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
 	TranslationGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
-	TranslationGizmoHandleGroup->SetupAttachment(SceneComponent);
+	TranslationGizmoHandleGroup->SetupAttachment(GetRootComponent());
 	AllHandleGroups.Add(TranslationGizmoHandleGroup);
 	PlaneTranslationGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup>(TEXT("PlaneTranslationHandles"), true);
 	PlaneTranslationGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
 	PlaneTranslationGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
-	PlaneTranslationGizmoHandleGroup->SetupAttachment(SceneComponent);
+	PlaneTranslationGizmoHandleGroup->SetupAttachment(GetRootComponent());
 	AllHandleGroups.Add(PlaneTranslationGizmoHandleGroup);
 
 
+	check(TranslationGizmoHandleGroup);
 	URuntimeQuVRHandleMeshComponent* mesh = TranslationGizmoHandleGroup->GetHandleMesh(EAxisList::X);
-	mesh->OnBeginCursorOver.AddDynamic(this,&ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
-	
+	check(mesh);
+	mesh->OnBeginCursorOver.AddDynamic(this, &ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
+/*
+	mesh->OnBeginCursorOver.AddDynamic(this, &ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
+
+	mesh = TranslationGizmoHandleGroup->GetHandleMesh(EAxisList::Y);
+	mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	mesh->bGenerateOverlapEvents = true;
+	mesh->OnBeginCursorOver.AddDynamic(this, &ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
+
+	mesh = TranslationGizmoHandleGroup->GetHandleMesh(EAxisList::Z);
+	mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	mesh->bGenerateOverlapEvents = true;
+	mesh->OnBeginCursorOver.AddDynamic(this, &ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
+*/
+
+
 /*
 	StretchGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRStretchGizmoHandleGroup>(TEXT("StretchHandles"), true);
 	StretchGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
@@ -156,8 +172,16 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 }
 void ARuntimeQuVRTransformAxisActor::OnHover_AxisX(class UPrimitiveComponent* OtherComp)
 {
-
+//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnHover_AxisX"),TEXT("OnHover_AxisX"));
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX "));
 }
+
+void ARuntimeQuVRTransformAxisActor::OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++ ") + Hit.Location.ToString());
+//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnClicked_AxisX"), TEXT("OnClicked_AxisX"));
+}
+
 float ARuntimeQuVRTransformAxisActor::GetAnimationAlpha()
 {
 	// Update animation

@@ -18,12 +18,12 @@ struct FQuVRTransformGizmoMeasurement
 	GENERATED_BODY()
 
 		/** The text that displays the actual measurement and units */
-		UPROPERTY()
+		UPROPERTY(EditAnywhere)
 		class UTextRenderComponent* MeasurementText;
 };
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class RUNTIMEQUVRTRANSFORMAXIS_API ARuntimeQuVRTransformAxisActor : public AActor
 {
 	GENERATED_BODY()
@@ -84,7 +84,7 @@ private:
 	RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType;
 
 	/** Translation handle group component */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	class URuntimeQuVRPivotTranslationGizmoHandleGroup* TranslationGizmoHandleGroup;
 
 	/** Plane translation handle group component */
@@ -96,11 +96,11 @@ private:
 	class URuntimeQuVRStretchGizmoHandleGroup* StretchGizmoHandleGroup;
 
 	/** Scene component root of this actor */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	USceneComponent* SceneComponent;
 
 	/** All gizmo components */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TArray< class URuntimeQuVRGizmoHandleGroup* > AllHandleGroups;
 
 	/** Real time that the gizmo was last attached to a selected set of objects.  This is used for animation transitions */
@@ -108,4 +108,7 @@ private:
 
 	UFUNCTION()
 		void OnHover_AxisX(class UPrimitiveComponent* OtherComp);
+
+	UFUNCTION()
+		void OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 };

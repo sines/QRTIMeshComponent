@@ -9,8 +9,8 @@
 /**
  * 
  */
-UCLASS(hidecategories = Object)
-class URuntimeQuVRHandleMeshComponent : public UStaticMeshComponent
+UCLASS(Blueprintable)//hidecategories = Object)
+class RUNTIMEQUVRTRANSFORMAXIS_API URuntimeQuVRHandleMeshComponent : public UStaticMeshComponent
 {
 	GENERATED_BODY()
 	

@@ -15,7 +15,7 @@ class UStaticMesh;
 /**
  *  Asset container for Render.
  */
-UCLASS()
+UCLASS(Blueprintable)
 class RUNTIMEQUVRTRANSFORMAXIS_API URuntimeQuVRAssetContainer : public UDataAsset
 {
 	GENERATED_BODY()
