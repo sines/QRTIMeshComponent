@@ -23,6 +23,10 @@ ARuntimeQuVRTransformAxisActor::ARuntimeQuVRTransformAxisActor()
 	RootComponent = SceneComponent;
 
 	CrateHandleGroups();
+
+	bIsMouseButtonDown = false;
+	bIsDrag = false;
+	bIsHover = false;
 }
 
 // Called when the game starts or when spawned
@@ -68,6 +72,7 @@ void ARuntimeQuVRTransformAxisActor::BeginPlay()
 		InGizmoHoverAnimationDuration,
 		bIsHoveringOrDraggingThisHandleGroup
 	);
+
 	Super::BeginPlay();
 }
 
@@ -75,7 +80,21 @@ void ARuntimeQuVRTransformAxisActor::BeginPlay()
 void ARuntimeQuVRTransformAxisActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
+	// Move
+	if (bIsHover && bIsMouseButtonDown)
+	{
+		bIsDrag = true;
+		FRotator rot;
+		FVector scale;
+		TranslationCalac(GetActorLocation(), vDragV3D, rot, scale);
+		SetActorLocation(GetActorLocation() + vDragV3D);
+		vDragV3D = FVector::ZeroVector;
+	}
+	else
+	{
+		bIsDrag = false;
+	}
 }
 
 void ARuntimeQuVRTransformAxisActor::Destroyed()
@@ -99,6 +118,35 @@ void ARuntimeQuVRTransformAxisActor::StartTracking()
 		QuVRTransformAlgorithm->ResetDeltaRotation();
 	}
 
+	if (TranslationGizmoHandleGroup->GetHandleHoveredType() != EQuVRGizmoHandleHoveredTypes::QUVR_VOID)
+	{
+		bIsHover = true;
+	}
+	if (bIsHover)
+	{
+		EAxisList::Type InCurrentAxis = EAxisList::Type::None;
+
+		switch (TranslationGizmoHandleGroup->GetHandleHoveredType())
+		{
+		case EQuVRGizmoHandleHoveredTypes::QUVR_X:
+			InCurrentAxis = EAxisList::X;
+			break;
+
+		case EQuVRGizmoHandleHoveredTypes::QUVR_Y:
+			InCurrentAxis = EAxisList::Y;
+			break;
+
+		case EQuVRGizmoHandleHoveredTypes::QUVR_Z:
+			InCurrentAxis = EAxisList::Z;
+			break;
+		default:
+			InCurrentAxis = EAxisList::None;
+			break;
+		}
+		QuVRTransformAlgorithm->SetCurrentAxis(InCurrentAxis);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("ButtonClicked"));
+
 }
 
 void ARuntimeQuVRTransformAxisActor::EndTracking()
@@ -113,12 +161,16 @@ void ARuntimeQuVRTransformAxisActor::EndTracking()
 void ARuntimeQuVRTransformAxisActor::ButtonPressed()
 {
 	StartTracking();
+	bIsMouseButtonDown = true;
 
 }
 
 void ARuntimeQuVRTransformAxisActor::ButtonReleased()
 {
 	EndTracking();
+	bIsMouseButtonDown = false;
+	bIsDrag = false;
+	bIsHover = false;
 }
 
 void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
@@ -140,24 +192,6 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 	AllHandleGroups.Add(PlaneTranslationGizmoHandleGroup);
 
 
-	check(TranslationGizmoHandleGroup);
-	URuntimeQuVRHandleMeshComponent* mesh = TranslationGizmoHandleGroup->GetHandleMesh(EAxisList::X);
-	check(mesh);
-	mesh->OnBeginCursorOver.AddDynamic(this, &ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
-/*
-	mesh->OnBeginCursorOver.AddDynamic(this, &ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
-
-	mesh = TranslationGizmoHandleGroup->GetHandleMesh(EAxisList::Y);
-	mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	mesh->bGenerateOverlapEvents = true;
-	mesh->OnBeginCursorOver.AddDynamic(this, &ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
-
-	mesh = TranslationGizmoHandleGroup->GetHandleMesh(EAxisList::Z);
-	mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	mesh->bGenerateOverlapEvents = true;
-	mesh->OnBeginCursorOver.AddDynamic(this, &ARuntimeQuVRTransformAxisActor::OnHover_AxisX);
-*/
-
 
 /*
 	StretchGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRStretchGizmoHandleGroup>(TEXT("StretchHandles"), true);
@@ -170,11 +204,7 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 
 
 }
-void ARuntimeQuVRTransformAxisActor::OnHover_AxisX(class UPrimitiveComponent* OtherComp)
-{
-//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnHover_AxisX"),TEXT("OnHover_AxisX"));
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX "));
-}
+
 
 void ARuntimeQuVRTransformAxisActor::OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
@@ -211,6 +241,32 @@ void ARuntimeQuVRTransformAxisActor::OnNewObjectsSelected()
 	SelectedAtTime = FTimespan::FromSeconds(FApp::GetCurrentTime());
 }
 
+
+void ARuntimeQuVRTransformAxisActor::TranslationCalac(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
+{
+	OutDrag = FVector::ZeroVector;
+	OutRotation = FRotator::ZeroRotator;
+	OutScale = FVector::ZeroVector;
+
+	FVector ViewLocation;
+	FRotator ViewRotation;
+	check(QuVRLocalPlayer->ViewportClient->Viewport);
+
+	FSceneViewFamilyContext viewFamily(
+		FSceneViewFamily::ConstructionValues(
+			QuVRLocalPlayer->ViewportClient->Viewport,
+			QuVRWorld->Scene,
+			QuVRLocalPlayer->ViewportClient->EngineShowFlags).SetRealtimeUpdate(true));
+
+	FSceneView* SceneView = QuVRLocalPlayer->CalcSceneView(&viewFamily, ViewLocation, ViewRotation, QuVRLocalPlayer->ViewportClient->Viewport);
+
+	FVector2D MousePosition = FVector2D(QuVRLocalPlayer->ViewportClient->Viewport->GetMouseX(), QuVRLocalPlayer->ViewportClient->Viewport->GetMouseY());
+	//calculate mouse position
+	check(QuVRLocalPlayer->ViewportClient->Viewport);
+	//////////////////////////////////////////////////////////////////////////
+	QuVRTransformAlgorithm->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, InLocation, MousePosition, OutDrag, OutRotation, OutScale);
+
+}
 
 /*
 FTransform InLocalToWorld = FTransform::Identity;
