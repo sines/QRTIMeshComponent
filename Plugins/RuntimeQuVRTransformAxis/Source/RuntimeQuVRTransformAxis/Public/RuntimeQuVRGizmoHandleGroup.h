@@ -50,7 +50,6 @@ struct RUNTIMEQUVRTRANSFORMAXIS_API FQuVRGizmoHandle
 };
 
 
-
 /**
 * Base class for gizmo handles
 */
@@ -111,12 +110,11 @@ public:
 
 	/** Gets if this handlegroup will be visible with the universal gizmo */
 	bool GetShowOnUniversalGizmo() const;
-/*
 
-	/ ** Sets the owning transform gizmo for this handle group* /
-	void SetOwningTransformGizmo(class ABaseTransformGizmo* TransformGizmo);
-*/
-
+	/** Sets the owning transform gizmo for this handle group*/
+	void SetQuVROwningTransformGizmo(class ARuntimeQuVRTransformAxisActor* TransformGizmo);
+	
+	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleHoveredTypes GetHandleHoveredType()const;
 protected:
 	/** Updates the colors of the dynamic material instances for the handle passed using its axis index */
 	void UpdateHandleColor(const int32 AxisIndex, FQuVRGizmoHandle& Handle, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles);
@@ -146,8 +144,8 @@ protected:
 		TArray< FQuVRGizmoHandle > Handles;
 
 	/** The actor transform gizmo owning this handlegroup */
-// 	UPROPERTY()
-// 		class ABaseTransformGizmo* OwningTransformGizmoActor;
+ 	UPROPERTY()
+ 		class ARuntimeQuVRTransformAxisActor* QuVROwningTransformGizmoActor;
 
 // 	UPROPERTY()
 // 		class UViewportDragOperationComponent* DragOperationComponent;
@@ -159,6 +157,9 @@ private:
 
 	/** If this handlegroup will be visible with the universal gizmo */
 	bool bShowOnUniversalGizmo;
+
+protected:
+	RuntimeQuVRtransformType::EQuVRGizmoHandleHoveredTypes eQuVRHandleHoveredType;
 
 };
 
@@ -206,12 +207,23 @@ public:
 	/** Gets the GizmoType for this Gizmo handle */
 	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const override;
 
-public:
+private:
 	class URuntimeQuVRHandleMeshComponent* GetHandleMesh(const EAxisList::Type type);
 
 	UFUNCTION()
-		void OnHover_AxisX(class UPrimitiveComponent* OtherComp);
+	void OnHover_AxisX(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+	void OnRelease_AxisX(class UPrimitiveComponent* OtherComp);
 
+	UFUNCTION()
+	void OnHover_AxisY(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+	void OnRelease_AxisY(class UPrimitiveComponent* OtherComp);
+
+	UFUNCTION()
+	void OnHover_AxisZ(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+	void OnRelease_AxisZ(class UPrimitiveComponent* OtherComp);
 };
 
 

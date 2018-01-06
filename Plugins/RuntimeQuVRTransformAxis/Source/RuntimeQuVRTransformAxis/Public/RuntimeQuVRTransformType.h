@@ -45,4 +45,23 @@ namespace RuntimeQuVRtransformType
 		QUVR_Rotate = 2,
 		QUVR_Scale = 3
 	};
+
+	enum class EQuVRGizmoHandleHoveredTypes
+	{
+		QUVR_VOID,
+		QUVR_X,
+		QUVR_Y,
+		QUVR_Z
+	};
+
+	enum class EQuVRColors
+	{
+		DefaultColor,
+		Forward,
+		Right,
+		Up,
+		GizmoHover,
+		GizmoDragging,
+		TotalCount
+	};
 }

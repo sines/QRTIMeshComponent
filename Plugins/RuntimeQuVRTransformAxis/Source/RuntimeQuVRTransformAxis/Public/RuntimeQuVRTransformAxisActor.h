@@ -107,8 +107,14 @@ private:
 	FTimespan SelectedAtTime;
 
 	UFUNCTION()
-		void OnHover_AxisX(class UPrimitiveComponent* OtherComp);
-
-	UFUNCTION()
 		void OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	void TranslationCalac(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+private:
+	bool bIsHover;
+	bool bIsDrag;
+	bool bIsMouseButtonDown;
+
+	FVector vDragV3D;
+
 };
