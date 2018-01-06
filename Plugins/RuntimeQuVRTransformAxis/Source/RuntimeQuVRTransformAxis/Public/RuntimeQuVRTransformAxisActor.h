@@ -8,7 +8,7 @@
 #include "RuntimeQuVRTransformAxisActor.generated.h"
 
 class FRuntimeQuVRTransformAlgorithm;
-
+class URuntimeQuVRWorldExtension;
 /**
 * Displays measurements along the bounds of selected objects
 */
@@ -18,12 +18,12 @@ struct FQuVRTransformGizmoMeasurement
 	GENERATED_BODY()
 
 		/** The text that displays the actual measurement and units */
-		UPROPERTY(EditAnywhere)
+		UPROPERTY()
 		class UTextRenderComponent* MeasurementText;
 };
 
 
-UCLASS(Blueprintable)
+UCLASS()
 class RUNTIMEQUVRTRANSFORMAXIS_API ARuntimeQuVRTransformAxisActor : public AActor
 {
 	GENERATED_BODY()
@@ -84,7 +84,7 @@ private:
 	RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType;
 
 	/** Translation handle group component */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	class URuntimeQuVRPivotTranslationGizmoHandleGroup* TranslationGizmoHandleGroup;
 
 	/** Plane translation handle group component */
@@ -96,12 +96,16 @@ private:
 	class URuntimeQuVRStretchGizmoHandleGroup* StretchGizmoHandleGroup;
 
 	/** Scene component root of this actor */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	USceneComponent* SceneComponent;
 
 	/** All gizmo components */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	TArray< class URuntimeQuVRGizmoHandleGroup* > AllHandleGroups;
+
+	/** Owning object */
+	UPROPERTY()
+		class URuntimeQuVRWorldInteraction* WorldInteraction;
 
 	/** Real time that the gizmo was last attached to a selected set of objects.  This is used for animation transitions */
 	FTimespan SelectedAtTime;

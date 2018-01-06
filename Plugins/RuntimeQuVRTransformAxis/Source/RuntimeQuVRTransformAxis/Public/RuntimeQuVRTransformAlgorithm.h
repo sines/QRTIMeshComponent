@@ -1,4 +1,4 @@
-// QUVRTransformAlgorithm By luis
+// Copyright 2017 Louis. All Rights Reserved.
 
 #pragma once
 #include "RuntimeQuVRTransformType.h"

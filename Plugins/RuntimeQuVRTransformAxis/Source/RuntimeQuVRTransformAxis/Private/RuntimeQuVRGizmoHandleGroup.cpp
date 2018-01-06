@@ -1,4 +1,4 @@
-// Copyright 2016 Chris Conway (Koderz). All Rights Reserved.
+// Copyright 2018 Louis. All Rights Reserved.
 
 #include "RuntimeQuVRGizmoHandleGroup.h"
 #include "RuntimeQuVRHandleMeshComponent.h"

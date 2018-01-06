@@ -4,6 +4,7 @@
 #include "RuntimeQuVRTransformAlgorithm.h"
 #include "RuntimeQuVRGizmoHandleGroup.h"
 #include "RuntimeQuVRAssetContainer.h"
+#include "RuntimeQuVRWorldInteraction.h"
 #include "Misc/App.h"
 
 using namespace RuntimeQuVRtransformType;
@@ -13,7 +14,7 @@ void ARuntimeQuVRTransformAxisActor::OnConstruction(const FTransform& Transform)
 	Super::OnConstruction(Transform);
 }
 // Sets default values
-ARuntimeQuVRTransformAxisActor::ARuntimeQuVRTransformAxisActor()
+ARuntimeQuVRTransformAxisActor::ARuntimeQuVRTransformAxisActor():WorldInteraction(nullptr)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;

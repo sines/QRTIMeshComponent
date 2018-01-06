@@ -1,4 +1,4 @@
-// Copyright 2016 Chris Conway (Koderz). All Rights Reserved.
+// Copyright 2018 Louis. All Rights Reserved.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(Blueprintable)//hidecategories = Object)
+UCLASS(hidecategories = Object)
 class RUNTIMEQUVRTRANSFORMAXIS_API URuntimeQuVRHandleMeshComponent : public UStaticMeshComponent
 {
 	GENERATED_BODY()
