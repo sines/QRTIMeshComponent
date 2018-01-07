@@ -3,6 +3,9 @@
 #include "RuntimeQuVRGizmoHandleGroup.h"
 #include "RuntimeQuVRHandleMeshComponent.h"
 #include "RuntimeQuVRAssetContainer.h"
+#include "RuntimeQuVRWorldInteraction.h"
+#include "RuntimeQuVRTransformAxisActor.h"
+
 #include "Engine/StaticMesh.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/StaticMeshComponent.h"
@@ -220,7 +223,7 @@ void URuntimeQuVRGizmoHandleGroup::UpdateHandleColor(const int32 AxisIndex, FQuV
 
 	if (GizmoActor)
 	{
-		//UViewportWorldInteraction* WorldInteraction = GizmoActor->GetOwnerWorldInteraction();
+		URuntimeQuVRWorldInteraction* WorldInteraction = GizmoActor->GetOwnerWorldInteraction();
 		if (true)//WorldInteraction)
 		{
 			FLinearColor HandleColor = FLinearColor::Blue; //WorldInteraction->GetColor(UViewportWorldInteraction::EColors::DefaultColor);

@@ -74,6 +74,7 @@ void ARuntimeQuVRTransformAxisActor::BeginPlay()
 		bIsHoveringOrDraggingThisHandleGroup
 	);
 
+	WorldInteraction = NewObject<URuntimeQuVRWorldInteraction>();
 	Super::BeginPlay();
 }
 
@@ -267,6 +268,11 @@ void ARuntimeQuVRTransformAxisActor::TranslationCalac(const FVector& InLocation,
 	//////////////////////////////////////////////////////////////////////////
 	QuVRTransformAlgorithm->AbsoluteTranslationConvertMouseMovementToAxisMovement(SceneView, InLocation, MousePosition, OutDrag, OutRotation, OutScale);
 
+}
+
+class URuntimeQuVRWorldInteraction* ARuntimeQuVRTransformAxisActor::GetOwnerWorldInteraction() const
+{
+	return WorldInteraction;
 }
 
 /*

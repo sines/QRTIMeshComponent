@@ -68,7 +68,8 @@ public:
 	void OnNewObjectsSelected();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	/** Gets the owner */
+	class URuntimeQuVRWorldInteraction* GetOwnerWorldInteraction() const;
 
 private:
 	// Get GWorld
