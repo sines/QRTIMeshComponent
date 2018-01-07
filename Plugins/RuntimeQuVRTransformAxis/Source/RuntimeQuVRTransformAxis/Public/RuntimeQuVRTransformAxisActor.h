@@ -113,7 +113,11 @@ private:
 
 	UFUNCTION()
 		void OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
-
+	//////////////////////////////////////////////////////////////////////////
+	// Calac object
+	//////////////////////////////////////////////////////////////////////////
+	void HitObject();
+	void UpdateGizmo();
 	void TranslationCalac(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
 private:
 	bool bIsHover;

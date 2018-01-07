@@ -27,3 +27,8 @@ void URuntimeQuVRWorldInteraction::Init()
 
 	AppTimeEntered = FTimespan::FromSeconds(FApp::GetCurrentTime());
 }
+
+FLinearColor URuntimeQuVRWorldInteraction::GetColor(const EQuVRColors Color, const float Multiplier /*= 1.f*/) const
+{
+	return Colors[(int32)Color] * Multiplier;
+}

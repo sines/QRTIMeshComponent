@@ -82,6 +82,8 @@ public:
 	/** Default setting the visibility and collision for all the handles in this group */
 	void UpdateVisibilityAndCollision(const RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType, const RuntimeQuVRtransformType::EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle);
 
+	void SetDragActor(class AActor* actor);
+	void UpdateDragActorTranslate(FVector& pos);
 //	class UViewportDragOperationComponent* GetDragOperationComponent();
 
 	/** Finds the index of DraggedMesh in HandleMeshes */
@@ -147,8 +149,8 @@ protected:
  	UPROPERTY()
  		class ARuntimeQuVRTransformAxisActor* QuVROwningTransformGizmoActor;
 
-// 	UPROPERTY()
-// 		class UViewportDragOperationComponent* DragOperationComponent;
+ 	UPROPERTY()
+ 		class AActor* DragActor;
 
 private:
 
@@ -160,6 +162,13 @@ private:
 
 protected:
 	RuntimeQuVRtransformType::EQuVRGizmoHandleHoveredTypes eQuVRHandleHoveredType;
+
+public:
+	/** The gizmo component we're dragging right now */
+	class UPrimitiveComponent*	DraggingTransformGizmoComponent;
+
+	/** Gizmo component that we're hovering over, or nullptr if not hovering over any */
+	class UPrimitiveComponent*	HoveringOverTransformGizmoComponent;
 
 };
 
@@ -206,6 +215,7 @@ public:
 
 	/** Gets the GizmoType for this Gizmo handle */
 	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const override;
+
 
 private:
 	class URuntimeQuVRHandleMeshComponent* GetHandleMesh(const EAxisList::Type type);
