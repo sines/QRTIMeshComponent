@@ -82,8 +82,11 @@ public:
 	/** Default setting the visibility and collision for all the handles in this group */
 	void UpdateVisibilityAndCollision(const RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType, const RuntimeQuVRtransformType::EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle);
 
-	void SetDragActor(class AActor* actor);
 	void UpdateDragActorTranslate(FVector& pos);
+
+	class AActor* GetDragActor() { return DragActor; };
+	void StartTracking(class AActor* actor);
+	void EndTracking();
 //	class UViewportDragOperationComponent* GetDragOperationComponent();
 
 	/** Finds the index of DraggedMesh in HandleMeshes */
@@ -150,7 +153,7 @@ protected:
  		class ARuntimeQuVRTransformAxisActor* QuVROwningTransformGizmoActor;
 
  	UPROPERTY()
- 		class AActor* DragActor;
+ 	class AActor* DragActor;
 
 private:
 

@@ -27,9 +27,9 @@ namespace QuVR //@todo QuVR: Duplicates of TransformGizmo
 	static FAutoConsoleVariable QuVRPivotGizmoTranslationHoverScaleMultiply(TEXT("QuVR.PivotGizmoTranslationHoverScaleMultiply"), 0.75f, TEXT("Multiplies translation handles hover scale"));
 	static FAutoConsoleVariable QuVRPivotGizmoAimAtShrinkSize(TEXT("QuVR.PivotGizmoAimAtShrinkSize"), 0.3f, TEXT("The minimum size when not aiming at the gizmo (0 to 1)"));
 	static FAutoConsoleVariable QuVRPivotGizmoAimAtAnimationSpeed(TEXT("QuVR.PivotGizmoAimAtAnimationSpeed"), 0.15f, TEXT("The speed to animate to the gizmo full size when aiming at it"));
-	static FAutoConsoleVariable QuVRGizmoSelectionAnimationDuration(TEXT("VI.GizmoSelectionAnimationDuration"), 0.15f, TEXT("How long to animate the gizmo after objects are selected"));
-	static FAutoConsoleVariable QuVRGizmoSelectionAnimationCurvePower(TEXT("VI.GizmoSelectionAnimationCurvePower"), 2.0f, TEXT("Controls the animation curve for the gizmo after objects are selected"));
-	static FAutoConsoleVariable QuVRGizmoShowMeasurementText(TEXT("VI.GizmoShowMeasurementText"), 0, TEXT("When enabled, gizmo measurements will always be visible.  Otherwise, only when hovering over a scale/stretch gizmo handle"));
+	static FAutoConsoleVariable QuVRGizmoSelectionAnimationDuration(TEXT("QuVR.GizmoSelectionAnimationDuration"), 0.15f, TEXT("How long to animate the gizmo after objects are selected"));
+	static FAutoConsoleVariable QuVRGizmoSelectionAnimationCurvePower(TEXT("QuVR.GizmoSelectionAnimationCurvePower"), 2.0f, TEXT("Controls the animation curve for the gizmo after objects are selected"));
+	static FAutoConsoleVariable QuVRGizmoShowMeasurementText(TEXT("QuVR.GizmoShowMeasurementText"), 0, TEXT("When enabled, gizmo measurements will always be visible.  Otherwise, only when hovering over a scale/stretch gizmo handle"));
 
 }
 
@@ -147,22 +147,32 @@ void URuntimeQuVRGizmoHandleGroup::UpdateGizmoHandleGroup(const FTransform& Loca
 {
 	UpdateHoverAnimation(DraggingHandle, HoveringOverHandles, GizmoHoverAnimationDuration, bOutIsHoveringOrDraggingThisHandleGroup);
 }
-void URuntimeQuVRGizmoHandleGroup::SetDragActor(class AActor* actor)
+
+void URuntimeQuVRGizmoHandleGroup::StartTracking(class AActor* actor)
 {
 	if (actor)
 	{
-		if (GetOwner()!= actor)
+		if (GetOwner() != actor)
 		{
-			GetOwner()->SetActorLocation(actor->GetActorLocation());
 			DragActor = actor;
+			GetOwner()->SetActorLocation(DragActor->GetActorLocation());
 		}
 	}
-}
+};
+
+void URuntimeQuVRGizmoHandleGroup::EndTracking()
+{
+	if (DragActor)
+	{
+		DragActor = NULL;
+	}
+};
+
+
 void URuntimeQuVRGizmoHandleGroup::UpdateDragActorTranslate(FVector& pos)
 {
 	if (DragActor)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("DragActor++++++++++++ ") + pos.ToString());
 		DragActor->SetActorLocation(DragActor->GetActorLocation()+pos);
 	}
 }
@@ -393,7 +403,7 @@ void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisX(class UPrimitiv
 	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_X;
 	HoveringOverTransformGizmoComponent = OtherComp;
 	//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnHover_AxisX"),TEXT("OnHover_AxisX"));
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX "));
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX "));
 }
 
 void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisY(class UPrimitiveComponent* OtherComp)
@@ -410,7 +420,7 @@ void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisZ(class UPrimitiv
 
 void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnRelease_AxisX(class UPrimitiveComponent* OtherComp)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnRelease_AxisX "));
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnRelease_AxisX "));
 	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
 	HoveringOverTransformGizmoComponent = NULL;
 }

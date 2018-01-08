@@ -53,12 +53,19 @@ protected:
 	*/
 	void  AddDelta(const int32 InDelta, bool InNudge);
 
-	// Input  Pressed Event
-	void ButtonPressed();
+	void Init();
 
-	// Input Released Event
-	void ButtonReleased();
+	// Input  LeftButton Pressed Event
+	void LeftButtonPressed();
 
+	// Input LeftButton Released Event
+	void LeftButtonReleased();
+	
+	// Input  RightButton Pressed Event
+	void RightButtonPressed();
+
+	// HideGizemo Event
+	void HideGizemo();
 public:	
 	// construction
 	void OnConstruction(const FTransform& Transform) override;
@@ -119,6 +126,7 @@ private:
 	void HitObject();
 	void UpdateGizmo();
 	void TranslationCalac(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+
 private:
 	bool bIsHover;
 	bool bIsDrag;

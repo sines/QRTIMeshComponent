@@ -32,6 +32,9 @@ public:
 	{
 		return FModuleManager::Get().IsModuleLoaded("RuntimeQuVRTransformAxisPlugin");
 	}
+
+	static void EditMode();
+	static void GameMode();
 };
 
 

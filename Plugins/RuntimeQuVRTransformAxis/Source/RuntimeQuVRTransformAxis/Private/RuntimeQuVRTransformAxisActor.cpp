@@ -33,6 +33,13 @@ ARuntimeQuVRTransformAxisActor::ARuntimeQuVRTransformAxisActor():WorldInteractio
 // Called when the game starts or when spawned
 void ARuntimeQuVRTransformAxisActor::BeginPlay()
 {
+	Super::BeginPlay();
+	Init();
+
+}
+
+void ARuntimeQuVRTransformAxisActor::Init()
+{
 	QuVRTransformAlgorithm = new FRuntimeQuVRTransformAlgorithm();
 	QuVRWorld = GetWorld();
 	check(QuVRWorld);
@@ -48,12 +55,17 @@ void ARuntimeQuVRTransformAxisActor::BeginPlay()
 	InputPriority = -1;
 	EnableInput(PlayController);
 	check(InputComponent);
-	InputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Pressed, this, &ARuntimeQuVRTransformAxisActor::ButtonPressed);
-	InputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Released, this, &ARuntimeQuVRTransformAxisActor::ButtonReleased);
+
+	FInputKeyBinding& LeftButtonPressedBindin = InputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Pressed, this, &ARuntimeQuVRTransformAxisActor::LeftButtonPressed);
+	LeftButtonPressedBindin.bConsumeInput = false;
+	FInputKeyBinding& LeftButtonReleasedBindin = InputComponent->BindKey(EKeys::LeftMouseButton, EInputEvent::IE_Released, this, &ARuntimeQuVRTransformAxisActor::LeftButtonReleased);
+	LeftButtonReleasedBindin.bConsumeInput = false;
 
 	WorldInteraction = NewObject<URuntimeQuVRWorldInteraction>();
-	Super::BeginPlay();
+
+	SetActorHiddenInGame(true);
 }
+
 
 // Called every frame
 void ARuntimeQuVRTransformAxisActor::Tick(float DeltaTime)
@@ -66,10 +78,14 @@ void ARuntimeQuVRTransformAxisActor::Tick(float DeltaTime)
 		bIsDrag = true;
 		FRotator rot;
 		FVector scale;
-		TranslationCalac(GetActorLocation(), vDragV3D, rot, scale);
-		SetActorLocation(GetActorLocation() + vDragV3D);
-		TranslationGizmoHandleGroup->UpdateDragActorTranslate(vDragV3D);
-		vDragV3D = FVector::ZeroVector;
+		if (EComponentMobility::Movable  == TranslationGizmoHandleGroup->GetDragActor()->GetDefaultAttachComponent()->Mobility)
+		{
+			TranslationCalac(GetActorLocation(), vDragV3D, rot, scale);
+			SetActorLocation(GetActorLocation() + vDragV3D);
+			TranslationGizmoHandleGroup->UpdateDragActorTranslate(vDragV3D);
+			vDragV3D = FVector::ZeroVector;
+		}
+
 	}
 	else
 	{
@@ -126,7 +142,7 @@ void ARuntimeQuVRTransformAxisActor::StartTracking()
 		}
 		QuVRTransformAlgorithm->SetCurrentAxis(InCurrentAxis);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("ButtonClicked"));
+//	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("ButtonClicked"));
 
 }
 
@@ -139,19 +155,31 @@ void ARuntimeQuVRTransformAxisActor::EndTracking()
 	}
 }
 
-void ARuntimeQuVRTransformAxisActor::ButtonPressed()
+void ARuntimeQuVRTransformAxisActor::LeftButtonPressed()
 {
 	HitObject();
 	StartTracking();
 	bIsMouseButtonDown = true;
 }
 
-void ARuntimeQuVRTransformAxisActor::ButtonReleased()
+void ARuntimeQuVRTransformAxisActor::LeftButtonReleased()
 {
+//	TranslationGizmoHandleGroup->EndTracking();
 	EndTracking();
 	bIsMouseButtonDown = false;
 	bIsDrag = false;
 	bIsHover = false;
+}
+
+void ARuntimeQuVRTransformAxisActor::RightButtonPressed()
+{
+	//	TranslationGizmoHandleGroup->EndTracking();
+	HideGizemo();
+}
+
+void ARuntimeQuVRTransformAxisActor::HideGizemo()
+{
+	SetActorHiddenInGame(true);
 }
 
 void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
@@ -189,7 +217,7 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 
 void ARuntimeQuVRTransformAxisActor::OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++ ") + Hit.Location.ToString());
+//	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++ ") + Hit.Location.ToString());
 //	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnClicked_AxisX"), TEXT("OnClicked_AxisX"));
 }
 
@@ -261,11 +289,10 @@ void ARuntimeQuVRTransformAxisActor::HitObject()
 	{
 		if (HitResult.GetActor())
 		{
-			TranslationGizmoHandleGroup->SetDragActor(HitResult.GetActor());
-		//	SetActorTransform(InLocalToWorld);
+			TranslationGizmoHandleGroup->StartTracking(HitResult.GetActor());
+			SetActorHiddenInGame(false);
 		}
 	}
-//	GetWorld()->LineTraceSingleByChannel(HitResult, LaserPointerStart, LaserPointerEnd, CollisionChannel, TraceParams, ResponseParam);
 }
 
 void ARuntimeQuVRTransformAxisActor::TranslationCalac(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
