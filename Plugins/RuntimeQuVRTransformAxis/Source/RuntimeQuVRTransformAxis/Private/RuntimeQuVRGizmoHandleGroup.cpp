@@ -575,6 +575,10 @@ URuntimeQuVRPivotTranslationGizmoHandleGroup::URuntimeQuVRPivotTranslationGizmoH
 	Super()
 {
 	const URuntimeQuVRAssetContainer& AssetContainer = URuntimeQuVRAssetContainer::LoadAssetContainer();
+	if (!IsValid(&AssetContainer))
+	{
+		return;
+	}
 	CreateHandles(AssetContainer.TranslationHandleMesh, FString("PivotTranslationHandle"));
 
 	//////////////////////////////////////////////////////////////////////////
@@ -634,6 +638,10 @@ URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup::URuntimeQuVRPivotPlaneTransla
 	Super()
 {
 	const URuntimeQuVRAssetContainer& AssetContainer = URuntimeQuVRAssetContainer::LoadAssetContainer();
+	if (!IsValid(&AssetContainer))
+	{
+		return;
+	}
 	CreateHandles(AssetContainer.PlaneTranslationHandleMesh, FString("PlaneTranslationHandle"));
 }
 

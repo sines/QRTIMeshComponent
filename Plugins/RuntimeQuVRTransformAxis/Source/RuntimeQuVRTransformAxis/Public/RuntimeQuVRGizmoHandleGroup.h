@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
-#include "UnrealWidget.h"
 #include "UObject/ObjectMacros.h"
 #include "Math/Axis.h"
 #include "RuntimeQuVRTransformType.h"

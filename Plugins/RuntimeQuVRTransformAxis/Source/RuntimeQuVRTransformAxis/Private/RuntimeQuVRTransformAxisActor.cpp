@@ -6,6 +6,7 @@
 #include "RuntimeQuVRAssetContainer.h"
 #include "RuntimeQuVRWorldInteraction.h"
 #include "Misc/App.h"
+#include "Engine/LocalPlayer.h"
 
 using namespace RuntimeQuVRtransformType;
 
@@ -186,6 +187,11 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 {
 	// Get AssetContainer
 	const URuntimeQuVRAssetContainer& AssetContainer = URuntimeQuVRAssetContainer::LoadAssetContainer();
+	if (!IsValid(&AssetContainer))
+	{
+		return;
+	}
+
 	UMaterialInterface* GizmoMaterial = AssetContainer.TransformGizmoMaterial;
 	UMaterialInterface* TranslucentGizmoMaterial = AssetContainer.TranslucentTransformGizmoMaterial;
 
