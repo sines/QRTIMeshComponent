@@ -72,27 +72,7 @@ void ARuntimeQuVRTransformAxisActor::Init()
 void ARuntimeQuVRTransformAxisActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	// Move
-	if (bIsHover && bIsMouseButtonDown)
-	{
-		bIsDrag = true;
-		FRotator rot;
-		FVector scale;
-		if (EComponentMobility::Movable  == TranslationGizmoHandleGroup->GetDragActor()->GetDefaultAttachComponent()->Mobility)
-		{
-			TranslationCalac(GetActorLocation(), vDragV3D, rot, scale);
-			SetActorLocation(GetActorLocation() + vDragV3D);
-			TranslationGizmoHandleGroup->UpdateDragActorTranslate(vDragV3D);
-			vDragV3D = FVector::ZeroVector;
-		}
-
-	}
-	else
-	{
-		bIsDrag = false;
-	}
-	UpdateGizmo();
+	UpdateGizmoAxis();
 }
 
 void ARuntimeQuVRTransformAxisActor::Destroyed()
@@ -195,28 +175,45 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 	UMaterialInterface* GizmoMaterial = AssetContainer.TransformGizmoMaterial;
 	UMaterialInterface* TranslucentGizmoMaterial = AssetContainer.TranslucentTransformGizmoMaterial;
 
+	// add translation
 	TranslationGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRPivotTranslationGizmoHandleGroup>(TEXT("TranslationHandles"), true);
 	TranslationGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
 	TranslationGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
 	TranslationGizmoHandleGroup->SetupAttachment(GetRootComponent());
+	TranslationGizmoHandleGroup->SetQuVROwningTransformGizmo(this);
+
 	AllHandleGroups.Add(TranslationGizmoHandleGroup);
 	PlaneTranslationGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup>(TEXT("PlaneTranslationHandles"), true);
 	PlaneTranslationGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
 	PlaneTranslationGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
 	PlaneTranslationGizmoHandleGroup->SetupAttachment(GetRootComponent());
+	PlaneTranslationGizmoHandleGroup->SetQuVROwningTransformGizmo(this);
 	AllHandleGroups.Add(PlaneTranslationGizmoHandleGroup);
 
-
-
-/*
+	// add Stretch
 	StretchGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRStretchGizmoHandleGroup>(TEXT("StretchHandles"), true);
 	StretchGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
 	StretchGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
 	StretchGizmoHandleGroup->SetShowOnUniversalGizmo(false);
+	StretchGizmoHandleGroup->SetQuVROwningTransformGizmo(this);
 	StretchGizmoHandleGroup->SetupAttachment(SceneComponent);
 	AllHandleGroups.Add(StretchGizmoHandleGroup);
-*/
+	
+	// add Rotation
+	RotationGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRPivotRotationGizmoHandleGroup>(TEXT("RotationHandles"), true);
+	RotationGizmoHandleGroup->SetQuVROwningTransformGizmo(this);
+	RotationGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
+	RotationGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
+	RotationGizmoHandleGroup->SetupAttachment(SceneComponent);
+	AllHandleGroups.Add(RotationGizmoHandleGroup);
 
+	// add scale
+	ScaleGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRPivotScaleGizmoHandleGroup>(TEXT("ScaleHandles"), true);
+	ScaleGizmoHandleGroup->SetQuVROwningTransformGizmo(this);
+	ScaleGizmoHandleGroup->SetTranslucentGizmoMaterial(TranslucentGizmoMaterial);
+	ScaleGizmoHandleGroup->SetGizmoMaterial(GizmoMaterial);
+	ScaleGizmoHandleGroup->SetupAttachment(SceneComponent);
+	AllHandleGroups.Add(ScaleGizmoHandleGroup);
 
 }
 
@@ -332,6 +329,33 @@ class URuntimeQuVRWorldInteraction* ARuntimeQuVRTransformAxisActor::GetOwnerWorl
 	return WorldInteraction;
 }
 
+void ARuntimeQuVRTransformAxisActor::UpdateGizmoAxis()
+{
+	// Move
+	if (bIsHover && bIsMouseButtonDown)
+	{
+		bIsDrag = true;
+		FRotator rot;
+		FVector scale;
+		if (EComponentMobility::Movable == TranslationGizmoHandleGroup->GetDragActor()->GetDefaultAttachComponent()->Mobility)
+		{
+			TranslationCalac(GetActorLocation(), vDragV3D, rot, scale);
+			SetActorLocation(GetActorLocation() + vDragV3D);
+			TranslationGizmoHandleGroup->UpdateAxisToDragActor(vDragV3D);
+			vDragV3D = FVector::ZeroVector;
+		}
+
+	}
+	else
+	{
+		bIsDrag = false;
+		TranslationGizmoHandleGroup->UpdateDragActorToAxis();
+
+	}
+
+	// update axis
+	UpdateGizmo();
+}
 /*
 FTransform InLocalToWorld = FTransform::Identity;
 FBox InLocalBounds(32.0f);

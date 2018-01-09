@@ -81,7 +81,8 @@ public:
 	/** Default setting the visibility and collision for all the handles in this group */
 	void UpdateVisibilityAndCollision(const RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType, const RuntimeQuVRtransformType::EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle);
 
-	void UpdateDragActorTranslate(FVector& pos);
+	virtual void UpdateAxisToDragActor(FVector& pos);
+	virtual void UpdateDragActorToAxis();
 
 	class AActor* GetDragActor() { return DragActor; };
 	void StartTracking(class AActor* actor);
@@ -218,7 +219,6 @@ public:
 	/** Gets the GizmoType for this Gizmo handle */
 	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const override;
 
-
 private:
 	class URuntimeQuVRHandleMeshComponent* GetHandleMesh(const EAxisList::Type type);
 
@@ -283,4 +283,92 @@ public:
 
 	/** Returns true if this type of handle is allowed with world space gizmos */
 	virtual bool SupportsWorldCoordinateSpace() const override;
+};
+
+
+/**
+* Axis Gizmo handle for scaling
+*/
+
+UCLASS()
+class RUNTIMEQUVRTRANSFORMAXIS_API URuntimeQuVRPivotScaleGizmoHandleGroup : public URuntimeQuVRAxisGizmoHandleGroup
+{
+	GENERATED_BODY()
+
+public:
+
+	/** Default constructor that sets up CDO properties */
+	URuntimeQuVRPivotScaleGizmoHandleGroup();
+
+	/** Updates the Gizmo handles */
+	virtual void UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles,
+		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
+
+	/** Gets the GizmoType for this Gizmo handle */
+	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes  GetHandleType() const override;
+
+};
+
+
+/**
+* Axis Gizmo handle for rotation
+*/
+UCLASS()
+class RUNTIMEQUVRTRANSFORMAXIS_API URuntimeQuVRPivotRotationGizmoHandleGroup : public URuntimeQuVRAxisGizmoHandleGroup
+{
+	GENERATED_BODY()
+
+public:
+
+	/** Default constructor that sets up CDO properties */
+	URuntimeQuVRPivotRotationGizmoHandleGroup();
+
+	/** Updates the Gizmo handles */
+	virtual void UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles,
+		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
+
+	/** Gets the GizmoType for this Gizmo handle */
+	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes  GetHandleType() const override;
+
+private:
+
+	/** Updates the root of an indicator to rotate the indicator itself */
+	void UpdateIndicator(USceneComponent* IndicatorRoot, const FVector& Direction, const uint32 FacingAxisIndex);
+
+	/** Make the components visible when dragging rotation */
+	void ShowRotationVisuals(const bool bInShow);
+
+	void SetupIndicator(USceneComponent* RootComponent, URuntimeQuVRHandleMeshComponent* IndicatorMeshComponent, UStaticMesh* Mesh);
+
+	void SetIndicatorColor(UStaticMeshComponent* InMeshComponent, const FLinearColor& InHandleColor);
+
+	/** Root component of all the mesh components that are used to visualize the rotation when dragging */
+	UPROPERTY()
+		USceneComponent* RootFullRotationHandleComponent;
+
+	/** When dragging a rotation handle the full rotation circle appears */
+	UPROPERTY()
+		class URuntimeQuVRHandleMeshComponent* FullRotationHandleMeshComponent;
+
+	/** The mesh that indicated the start rotation */
+	UPROPERTY()
+		class URuntimeQuVRHandleMeshComponent* StartRotationIndicatorMeshComponent;
+
+	/** The root component of the start rotation indicator */
+	UPROPERTY()
+		USceneComponent* RootStartRotationIdicatorComponent;
+
+	/** The mesh that indicated the delta rotation */
+	UPROPERTY()
+		class URuntimeQuVRHandleMeshComponent* DeltaRotationIndicatorMeshComponent;
+
+	/** The root component of the delta rotation indicator */
+	UPROPERTY()
+		USceneComponent* RootDeltaRotationIndicatorComponent;
+
+	/** The rotation when starting to drag the gizmo */
+	TOptional<FQuat> StartDragRotation;
+
+
+	
 };

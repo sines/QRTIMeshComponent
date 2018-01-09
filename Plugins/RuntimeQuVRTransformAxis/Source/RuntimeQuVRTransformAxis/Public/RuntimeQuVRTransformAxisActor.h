@@ -78,6 +78,8 @@ public:
 	/** Gets the owner */
 	class URuntimeQuVRWorldInteraction* GetOwnerWorldInteraction() const;
 
+	/*UPdataAxis*/
+	void UpdateGizmoAxis();
 private:
 	// Get GWorld
 	UWorld* QuVRWorld;
@@ -99,9 +101,17 @@ private:
 	UPROPERTY()
 	class  URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup* PlaneTranslationGizmoHandleGroup;
 
+	UPROPERTY()
+		class URuntimeQuVRPivotRotationGizmoHandleGroup* RotationGizmoHandleGroup;
+
+	UPROPERTY()
+		class URuntimeQuVRPivotScaleGizmoHandleGroup* ScaleGizmoHandleGroup;
+
 	/** Stretch handle group component */
 	UPROPERTY()
 	class URuntimeQuVRStretchGizmoHandleGroup* StretchGizmoHandleGroup;
+
+
 
 	/** Scene component root of this actor */
 	UPROPERTY()
@@ -120,8 +130,9 @@ private:
 
 	UFUNCTION()
 		void OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+	
 	//////////////////////////////////////////////////////////////////////////
-	// Calac object
+	// Hit object 
 	//////////////////////////////////////////////////////////////////////////
 	void HitObject();
 	void UpdateGizmo();

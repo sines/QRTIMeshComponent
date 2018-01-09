@@ -169,11 +169,19 @@ void URuntimeQuVRGizmoHandleGroup::EndTracking()
 };
 
 
-void URuntimeQuVRGizmoHandleGroup::UpdateDragActorTranslate(FVector& pos)
+void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActor(FVector& pos)
 {
 	if (DragActor)
 	{
 		DragActor->SetActorLocation(DragActor->GetActorLocation()+pos);
+	}
+}
+
+void URuntimeQuVRGizmoHandleGroup::UpdateDragActorToAxis()
+{
+	if (DragActor)
+	{
+		GetOwner()->SetActorLocation(DragActor->GetActorLocation());
 	}
 }
 
@@ -908,4 +916,101 @@ bool URuntimeQuVRStretchGizmoHandleGroup::SupportsWorldCoordinateSpace() const
 {
 	// Stretching only works with local space gizmos
 	return false;
+}
+
+/************************************************************************/
+/* Axis Gizmo handle for scaling										*/
+/************************************************************************/
+URuntimeQuVRPivotScaleGizmoHandleGroup::URuntimeQuVRPivotScaleGizmoHandleGroup():Super()
+{
+
+}
+
+
+void URuntimeQuVRPivotScaleGizmoHandleGroup::UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray<UActorComponent *>& HoveringOverHandles, float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup)
+{
+
+}
+
+
+EQuVRGizmoHandleTypes URuntimeQuVRPivotScaleGizmoHandleGroup::GetHandleType() const
+{
+	return EQuVRGizmoHandleTypes::QUVR_Translate;
+}
+
+
+
+/************************************************************************/
+/* Axis Gizmo handle for rotation										*/
+/************************************************************************/
+URuntimeQuVRPivotRotationGizmoHandleGroup::URuntimeQuVRPivotRotationGizmoHandleGroup():Super()
+{
+	const URuntimeQuVRAssetContainer& AssetContainer = URuntimeQuVRAssetContainer::LoadAssetContainer();
+	if (!IsValid(&AssetContainer))
+	{
+		return;
+	}
+	CreateHandles(AssetContainer.PlaneTranslationHandleMesh, FString("RotationHandle"));
+
+	{
+		RootFullRotationHandleComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootFullRotationHandleComponent"));
+		RootFullRotationHandleComponent->SetMobility(EComponentMobility::Movable);
+		RootFullRotationHandleComponent->SetupAttachment(this);
+
+		UStaticMesh* FullRotationHandleMesh = AssetContainer.RotationHandleSelectedMesh;
+		check(FullRotationHandleMesh != nullptr);
+
+		FullRotationHandleMeshComponent = CreateMeshHandle(FullRotationHandleMesh, FString("FullRotationHandle"));
+		FullRotationHandleMeshComponent->SetVisibility(false);
+		FullRotationHandleMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		FullRotationHandleMeshComponent->SetupAttachment(RootFullRotationHandleComponent);
+	}
+
+	{
+		UStaticMesh* RotationHandleIndicatorMesh = AssetContainer.StartRotationIndicatorMesh;
+		check(RotationHandleIndicatorMesh != nullptr);
+
+		//Start rotation indicator
+		RootStartRotationIdicatorComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootStartRotationIndicator"));
+		StartRotationIndicatorMeshComponent = CreateDefaultSubobject<URuntimeQuVRHandleMeshComponent>(TEXT("StartRotationIndicator"));
+		SetupIndicator(RootStartRotationIdicatorComponent, StartRotationIndicatorMeshComponent, RotationHandleIndicatorMesh);
+	}
+
+	{
+		UStaticMesh* RotationHandleIndicatorMesh = AssetContainer.CurrentRotationIndicatorMesh;
+		check(RotationHandleIndicatorMesh != nullptr);
+
+		//Delta rotation indicator
+		RootDeltaRotationIndicatorComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootDeltaRotationIndicator"));
+		DeltaRotationIndicatorMeshComponent = CreateDefaultSubobject<URuntimeQuVRHandleMeshComponent>(TEXT("DeltaRotationIndicator"));
+		SetupIndicator(RootDeltaRotationIndicatorComponent, DeltaRotationIndicatorMeshComponent, RotationHandleIndicatorMesh);
+	}
+
+	{
+		UMaterialInstanceDynamic* DynamicMaterialInst = UMaterialInstanceDynamic::Create(AssetContainer.TransformGizmoMaterial, GetTransientPackage());
+		check(DynamicMaterialInst != nullptr);
+
+		DeltaRotationIndicatorMeshComponent->SetMaterial(0, DynamicMaterialInst);
+		StartRotationIndicatorMeshComponent->SetMaterial(0, DynamicMaterialInst);
+		FullRotationHandleMeshComponent->SetMaterial(0, DynamicMaterialInst);
+
+		UMaterialInstanceDynamic* TranslucentDynamicMaterialInst = UMaterialInstanceDynamic::Create(AssetContainer.TranslucentTransformGizmoMaterial, GetTransientPackage());
+		check(TranslucentDynamicMaterialInst != nullptr);
+
+		DeltaRotationIndicatorMeshComponent->SetMaterial(1, TranslucentDynamicMaterialInst);
+		StartRotationIndicatorMeshComponent->SetMaterial(1, TranslucentDynamicMaterialInst);
+		FullRotationHandleMeshComponent->SetMaterial(1, TranslucentDynamicMaterialInst);
+
+	}
+
+}
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray<UActorComponent *>& HoveringOverHandles, float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup)
+{
+
+}
+
+EQuVRGizmoHandleTypes URuntimeQuVRPivotRotationGizmoHandleGroup::GetHandleType() const
+{
+	return EQuVRGizmoHandleTypes::QUVR_Translate;
 }
