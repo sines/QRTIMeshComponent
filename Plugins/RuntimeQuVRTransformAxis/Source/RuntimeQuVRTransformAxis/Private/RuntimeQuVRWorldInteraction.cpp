@@ -3,7 +3,11 @@
 #include "RuntimeQuVRWorldInteraction.h"
 #include "RuntimeQuVRTransformType.h"
 
-URuntimeQuVRWorldInteraction::URuntimeQuVRWorldInteraction():Super(), AppTimeEntered(FTimespan::Zero())
+using namespace RuntimeQuVRtransformType;
+
+URuntimeQuVRWorldInteraction::URuntimeQuVRWorldInteraction():Super(),
+								AppTimeEntered(FTimespan::Zero()),
+								CurrentCoordSystem(EQuVRCoordSystem::QuVR_COORD_World)
 {
 	Init();
 }
@@ -31,4 +35,15 @@ void URuntimeQuVRWorldInteraction::Init()
 FLinearColor URuntimeQuVRWorldInteraction::GetColor(const EQuVRColors Color, const float Multiplier /*= 1.f*/) const
 {
 	return Colors[(int32)Color] * Multiplier;
+}
+
+
+EQuVRCoordSystem URuntimeQuVRWorldInteraction::GetTransformGizmoCoordinateSpace()
+{
+	return CurrentCoordSystem;
+}
+
+void URuntimeQuVRWorldInteraction::SetTransformGizmoCoordinateSpace(const EQuVRCoordSystem NewCoordSystem)
+{
+	CurrentCoordSystem = NewCoordSystem;
 }

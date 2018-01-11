@@ -87,6 +87,7 @@ public:
 	class AActor* GetDragActor() { return DragActor; };
 	void StartTracking(class AActor* actor);
 	void EndTracking();
+	void SetIsDrag(bool& inIsDrag);
 //	class UViewportDragOperationComponent* GetDragOperationComponent();
 
 	/** Finds the index of DraggedMesh in HandleMeshes */
@@ -155,6 +156,9 @@ protected:
  	UPROPERTY()
  	class AActor* DragActor;
 
+	UPROPERTY()
+		bool bIsDrag;
+
 private:
 
 	/** Updates the hover animation for the HoveringOverHandles */
@@ -196,7 +200,25 @@ protected:
 	void UpdateHandlesRelativeTransformOnAxis(const FTransform& HandleToCenter, const float AnimationAlpha, const float GizmoScale, const float GizmoHoverScale,
 		const FVector& ViewLocation, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles);
 
+protected:
+	virtual class URuntimeQuVRHandleMeshComponent* GetHandleMesh(const EAxisList::Type type);
 
+	UFUNCTION()
+	virtual	void OnHoverAxisX(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+	virtual	void OnReleaseAxisX(class UPrimitiveComponent* OtherComp);
+
+	UFUNCTION()
+	virtual	void OnHoverAxisY(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+	virtual	void OnReleaseAxisY(class UPrimitiveComponent* OtherComp);
+
+	UFUNCTION()
+	virtual	void OnHoverAxisZ(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+	virtual	void OnReleaseAxisZ(class UPrimitiveComponent* OtherComp);
+
+	virtual void OnBindingAxis();
 };
 
 /**
@@ -218,24 +240,6 @@ public:
 
 	/** Gets the GizmoType for this Gizmo handle */
 	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const override;
-
-private:
-	class URuntimeQuVRHandleMeshComponent* GetHandleMesh(const EAxisList::Type type);
-
-	UFUNCTION()
-	void OnHover_AxisX(class UPrimitiveComponent* OtherComp);
-	UFUNCTION()
-	void OnRelease_AxisX(class UPrimitiveComponent* OtherComp);
-
-	UFUNCTION()
-	void OnHover_AxisY(class UPrimitiveComponent* OtherComp);
-	UFUNCTION()
-	void OnRelease_AxisY(class UPrimitiveComponent* OtherComp);
-
-	UFUNCTION()
-	void OnHover_AxisZ(class UPrimitiveComponent* OtherComp);
-	UFUNCTION()
-	void OnRelease_AxisZ(class UPrimitiveComponent* OtherComp);
 };
 
 
@@ -368,7 +372,4 @@ private:
 
 	/** The rotation when starting to drag the gizmo */
 	TOptional<FQuat> StartDragRotation;
-
-
-	
 };

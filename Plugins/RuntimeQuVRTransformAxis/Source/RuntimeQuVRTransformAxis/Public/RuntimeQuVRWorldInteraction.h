@@ -39,6 +39,13 @@ public:
 
 	/** Gets the color from color type */
 	FLinearColor GetColor(const RuntimeQuVRtransformType::EQuVRColors Color, const float Multiplier = 1.f) const;
+
+	/** Sets which transform gizmo coordinate space is used */
+	void SetTransformGizmoCoordinateSpace(const RuntimeQuVRtransformType::EQuVRCoordSystem NewCoordSystem);
+
+	/** Returns which transform gizmo coordinate space we're using, world or local */
+	RuntimeQuVRtransformType::EQuVRCoordSystem GetTransformGizmoCoordinateSpace();
+
 private:
 	/** The current gizmo type */ //@todo ViewportInteraction: Currently this is only used for universal gizmo.
 	TOptional<RuntimeQuVRtransformType::EQuVRGizmoHandleTypes> CurrentGizmoType;
@@ -51,5 +58,7 @@ private:
 
 	/** App time that we entered this */
 	FTimespan AppTimeEntered;
+
+	RuntimeQuVRtransformType::EQuVRCoordSystem CurrentCoordSystem;
 
 };

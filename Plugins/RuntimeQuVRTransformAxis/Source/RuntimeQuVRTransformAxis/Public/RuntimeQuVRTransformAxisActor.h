@@ -80,6 +80,9 @@ public:
 
 	/*UPdataAxis*/
 	void UpdateGizmoAxis();
+
+	/** Gets the current gizmo handle type */
+	RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetGizmoType() const;
 private:
 	// Get GWorld
 	UWorld* QuVRWorld;
@@ -131,13 +134,23 @@ private:
 	UFUNCTION()
 		void OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 	
-	//////////////////////////////////////////////////////////////////////////
-	// Hit object 
-	//////////////////////////////////////////////////////////////////////////
+	/** Left Mouse  Hit object */
 	void HitObject();
-	void UpdateGizmo();
-	void TranslationCalac(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
 
+	/** TranslationGizmoHandleGroup :: calculate Transform */
+	void TranslationCalac(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+	
+	/** update all group draw */
+	void UpdateGizmoGroupDraw();
+
+	/** UpdateTranslation */
+	void UpdateTranslation();
+
+	/** UpdateRotation */
+	void UpdateRotation();
+
+	/** UpdateScale */
+	void UpdateScale();
 private:
 	bool bIsHover;
 	bool bIsDrag;

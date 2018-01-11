@@ -253,11 +253,6 @@ void URuntimeQuVRGizmoHandleGroup::UpdateHandleColor(const int32 AxisIndex, FQuV
 	}
 	UMaterialInstanceDynamic* MID0 = CastChecked<UMaterialInstanceDynamic>(HandleMesh->GetMaterial(0));
 	UMaterialInstanceDynamic* MID1 = CastChecked<UMaterialInstanceDynamic>(HandleMesh->GetMaterial(1));
-
-	FLinearColor AxisColorX = FLinearColor(0.594f, 0.0197f, 0.0f);
-	FLinearColor AxisColorY = FLinearColor(0.1349f, 0.3959f, 0.0f);
-	FLinearColor AxisColorZ = FLinearColor(0.0251f, 0.207f, 0.85f);
-
 	ARuntimeQuVRTransformAxisActor* GizmoActor = CastChecked<ARuntimeQuVRTransformAxisActor>(GetOwner());
 
 
@@ -344,7 +339,6 @@ class URuntimeQuVRHandleMeshComponent* URuntimeQuVRGizmoHandleGroup::CreateMeshH
 	HandleComponent->SetupAttachment(this);
 
 	HandleComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	HandleComponent->SetSimulatePhysics(false);
 	HandleComponent->SetCollisionResponseToChannel(COLLISION_GIZMO, ECollisionResponse::ECR_Block);
 	HandleComponent->SetCollisionObjectType(COLLISION_GIZMO);
 
@@ -406,44 +400,6 @@ void URuntimeQuVRGizmoHandleGroup::UpdateHoverAnimation(UActorComponent* Draggin
 	}
 }
 
-void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisX(class UPrimitiveComponent* OtherComp)
-{
-	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_X;
-	HoveringOverTransformGizmoComponent = OtherComp;
-	//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnHover_AxisX"),TEXT("OnHover_AxisX"));
-	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX "));
-}
-
-void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisY(class UPrimitiveComponent* OtherComp)
-{
-	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_Y;
-	HoveringOverTransformGizmoComponent = OtherComp;
-}
-
-void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisZ(class UPrimitiveComponent* OtherComp)
-{
-	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_Z;
-	HoveringOverTransformGizmoComponent = OtherComp;
-}
-
-void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnRelease_AxisX(class UPrimitiveComponent* OtherComp)
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnRelease_AxisX "));
-	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
-	HoveringOverTransformGizmoComponent = NULL;
-}
-
-void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnRelease_AxisY(class UPrimitiveComponent* OtherComp)
-{
-	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
-	HoveringOverTransformGizmoComponent = NULL;
-}
-void URuntimeQuVRPivotTranslationGizmoHandleGroup::OnRelease_AxisZ(class UPrimitiveComponent* OtherComp)
-{
-	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
-	HoveringOverTransformGizmoComponent = NULL;
-}
-
 void URuntimeQuVRAxisGizmoHandleGroup::CreateHandles(UStaticMesh* HandleMesh, const FString& HandleComponentName)
 {
 	for (int32 X = 0; X < 3; ++X)
@@ -474,6 +430,9 @@ void URuntimeQuVRAxisGizmoHandleGroup::CreateHandles(UStaticMesh* HandleMesh, co
 			}
 		}
 	}
+	
+	// bind axis event
+	OnBindingAxis();
 }
 
 void URuntimeQuVRAxisGizmoHandleGroup::UpdateHandlesRelativeTransformOnAxis(const FTransform& HandleToCenter, const float AnimationAlpha, const float GizmoScale, const float GizmoHoverScale,
@@ -542,6 +501,104 @@ void URuntimeQuVRAxisGizmoHandleGroup::UpdateHandlesRelativeTransformOnAxis(cons
 	}
 }
 
+class URuntimeQuVRHandleMeshComponent* URuntimeQuVRAxisGizmoHandleGroup::GetHandleMesh(const EAxisList::Type type)
+{
+	for (int32 HandleIndex = 0; HandleIndex < Handles.Num(); ++HandleIndex)
+	{
+		FQuVRGizmoHandle& Handle = Handles[HandleIndex];
+		if (Handle.HandleType == type)
+		{
+			return Handle.HandleMesh;
+		}
+
+	}
+	return NULL;
+}
+
+
+void URuntimeQuVRAxisGizmoHandleGroup::OnHoverAxisX(class UPrimitiveComponent* OtherComp)
+{
+	if (false == bIsDrag)
+	{
+		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_X;
+		HoveringOverTransformGizmoComponent = OtherComp;
+		//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnHover_AxisX"),TEXT("OnHover_AxisX"));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX "));
+	}
+}
+
+void URuntimeQuVRAxisGizmoHandleGroup::OnHoverAxisY(class UPrimitiveComponent* OtherComp)
+{
+	if (false == bIsDrag)
+	{
+		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_Y;
+		HoveringOverTransformGizmoComponent = OtherComp;
+	}
+}
+
+void URuntimeQuVRAxisGizmoHandleGroup::OnHoverAxisZ(class UPrimitiveComponent* OtherComp)
+{
+	if (false == bIsDrag)
+	{
+		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_Z;
+		HoveringOverTransformGizmoComponent = OtherComp;
+	}
+}
+
+void URuntimeQuVRAxisGizmoHandleGroup::OnReleaseAxisX(class UPrimitiveComponent* OtherComp)
+{
+	if (false == bIsDrag)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnRelease_AxisX "));
+		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
+		HoveringOverTransformGizmoComponent = NULL;
+	}
+}
+
+void URuntimeQuVRAxisGizmoHandleGroup::OnReleaseAxisY(class UPrimitiveComponent* OtherComp)
+{
+	if (false == bIsDrag)
+	{
+		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
+		HoveringOverTransformGizmoComponent = NULL;
+	}
+}
+
+void URuntimeQuVRAxisGizmoHandleGroup::OnReleaseAxisZ(class UPrimitiveComponent* OtherComp)
+{
+	if (false == bIsDrag)
+	{
+		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
+		HoveringOverTransformGizmoComponent = NULL;
+	}
+}
+void URuntimeQuVRGizmoHandleGroup::SetIsDrag(bool& inIsDrag)
+{
+	bIsDrag = inIsDrag;
+	if (false == bIsDrag)
+	{
+		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
+		HoveringOverTransformGizmoComponent = NULL;
+	}
+}
+void URuntimeQuVRAxisGizmoHandleGroup::OnBindingAxis()
+{
+	//////////////////////////////////////////////////////////////////////////
+	// Bind Axis
+	URuntimeQuVRHandleMeshComponent* mesh = GetHandleMesh(EAxisList::X);
+	check(mesh);
+	mesh->OnBeginCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHoverAxisX);
+	mesh->OnEndCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnReleaseAxisX);
+	mesh = GetHandleMesh(EAxisList::Y);
+	check(mesh);
+	mesh->OnBeginCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHoverAxisY);
+	mesh->OnEndCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnReleaseAxisY);
+	mesh = GetHandleMesh(EAxisList::Z);
+	check(mesh);
+	mesh->OnBeginCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHoverAxisZ);
+	mesh->OnEndCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnReleaseAxisZ);
+}
+
 /**
 * FQuVRTransformGizmoHandlePlacement GetCenterHandleCountAndFacingAxisIndex
 */
@@ -575,7 +632,6 @@ void FQuVRTransformGizmoHandlePlacement::GetCenterHandleCountAndFacingAxisIndex(
 }
 
 
-
 /************************************************************************/
 /* Translation                                                          */
 /************************************************************************/
@@ -588,21 +644,6 @@ URuntimeQuVRPivotTranslationGizmoHandleGroup::URuntimeQuVRPivotTranslationGizmoH
 		return;
 	}
 	CreateHandles(AssetContainer.TranslationHandleMesh, FString("PivotTranslationHandle"));
-
-	//////////////////////////////////////////////////////////////////////////
-	// Bind Axis
-	URuntimeQuVRHandleMeshComponent* mesh = GetHandleMesh(EAxisList::X);
-	check(mesh);
-	mesh->OnBeginCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisX);
-	mesh->OnEndCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnRelease_AxisX);
-	mesh = GetHandleMesh(EAxisList::Y);
-	check(mesh);
-	mesh->OnBeginCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisY);
-	mesh->OnEndCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnRelease_AxisY);
-	mesh = GetHandleMesh(EAxisList::Z);
-	check(mesh);
-	mesh->OnBeginCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnHover_AxisZ);
-	mesh->OnEndCursorOver.AddDynamic(this, &URuntimeQuVRPivotTranslationGizmoHandleGroup::OnRelease_AxisZ);
 }
 
 
@@ -610,7 +651,7 @@ void URuntimeQuVRPivotTranslationGizmoHandleGroup::UpdateGizmoHandleGroup(const 
 	const TArray< UActorComponent* >& HoveringOverHandles, float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup)
 {
 	// Call parent implementation (updates hover animation)
-	Super::UpdateGizmoHandleGroup(LocalToWorld, LocalBounds, ViewLocation, bAllHandlesVisible, DraggingHandle, HoveringOverHandles, AnimationAlpha,
+	Super::UpdateGizmoHandleGroup(GetOwner()->GetTransform(), LocalBounds, ViewLocation, bAllHandlesVisible, DraggingTransformGizmoComponent, HoveringOverHandles, AnimationAlpha,
 		GizmoScale, GizmoHoverScale, GizmoHoverAnimationDuration, bOutIsHoveringOrDraggingThisHandleGroup);
 
 	const float MultipliedGizmoScale = GizmoScale * QuVR::QuVRPivotGizmoTranslationScaleMultiply->GetFloat();
@@ -622,20 +663,6 @@ void URuntimeQuVRPivotTranslationGizmoHandleGroup::UpdateGizmoHandleGroup(const 
 EQuVRGizmoHandleTypes URuntimeQuVRPivotTranslationGizmoHandleGroup::GetHandleType() const
 {
 	return EQuVRGizmoHandleTypes::QUVR_Translate;
-}
-
-class URuntimeQuVRHandleMeshComponent* URuntimeQuVRPivotTranslationGizmoHandleGroup::GetHandleMesh(const EAxisList::Type type)
-{
-	for (int32 HandleIndex = 0; HandleIndex < Handles.Num(); ++HandleIndex)
-	{
-		FQuVRGizmoHandle& Handle = Handles[HandleIndex];
-		if (Handle.HandleType == type)
-		{
-			return Handle.HandleMesh;
-		}
-		
-	}
-	return NULL;
 }
 
 
@@ -950,11 +977,12 @@ URuntimeQuVRPivotRotationGizmoHandleGroup::URuntimeQuVRPivotRotationGizmoHandleG
 	{
 		return;
 	}
-	CreateHandles(AssetContainer.PlaneTranslationHandleMesh, FString("RotationHandle"));
+	CreateHandles(AssetContainer.RotationHandleMesh, FString("RotationHandle"));
 
 	{
 		RootFullRotationHandleComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootFullRotationHandleComponent"));
 		RootFullRotationHandleComponent->SetMobility(EComponentMobility::Movable);
+		RootFullRotationHandleComponent->SetVisibility(true);
 		RootFullRotationHandleComponent->SetupAttachment(this);
 
 		UStaticMesh* FullRotationHandleMesh = AssetContainer.RotationHandleSelectedMesh;
@@ -1007,10 +1035,202 @@ URuntimeQuVRPivotRotationGizmoHandleGroup::URuntimeQuVRPivotRotationGizmoHandleG
 
 void URuntimeQuVRPivotRotationGizmoHandleGroup::UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray<UActorComponent *>& HoveringOverHandles, float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup)
 {
+	// Call parent implementation (updates hover animation)
+	Super::UpdateGizmoHandleGroup(GetOwner()->GetActorTransform(), LocalBounds, ViewLocation, bAllHandlesVisible, DraggingHandle, HoveringOverHandles, AnimationAlpha,
+		GizmoScale, GizmoHoverScale, GizmoHoverAnimationDuration, bOutIsHoveringOrDraggingThisHandleGroup);
+
+	bool bShowFullRotationDragHandle = false;
+	URuntimeQuVRWorldInteraction* WorldInteraction = QuVROwningTransformGizmoActor->GetOwnerWorldInteraction();
+	const EQuVRCoordSystem CoordSystem = WorldInteraction->GetTransformGizmoCoordinateSpace();
+	const bool bIsTypeSupported = (QuVROwningTransformGizmoActor->GetGizmoType() == EQuVRGizmoHandleTypes::QUVR_All && GetShowOnUniversalGizmo()) || GetHandleType() == QuVROwningTransformGizmoActor->GetGizmoType();
+	const bool bSupportsCurrentCoordinateSpace = SupportsWorldCoordinateSpace() || CoordSystem != EQuVRCoordSystem::QuVR_COORD_World;
+	const bool bShowAnyRotationHandle = (bIsTypeSupported && bSupportsCurrentCoordinateSpace && bAllHandlesVisible);
+
+	for (int32 HandleIndex = 0; HandleIndex < Handles.Num(); ++HandleIndex)
+	{
+		if (EAxisList::None == Handles[HandleIndex].HandleType)
+		{
+			continue;
+		}
+	
+		FQuVRGizmoHandle& Handle = Handles[HandleIndex];
+		UStaticMeshComponent* GizmoHandleMeshComponent = Handle.HandleMesh;
+		if (GizmoHandleMeshComponent != nullptr)	// Can be null if no handle for this specific placement
+		{
+			const bool bDraggingCurrentHandle = (DraggingHandle != nullptr && DraggingHandle == GizmoHandleMeshComponent);
+			const bool bShouldShowHandle = bShowAnyRotationHandle && !bDraggingCurrentHandle;
+			GizmoHandleMeshComponent->SetVisibility(bShouldShowHandle);
+			GizmoHandleMeshComponent->SetCollisionEnabled(bShouldShowHandle ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+
+			int32 CenterHandleCount, FacingAxisIndex, CenterAxisIndex;
+			const FQuVRTransformGizmoHandlePlacement HandlePlacement = MakeHandlePlacementForIndex(HandleIndex);
+			HandlePlacement.GetCenterHandleCountAndFacingAxisIndex(/* Out */ CenterHandleCount, /* Out */ FacingAxisIndex, /* Out */ CenterAxisIndex);
+
+			if (bDraggingCurrentHandle)
+			{
+				bool bInitialDrag = false;
+				bShowFullRotationDragHandle = true;
+				FVector GizmoSpaceFacingAxisVector = GetAxisVector(FacingAxisIndex, HandlePlacement.Axes[FacingAxisIndex]);
+
+				// Set the initial rotation
+				if (!StartDragRotation.IsSet())
+				{
+					StartDragRotation = LocalToWorld.GetRotation();
+					bInitialDrag = true;
+				}
+
+				// Set the root of the full rotation handles to the rotation we had when starting the drag.
+				RootFullRotationHandleComponent->SetWorldRotation(StartDragRotation.GetValue());
+
+				FullRotationHandleMeshComponent->SetRelativeTransform(FTransform(GizmoSpaceFacingAxisVector.ToOrientationQuat(), FVector::ZeroVector, FVector(GizmoScale)));
+
+			//	URotateOnAngleDragOperation* DragOperation = StaticCast<URotateOnAngleDragOperation*>(GetDragOperationComponent()->GetDragOperation());
+				const FVector LocalIntersectPoint = FVector(0,0,50);//DragOperation->GetLocalIntersectPointOnRotationGizmo();
+
+				UpdateIndicator(RootDeltaRotationIndicatorComponent, LocalIntersectPoint, FacingAxisIndex);
+
+				// Update the start indicator only if this was the first time dragging
+				if (bInitialDrag)
+				{
+					UpdateIndicator(RootStartRotationIdicatorComponent, LocalIntersectPoint, FacingAxisIndex);
+
+					FLinearColor Color = WorldInteraction->GetColor(RuntimeQuVRtransformType::EQuVRColors::GizmoHover);
+					SetIndicatorColor(FullRotationHandleMeshComponent, Color);
+					SetIndicatorColor(DeltaRotationIndicatorMeshComponent, Color);
+					SetIndicatorColor(StartRotationIndicatorMeshComponent, Color);
+
+					bInitialDrag = false;
+				}
+			}
+			else if (DraggingHandle == nullptr)
+			{
+				int32 UpAxisIndex = 0;
+				int32 RightAxisIndex = 0;
+				FRotator Rotation;
+
+				if (FacingAxisIndex == 0)
+				{
+					// X, up = Z, right = Y
+					UpAxisIndex = 2;
+					RightAxisIndex = 1;
+					Rotation = FRotator::ZeroRotator;
+				}
+				else if (FacingAxisIndex == 1)
+				{
+					// Y, up = Z, right = X
+					UpAxisIndex = 2;
+					RightAxisIndex = 0;
+					Rotation = FRotator(0, -90, 0);
+
+				}
+				else if (FacingAxisIndex == 2)
+				{
+					// Z, up = Y, right = X
+					UpAxisIndex = 0;
+					RightAxisIndex = 1;
+					Rotation = FRotator(-90, 0, 0);
+				}
+
+				// ViewLocation = QuVROwningTransformGizmoActor->GetActorLocation();
+				// Check on which side we are relative to the gizmo
+				// get
+				const FVector GizmoSpaceViewLocation = GetOwner()->GetTransform().InverseTransformPosition(ViewLocation);
+				if (GizmoSpaceViewLocation[UpAxisIndex] < 0 && GizmoSpaceViewLocation[RightAxisIndex] < 0)
+				{
+					Rotation.Roll = 180;
+				}
+				else if (GizmoSpaceViewLocation[UpAxisIndex] < 0)
+				{
+					Rotation.Roll = 90;
+				}
+				else if (GizmoSpaceViewLocation[RightAxisIndex] < 0)
+				{
+					Rotation.Roll = -90;
+				}
+
+				const float GizmoHandleScale = GizmoScale * AnimationAlpha;
+
+				// Set the final transform
+				GizmoHandleMeshComponent->SetRelativeTransform(FTransform(Rotation, FVector::ZeroVector, FVector(GizmoHandleScale)));
+
+				// Update material
+				UpdateHandleColor(FacingAxisIndex, Handle, DraggingHandle, HoveringOverHandles);
+
+				// Reset the start rotation
+				StartDragRotation.Reset();
+			}
+		}
+	}
+
+	// Show or hide the visuals for when rotating
+	ShowRotationVisuals(bShowFullRotationDragHandle);
 
 }
 
 EQuVRGizmoHandleTypes URuntimeQuVRPivotRotationGizmoHandleGroup::GetHandleType() const
 {
-	return EQuVRGizmoHandleTypes::QUVR_Translate;
+	return EQuVRGizmoHandleTypes::QUVR_Rotate;
+}
+
+
+/** Updates the root of an indicator to rotate the indicator itself */
+void URuntimeQuVRPivotRotationGizmoHandleGroup::UpdateIndicator(USceneComponent* IndicatorRoot, const FVector& Direction, const uint32 FacingAxisIndex)
+{
+	float Y = 0, X = 0;
+	if (FacingAxisIndex == 0)
+	{
+		Y = Direction.Y;
+		X = Direction.Z;
+	}
+	else if (FacingAxisIndex == 1)
+	{
+		Y = -Direction.X;
+		X = Direction.Z;
+	}
+	else if (FacingAxisIndex == 2)
+	{
+		Y = Direction.Y;
+		X = -Direction.X;
+	}
+
+	const float Angle = FMath::RadiansToDegrees(FMath::Atan2(Y, X));
+	IndicatorRoot->SetRelativeRotation(FRotator(0, 0, Angle));
+}
+
+/** Make the components visible when dragging rotation */
+void URuntimeQuVRPivotRotationGizmoHandleGroup::ShowRotationVisuals(const bool bInShow)
+{
+	FullRotationHandleMeshComponent->SetCollisionEnabled(bInShow == true ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+	FullRotationHandleMeshComponent->SetVisibility(bInShow);
+	StartRotationIndicatorMeshComponent->SetVisibility(bInShow);
+	DeltaRotationIndicatorMeshComponent->SetVisibility(bInShow);
+}
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::SetupIndicator(USceneComponent* RootComponent, URuntimeQuVRHandleMeshComponent* IndicatorMeshComponent, UStaticMesh* Mesh)
+{
+	RootComponent->SetMobility(EComponentMobility::Movable);
+	RootComponent->SetupAttachment(FullRotationHandleMeshComponent);
+
+	IndicatorMeshComponent->SetStaticMesh(Mesh);
+	IndicatorMeshComponent->SetMobility(EComponentMobility::Movable);
+	IndicatorMeshComponent->SetupAttachment(RootComponent);
+	IndicatorMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	IndicatorMeshComponent->SetVisibility(false);
+	IndicatorMeshComponent->bGenerateOverlapEvents = false;
+	IndicatorMeshComponent->SetCanEverAffectNavigation(false);
+	IndicatorMeshComponent->bCastDynamicShadow = true;
+	IndicatorMeshComponent->bCastStaticShadow = false;
+	IndicatorMeshComponent->bAffectDistanceFieldLighting = false;
+	IndicatorMeshComponent->bAffectDynamicIndirectLighting = false;
+	IndicatorMeshComponent->SetRelativeLocation(FVector(0, 0, 100));
+}
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::SetIndicatorColor(UStaticMeshComponent* InMeshComponent, const FLinearColor& InHandleColor)
+{
+	UMaterialInstanceDynamic* MID0 = Cast<UMaterialInstanceDynamic>(InMeshComponent->GetMaterial(0));
+	UMaterialInstanceDynamic* MID1 = Cast<UMaterialInstanceDynamic>(InMeshComponent->GetMaterial(1));
+
+	static FName StaticHandleColorParameter("Color");
+	MID0->SetVectorParameterValue(StaticHandleColorParameter, InHandleColor);
+	MID1->SetVectorParameterValue(StaticHandleColorParameter, InHandleColor);
 }

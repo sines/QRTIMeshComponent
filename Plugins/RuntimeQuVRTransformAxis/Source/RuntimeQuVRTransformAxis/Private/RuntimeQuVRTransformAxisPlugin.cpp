@@ -44,6 +44,7 @@ void FRuntimeQuVRTransformAxisPlugin::GameMode()
 			if (axisActor && !axisActor->IsPendingKill())
 			{
 				// Game mode
+				axisActor->Destroy();
 			}
 		}
 	}
