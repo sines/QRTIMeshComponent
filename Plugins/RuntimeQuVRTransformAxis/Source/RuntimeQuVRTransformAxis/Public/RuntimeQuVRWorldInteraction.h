@@ -32,10 +32,10 @@ public:
 
 
 	/** Gets the current Gizmo handle type */
-	RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetCurrentGizmoType() const;
+	RuntimeQuVRtransformType::EQuVRMode GetCurrentGizmoType() const;
 
 	/** Sets the current gizmo handle type */
-	void SetGizmoHandleType(const RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoHandleType);
+	void SetGizmoHandleType(const RuntimeQuVRtransformType::EQuVRMode GizmoHandleType);
 
 	/** Gets the color from color type */
 	FLinearColor GetColor(const RuntimeQuVRtransformType::EQuVRColors Color, const float Multiplier = 1.f) const;
@@ -48,7 +48,7 @@ public:
 
 private:
 	/** The current gizmo type */ //@todo ViewportInteraction: Currently this is only used for universal gizmo.
-	TOptional<RuntimeQuVRtransformType::EQuVRGizmoHandleTypes> CurrentGizmoType;
+	TOptional<RuntimeQuVRtransformType::EQuVRMode> CurrentGizmoType;
 
 	// All the colors for this mode
 	TArray<FLinearColor> Colors;

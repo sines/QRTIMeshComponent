@@ -177,6 +177,14 @@ void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActor(FVector& pos)
 	}
 }
 
+void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActor(FRotator& rotator)
+{
+	if (DragActor)
+	{
+		DragActor->SetActorRotation(DragActor->GetActorRotation() + rotator);
+	}
+}
+
 void URuntimeQuVRGizmoHandleGroup::UpdateDragActorToAxis()
 {
 	if (DragActor)
@@ -213,9 +221,9 @@ TArray<FQuVRGizmoHandle>& URuntimeQuVRGizmoHandleGroup::GetHandles()
 	return Handles;
 }
 
-EQuVRGizmoHandleTypes URuntimeQuVRGizmoHandleGroup::GetHandleType() const
+EQuVRMode URuntimeQuVRGizmoHandleGroup::GetHandleType() const
 {
-	return EQuVRGizmoHandleTypes::QUVR_All;
+	return EQuVRMode::QuVR_WM_None;
 }
 
 void URuntimeQuVRGizmoHandleGroup::SetShowOnUniversalGizmo(const bool bInShowOnUniversal)
@@ -297,11 +305,11 @@ void URuntimeQuVRGizmoHandleGroup::UpdateHandleColor(const int32 AxisIndex, FQuV
 
 }
 
-void URuntimeQuVRGizmoHandleGroup::UpdateVisibilityAndCollision(const EQuVRGizmoHandleTypes GizmoType, const EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle)
+void URuntimeQuVRGizmoHandleGroup::UpdateVisibilityAndCollision(const EQuVRMode GizmoType, const EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle)
 {
 	const bool bIsTypeSupported =
-		((GizmoType == EQuVRGizmoHandleTypes::QUVR_All && GetShowOnUniversalGizmo()) || GetHandleType() == GizmoType) &&
-		(bAllowRotationAndScaleHandles || (GetHandleType() != EQuVRGizmoHandleTypes::QUVR_Rotate && GetHandleType() != EQuVRGizmoHandleTypes::QUVR_Scale));
+		((GizmoType == EQuVRMode::QUVR_WM_All && GetShowOnUniversalGizmo()) || GetHandleType() == GizmoType) &&
+		(bAllowRotationAndScaleHandles || (GetHandleType() != EQuVRMode::QuVR_WM_Rotate && GetHandleType() != EQuVRMode::QuVR_WM_Scale));
 
 	const bool bSupportsCurrentCoordinateSpace = SupportsWorldCoordinateSpace() || GizmoCoordinateSpace != EQuVRCoordSystem::QuVR_COORD_World;
 
@@ -660,9 +668,9 @@ void URuntimeQuVRPivotTranslationGizmoHandleGroup::UpdateGizmoHandleGroup(const 
 	UpdateHandlesRelativeTransformOnAxis(FTransform(FVector(QuVR::QuVRPivotGizmoTranslationPivotOffsetX->GetFloat(), 0, 0)), AnimationAlpha, MultipliedGizmoScale, MultipliedGizmoHoverScale, ViewLocation, DraggingHandle, HoveringOverHandles);
 }
 
-EQuVRGizmoHandleTypes URuntimeQuVRPivotTranslationGizmoHandleGroup::GetHandleType() const
+EQuVRMode URuntimeQuVRPivotTranslationGizmoHandleGroup::GetHandleType() const
 {
-	return EQuVRGizmoHandleTypes::QUVR_Translate;
+	return EQuVRMode::QuVR_WM_Translate;
 }
 
 
@@ -691,9 +699,9 @@ void URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup::UpdateGizmoHandleGroup(c
 		AnimationAlpha, GizmoScale, GizmoHoverScale, ViewLocation, DraggingHandle, HoveringOverHandles);
 }
 
-EQuVRGizmoHandleTypes URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup::GetHandleType() const
+EQuVRMode URuntimeQuVRPivotPlaneTranslationGizmoHandleGroup::GetHandleType() const
 {
-	return EQuVRGizmoHandleTypes::QUVR_Translate;
+	return EQuVRMode::QuVR_WM_Translate;
 }
 
 /************************************************************************/
@@ -934,9 +942,9 @@ void URuntimeQuVRStretchGizmoHandleGroup::UpdateGizmoHandleGroup(const FTransfor
 }
 
 
-EQuVRGizmoHandleTypes URuntimeQuVRStretchGizmoHandleGroup::GetHandleType() const
+EQuVRMode URuntimeQuVRStretchGizmoHandleGroup::GetHandleType() const
 {
-	return EQuVRGizmoHandleTypes::QUVR_Scale;
+	return EQuVRMode::QuVR_WM_Scale;
 }
 
 bool URuntimeQuVRStretchGizmoHandleGroup::SupportsWorldCoordinateSpace() const
@@ -960,9 +968,9 @@ void URuntimeQuVRPivotScaleGizmoHandleGroup::UpdateGizmoHandleGroup(const FTrans
 }
 
 
-EQuVRGizmoHandleTypes URuntimeQuVRPivotScaleGizmoHandleGroup::GetHandleType() const
+EQuVRMode URuntimeQuVRPivotScaleGizmoHandleGroup::GetHandleType() const
 {
-	return EQuVRGizmoHandleTypes::QUVR_Translate;
+	return EQuVRMode::QuVR_WM_Translate;
 }
 
 
@@ -1042,7 +1050,7 @@ void URuntimeQuVRPivotRotationGizmoHandleGroup::UpdateGizmoHandleGroup(const FTr
 	bool bShowFullRotationDragHandle = false;
 	URuntimeQuVRWorldInteraction* WorldInteraction = QuVROwningTransformGizmoActor->GetOwnerWorldInteraction();
 	const EQuVRCoordSystem CoordSystem = WorldInteraction->GetTransformGizmoCoordinateSpace();
-	const bool bIsTypeSupported = (QuVROwningTransformGizmoActor->GetGizmoType() == EQuVRGizmoHandleTypes::QUVR_All && GetShowOnUniversalGizmo()) || GetHandleType() == QuVROwningTransformGizmoActor->GetGizmoType();
+	const bool bIsTypeSupported = (QuVROwningTransformGizmoActor->GetGizmoType() == EQuVRMode::QUVR_WM_All && GetShowOnUniversalGizmo()) || GetHandleType() == QuVROwningTransformGizmoActor->GetGizmoType();
 	const bool bSupportsCurrentCoordinateSpace = SupportsWorldCoordinateSpace() || CoordSystem != EQuVRCoordSystem::QuVR_COORD_World;
 	const bool bShowAnyRotationHandle = (bIsTypeSupported && bSupportsCurrentCoordinateSpace && bAllHandlesVisible);
 
@@ -1167,9 +1175,9 @@ void URuntimeQuVRPivotRotationGizmoHandleGroup::UpdateGizmoHandleGroup(const FTr
 
 }
 
-EQuVRGizmoHandleTypes URuntimeQuVRPivotRotationGizmoHandleGroup::GetHandleType() const
+EQuVRMode URuntimeQuVRPivotRotationGizmoHandleGroup::GetHandleType() const
 {
-	return EQuVRGizmoHandleTypes::QUVR_Rotate;
+	return EQuVRMode::QuVR_WM_Rotate;
 }
 
 

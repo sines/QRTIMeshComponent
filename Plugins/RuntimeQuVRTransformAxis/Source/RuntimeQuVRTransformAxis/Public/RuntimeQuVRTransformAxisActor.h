@@ -40,7 +40,7 @@ protected:
 	/**
 	* Begin tracking at the specified location for the specified viewport.
 	*/
-	void StartTracking();
+	void StartTracking(class URuntimeQuVRAxisGizmoHandleGroup* InHandleGroup);
 
 	/**
 	* Called when a mouse button has been released.  If there are no other
@@ -82,7 +82,7 @@ public:
 	void UpdateGizmoAxis();
 
 	/** Gets the current gizmo handle type */
-	RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetGizmoType() const;
+	RuntimeQuVRtransformType::EQuVRMode GetGizmoType() const;
 private:
 	// Get GWorld
 	UWorld* QuVRWorld;
@@ -94,7 +94,7 @@ private:
 	FRuntimeQuVRTransformAlgorithm*  QuVRTransformAlgorithm;
 
 	/** Current gizmo type */
-	RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType;
+	RuntimeQuVRtransformType::EQuVRMode GizmoType;
 
 	/** Translation handle group component */
 	UPROPERTY()
@@ -138,8 +138,11 @@ private:
 	void HitObject();
 
 	/** TranslationGizmoHandleGroup :: calculate Transform */
-	void TranslationCalac(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+	void GizmoTranslation(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
 	
+	/** TranslationGizmoHandleGroup :: calculate Rotation */
+	void GizmoRotation(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+
 	/** update all group draw */
 	void UpdateGizmoGroupDraw();
 

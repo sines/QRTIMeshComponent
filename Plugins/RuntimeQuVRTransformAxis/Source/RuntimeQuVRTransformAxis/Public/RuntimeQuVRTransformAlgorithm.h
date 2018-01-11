@@ -203,7 +203,7 @@ public:
 	/** @return the rotation speed of the widget */
 	static float GetRotationSpeed() { return (2.f*(float)PI) / 360.f; }
 
-
+	void SetModeType(RuntimeQuVRtransformType::EQuVRMode InModeType) { ModeType = InModeType; };
 private:
 
 	/**
@@ -311,7 +311,7 @@ private:
 	/************************************************************************/
 	/*Axis 	WM_None,WM_Translate,WM_TranslateRotateZ,						*/
 	/************************************************************************/
-	RuntimeQuVRtransformType::EQuVRMode  MoveModeType;
+	RuntimeQuVRtransformType::EQuVRMode  ModeType;
 
 	/**
 	* An extra matrix to apply to the widget before drawing it (allows for local/custom coordinate systems).

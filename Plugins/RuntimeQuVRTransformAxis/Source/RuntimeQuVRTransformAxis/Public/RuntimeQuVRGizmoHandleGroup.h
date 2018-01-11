@@ -79,9 +79,10 @@ public:
 		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup);
 
 	/** Default setting the visibility and collision for all the handles in this group */
-	void UpdateVisibilityAndCollision(const RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GizmoType, const RuntimeQuVRtransformType::EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle);
+	void UpdateVisibilityAndCollision(const RuntimeQuVRtransformType::EQuVRMode GizmoType, const RuntimeQuVRtransformType::EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle);
 
 	virtual void UpdateAxisToDragActor(FVector& pos);
+	virtual void UpdateAxisToDragActor(FRotator& rotator);
 	virtual void UpdateDragActorToAxis();
 
 	class AActor* GetDragActor() { return DragActor; };
@@ -103,7 +104,7 @@ public:
 	TArray< FQuVRGizmoHandle >& GetHandles();
 
 	/** Gets the GizmoType for this Gizmo handle */
-	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const;
+	virtual RuntimeQuVRtransformType::EQuVRMode GetHandleType() const;
 
 	/** Returns true if this type of handle is allowed with world space gizmos */
 	virtual bool SupportsWorldCoordinateSpace() const
@@ -239,7 +240,7 @@ public:
 		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
 
 	/** Gets the GizmoType for this Gizmo handle */
-	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes GetHandleType() const override;
+	virtual RuntimeQuVRtransformType::EQuVRMode GetHandleType() const override;
 };
 
 
@@ -261,7 +262,7 @@ public:
 		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
 
 	/** Gets the GizmoType for this Gizmo handle */
-	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes  GetHandleType() const override;
+	virtual RuntimeQuVRtransformType::EQuVRMode  GetHandleType() const override;
 };
 
 
@@ -283,7 +284,7 @@ public:
 		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
 
 	/** Gets the GizmoType for this Gizmo handle */
-	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes  GetHandleType() const override;
+	virtual RuntimeQuVRtransformType::EQuVRMode  GetHandleType() const override;
 
 	/** Returns true if this type of handle is allowed with world space gizmos */
 	virtual bool SupportsWorldCoordinateSpace() const override;
@@ -309,7 +310,7 @@ public:
 		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
 
 	/** Gets the GizmoType for this Gizmo handle */
-	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes  GetHandleType() const override;
+	virtual RuntimeQuVRtransformType::EQuVRMode  GetHandleType() const override;
 
 };
 
@@ -332,7 +333,7 @@ public:
 		float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup) override;
 
 	/** Gets the GizmoType for this Gizmo handle */
-	virtual RuntimeQuVRtransformType::EQuVRGizmoHandleTypes  GetHandleType() const override;
+	virtual RuntimeQuVRtransformType::EQuVRMode  GetHandleType() const override;
 
 private:
 

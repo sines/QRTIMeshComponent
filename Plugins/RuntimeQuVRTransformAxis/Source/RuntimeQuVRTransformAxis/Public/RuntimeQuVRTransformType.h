@@ -12,6 +12,7 @@ namespace RuntimeQuVRtransformType
 	enum class EQuVRMode
 	{
 		QuVR_WM_None = -1,
+		QUVR_WM_All = 0,
 		QuVR_WM_Translate,
 		QuVR_WM_TranslateRotateZ,
 		QuVR_WM_2D,
@@ -38,13 +39,14 @@ namespace RuntimeQuVRtransformType
 		QUVR_Positive,
 	};
 
+/*
 	enum class EQuVRGizmoHandleTypes : uint8
 	{
 		QUVR_All = 0,
 		QUVR_Translate = 1,
 		QUVR_Rotate = 2,
 		QUVR_Scale = 3
-	};
+	};*/
 
 	enum class EQuVRGizmoHandleHoveredTypes
 	{

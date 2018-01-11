@@ -163,7 +163,7 @@ FRuntimeQuVRTransformAlgorithm::FRuntimeQuVRTransformAlgorithm()
 	YAxisDir = FVector2D::ZeroVector;
 	ZAxisDir = FVector2D::ZeroVector;
 	DragStartPos = FVector2D::ZeroVector;
-	MoveModeType = RuntimeQuVRtransformType::EQuVRMode::QuVR_WM_Translate;
+	ModeType = RuntimeQuVRtransformType::EQuVRMode::QuVR_WM_Translate;
 }
 
 /**
@@ -208,7 +208,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 	OutRotation = FRotator::ZeroRotator;
 	OutScale = FVector::ZeroVector;
 
-	MoveModeType = EQuVRMode::QuVR_WM_Translate;
+	ModeType = EQuVRMode::QuVR_WM_Translate;
 
 	// Get input Delta as 2D vector, adjusted for inverted screen space y axis
 	const FVector2D DragDir = FVector2D(InDiff.X, -InDiff.Y);
@@ -230,7 +230,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 		TangentDir = FVector2D(-DirectionToMousePos.Y, DirectionToMousePos.X);
 	}
 
-	switch (MoveModeType)
+	switch (ModeType)
 	{
 	case EQuVRMode::QuVR_WM_Translate:
 		{
@@ -447,7 +447,7 @@ void FRuntimeQuVRTransformAlgorithm::AbsoluteTranslationConvertMouseMovementToAx
 	Params.YAxis = InputCoordSystem.TransformVector(FVector(0, 1, 0));
 	Params.ZAxis = InputCoordSystem.TransformVector(FVector(0, 0, 1));
 
-	switch (MoveModeType)
+	switch (ModeType)
 	{
 	case EQuVRMode::QuVR_WM_Translate:
 	{
