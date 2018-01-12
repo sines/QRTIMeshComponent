@@ -2,11 +2,14 @@
 
 #include "RuntimeQuVRWorldInteraction.h"
 #include "RuntimeQuVRTransformType.h"
+#include "InputCoreTypes.h"
 
 using namespace RuntimeQuVRtransformType;
 
 URuntimeQuVRWorldInteraction::URuntimeQuVRWorldInteraction():Super(),
 								AppTimeEntered(FTimespan::Zero()),
+								MouseDelta(FVector2D::ZeroVector),
+								MouseSensitivty(0.5),
 								CurrentCoordSystem(EQuVRCoordSystem::QuVR_COORD_World)
 {
 	Init();
@@ -47,3 +50,30 @@ void URuntimeQuVRWorldInteraction::SetTransformGizmoCoordinateSpace(const EQuVRC
 {
 	CurrentCoordSystem = NewCoordSystem;
 }
+
+void URuntimeQuVRWorldInteraction::StartTracking(const int32 InX, const int32 InY)
+{
+	Start = FVector(InX, InY, 0);
+	End = Start;
+}
+
+bool URuntimeQuVRWorldInteraction::EndTracking()
+{
+	Start =  End =  FVector::ZeroVector;
+	MouseDelta = FVector2D::ZeroVector;
+	return true;
+}
+
+const FVector URuntimeQuVRWorldInteraction::GetMouseDelta() const
+{
+	const FVector Delta(End - Start);
+	return Delta;
+}
+
+void URuntimeQuVRWorldInteraction::AddMouseDelta(const float InDeltaX, const float InDeltaY)
+{
+	FVector Wk = FVector(InDeltaX, InDeltaY, 0);
+	Wk *= MouseSensitivty;
+ 	End += Wk;
+}
+

@@ -30,6 +30,27 @@ public:
 	/** Give base class the chance to tick */
 	virtual void Tick(float DeltaSeconds) {};
 
+	/**
+	* Begin tracking at the specified location for the specified viewport.
+	*/
+	void StartTracking( const int32 InX, const int32 InY);
+
+	/**
+	* Called when a mouse button has been released.  If there are no other
+	* mouse buttons being held down, the internal information is reset.
+	*/
+	bool EndTracking();
+
+	/**
+	* Returns the current delta.
+	*/
+	const FVector GetMouseDelta() const;
+
+	/**
+	* Adds delta movement into the tracker.
+	*/
+	void AddMouseDelta(const float InDeltaX, const float InDeltaY);
+
 
 	/** Gets the current Gizmo handle type */
 	RuntimeQuVRtransformType::EQuVRMode GetCurrentGizmoType() const;
@@ -61,4 +82,12 @@ private:
 
 	RuntimeQuVRtransformType::EQuVRCoordSystem CurrentCoordSystem;
 
+	/** The unsnapped start position of the current mouse drag. */
+	FVector Start;
+
+	/** The unsnapped end position of the current mouse drag. */
+	FVector End;
+	FVector2D MouseDelta;
+
+	float MouseSensitivty;
 };

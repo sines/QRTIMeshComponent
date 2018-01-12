@@ -81,8 +81,9 @@ public:
 	/** Default setting the visibility and collision for all the handles in this group */
 	void UpdateVisibilityAndCollision(const RuntimeQuVRtransformType::EQuVRMode GizmoType, const RuntimeQuVRtransformType::EQuVRCoordSystem GizmoCoordinateSpace, const bool bAllHandlesVisible, const bool bAllowRotationAndScaleHandles, UActorComponent* DraggingHandle);
 
-	virtual void UpdateAxisToDragActor(FVector& pos);
-	virtual void UpdateAxisToDragActor(FRotator& rotator);
+	virtual void UpdateAxisToDragActorTranslational(FVector& pos);
+	virtual void UpdateAxisToDragActorRotation(FRotator& rotator);
+	virtual void UpdateAxisToDragActorScale(FVector& scale);
 	virtual void UpdateDragActorToAxis();
 
 	class AActor* GetDragActor() { return DragActor; };

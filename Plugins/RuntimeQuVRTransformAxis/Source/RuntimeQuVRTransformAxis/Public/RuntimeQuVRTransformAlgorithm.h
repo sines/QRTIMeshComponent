@@ -204,6 +204,8 @@ public:
 	static float GetRotationSpeed() { return (2.f*(float)PI) / 360.f; }
 
 	void SetModeType(RuntimeQuVRtransformType::EQuVRMode InModeType) { ModeType = InModeType; };
+
+	void GetRotationArc(const FSceneView* View, const FVector& InLocation, const FVector& InDirectionToWidget, const float InScale);
 private:
 
 	/**
@@ -247,21 +249,6 @@ private:
 	* Returns how far we have just rotated
 	*/
 	float GetDeltaRotation() const;
-
-	/**
-	* If actively dragging, draws a ring representing the potential rotation of the selected objects, snap ticks, and "delta" markers
-	* If not actively dragging, draws a quarter ring representing the closest quadrant to the camera
-	* @param View - Information about the scene/camera/etc
-	* @param PDI - Drawing interface
-	* @param InAxis - Enumeration of axis to rotate about
-	* @param InLocation - The Origin of the widget
-	* @param Axis0 - The Axis that describes a 0 degree rotation
-	* @param Axis1 - The Axis that describes a 90 degree rotation
-	* @param InDirectionToWidget - Direction from camera to the widget
-	* @param InColor - The color associated with the axis of rotation
-	* @param InScale - Multiplier to maintain a constant screen size for rendering the widget
-	* @param OutAxisDir - Viewport-space direction of rotation arc chord is placed here
-	*/
 
 	/**
 	* Caches off HUD text to display after 3d rendering is complete

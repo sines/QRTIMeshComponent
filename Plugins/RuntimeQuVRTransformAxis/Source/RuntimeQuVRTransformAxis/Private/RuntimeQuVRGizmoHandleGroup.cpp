@@ -46,7 +46,6 @@ URuntimeQuVRGizmoHandleGroup::URuntimeQuVRGizmoHandleGroup()
 	HoveringOverTransformGizmoComponent(nullptr)
 {
 	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
-//	DragOperationComponent = CreateDefaultSubobject<UViewportDragOperationComponent>(TEXT("DragOperation"));
 }
 
 FQuVRTransformGizmoHandlePlacement URuntimeQuVRGizmoHandleGroup::MakeHandlePlacementForIndex(const int32 HandleIndex) const
@@ -55,14 +54,12 @@ FQuVRTransformGizmoHandlePlacement URuntimeQuVRGizmoHandleGroup::MakeHandlePlace
 	HandlePlacement.Axes[0] = (EQuVRTransformGizmoHandleDirection)(HandleIndex / 9);
 	HandlePlacement.Axes[1] = (EQuVRTransformGizmoHandleDirection)((HandleIndex % 9) / 3);
 	HandlePlacement.Axes[2] = (EQuVRTransformGizmoHandleDirection)((HandleIndex % 9) % 3);
-	//	GWarn->Logf( TEXT( "%i = HandlePlacment[ %i %i %i ]" ), HandleIndex, (int32)HandlePlacement.Axes[ 0 ], (int32)HandlePlacement.Axes[ 1 ], (int32)HandlePlacement.Axes[ 2 ] );
 	return HandlePlacement;
 }
 
 int32 URuntimeQuVRGizmoHandleGroup::MakeHandleIndex(const FQuVRTransformGizmoHandlePlacement HandlePlacement) const
 {
 	const int32 HandleIndex = (int32)HandlePlacement.Axes[0] * 9 + (int32)HandlePlacement.Axes[1] * 3 + (int32)HandlePlacement.Axes[2];
-	//	GWarn->Logf( TEXT( "HandlePlacment[ %i %i %i ] = %i" ), (int32)HandlePlacement.Axes[ 0 ], (int32)HandlePlacement.Axes[ 1 ], (int32)HandlePlacement.Axes[ 2 ], HandleIndex );
 	return HandleIndex;
 }
 
@@ -168,8 +165,7 @@ void URuntimeQuVRGizmoHandleGroup::EndTracking()
 	}
 };
 
-
-void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActor(FVector& pos)
+void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActorTranslational(FVector& pos)
 {
 	if (DragActor)
 	{
@@ -177,13 +173,22 @@ void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActor(FVector& pos)
 	}
 }
 
-void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActor(FRotator& rotator)
+void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActorRotation(FRotator& rotator)
 {
 	if (DragActor)
 	{
 		DragActor->SetActorRotation(DragActor->GetActorRotation() + rotator);
 	}
 }
+
+void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActorScale(FVector& scale)
+{
+	if (DragActor)
+	{
+	//	DragActor->SetActorRotation(DragActor->GetActorRotation() + rotator);
+	}
+}
+
 
 void URuntimeQuVRGizmoHandleGroup::UpdateDragActorToAxis()
 {
@@ -557,7 +562,6 @@ void URuntimeQuVRAxisGizmoHandleGroup::OnReleaseAxisX(class UPrimitiveComponent*
 {
 	if (false == bIsDrag)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnRelease_AxisX "));
 		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
 		HoveringOverTransformGizmoComponent = NULL;
 	}
@@ -777,8 +781,6 @@ URuntimeQuVRStretchGizmoHandleGroup::URuntimeQuVRStretchGizmoHandleGroup()
 			}
 		}
 	}
-
-//	DragOperationComponent->SetDragOperationClass(UStretchGizmoHandleDragOperation::StaticClass());
 }
 
 

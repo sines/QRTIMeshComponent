@@ -9,6 +9,7 @@
 
 class FRuntimeQuVRTransformAlgorithm;
 class URuntimeQuVRWorldExtension;
+class ULocalPlayer;
 /**
 * Displays measurements along the bounds of selected objects
 */

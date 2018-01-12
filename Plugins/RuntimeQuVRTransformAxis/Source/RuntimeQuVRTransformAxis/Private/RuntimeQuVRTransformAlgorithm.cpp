@@ -4,6 +4,7 @@
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "EngineGlobals.h"
+#include "Engine.h"
 #include "SceneView.h"
 
 using namespace RuntimeQuVRtransformType;
@@ -207,8 +208,6 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 	OutDrag = FVector::ZeroVector;
 	OutRotation = FRotator::ZeroRotator;
 	OutScale = FVector::ZeroVector;
-
-	ModeType = EQuVRMode::QuVR_WM_Translate;
 
 	// Get input Delta as 2D vector, adjusted for inverted screen space y axis
 	const FVector2D DragDir = FVector2D(InDiff.X, -InDiff.Y);
@@ -707,6 +706,51 @@ void FRuntimeQuVRTransformAlgorithm::UpdateDeltaRotation()
 	if ((TotalDeltaRotation <= -360.f) || (TotalDeltaRotation >= 360.f))
 	{
 		TotalDeltaRotation = FRotator::ClampAxis(TotalDeltaRotation);
+	}
+}
+
+void FRuntimeQuVRTransformAlgorithm::GetRotationArc(const FSceneView* View, const FVector& InLocation, const FVector& InDirectionToWidget, const float InScale)
+{
+	//get the axes 
+	FVector XAxis = CustomCoordSystem.TransformVector(FVector(1, 0, 0));
+	FVector YAxis = CustomCoordSystem.TransformVector(FVector(0, 1, 0));
+	FVector ZAxis = CustomCoordSystem.TransformVector(FVector(0, 0, 1));
+
+	const FVector& Axis0 = ZAxis;
+	const FVector& Axis1 = YAxis;
+
+	bool bIsPerspective = (View->ViewMatrices.GetProjectionMatrix().M[3][3] < 1.0f);
+	bool bIsOrtho = !bIsPerspective;
+
+	//if we're in an ortho viewport and the ring is perpendicular to the camera (both Axis0 & Axis1 are perpendicular)
+	bIsOrthoDrawingFullRing |= bIsOrtho && (FMath::Abs(Axis0 | InDirectionToWidget) < KINDA_SMALL_NUMBER) && (FMath::Abs(Axis1 | InDirectionToWidget) < KINDA_SMALL_NUMBER);
+
+	if (bDragging || (bIsOrthoDrawingFullRing))
+	{
+	}
+	else
+	{
+		//Reverse the axes based on camera view
+		bool bMirrorAxis0 = ((Axis0 | InDirectionToWidget) <= 0.0f);
+		bool bMirrorAxis1 = ((Axis1 | InDirectionToWidget) <= 0.0f);
+
+		FVector RenderAxis0 = bMirrorAxis0 ? Axis0 : -Axis0;
+		FVector RenderAxis1 = bMirrorAxis1 ? Axis1 : -Axis1;
+		float Direction = (bMirrorAxis0 ^ bMirrorAxis1) ? -1.0f : 1.0f;
+
+		FVector2D Axis0ScreenLocation;
+		if (!View->ScreenToPixel(View->WorldToScreen(InLocation + RenderAxis0 * 64.0f), Axis0ScreenLocation))
+		{
+			Axis0ScreenLocation.X = Axis0ScreenLocation.Y = 0;
+		}
+
+		FVector2D Axis1ScreenLocation;
+		if (!View->ScreenToPixel(View->WorldToScreen(InLocation + RenderAxis1 * 64.0f), Axis1ScreenLocation))
+		{
+			Axis1ScreenLocation.X = Axis1ScreenLocation.Y = 0;
+		}
+
+		XAxisDir = ((Axis1ScreenLocation - Axis0ScreenLocation) * Direction).GetSafeNormal();
 	}
 }
 
