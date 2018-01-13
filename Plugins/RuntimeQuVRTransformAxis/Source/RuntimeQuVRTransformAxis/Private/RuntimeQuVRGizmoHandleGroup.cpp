@@ -43,7 +43,8 @@ URuntimeQuVRGizmoHandleGroup::URuntimeQuVRGizmoHandleGroup()
 	bShowOnUniversalGizmo(true),
 	DragActor(nullptr),
 	DraggingTransformGizmoComponent(nullptr),
-	HoveringOverTransformGizmoComponent(nullptr)
+	HoveringOverTransformGizmoComponent(nullptr),
+	DragActorTransform(FTransform::Identity)
 {
 	eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_VOID;
 }
@@ -154,6 +155,7 @@ void URuntimeQuVRGizmoHandleGroup::StartTracking(class AActor* actor)
 			DragActor = actor;
 			GetOwner()->SetActorLocation(DragActor->GetActorLocation());
 		}
+		DragActorTransform = DragActor->GetActorTransform();
 	}
 };
 
@@ -177,7 +179,7 @@ void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActorRotation(FRotator& rotat
 {
 	if (DragActor)
 	{
-		DragActor->SetActorRotation(DragActor->GetActorRotation() + rotator);
+		DragActor->SetActorRotation(DragActorTransform.GetRotation().Rotator()+ rotator);
 	}
 }
 
@@ -185,10 +187,9 @@ void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActorScale(FVector& scale)
 {
 	if (DragActor)
 	{
-	//	DragActor->SetActorRotation(DragActor->GetActorRotation() + rotator);
+//		DragActor->SetActorRotation(DragActorTransform.MultiplyScale3D(scale));
 	}
 }
-
 
 void URuntimeQuVRGizmoHandleGroup::UpdateDragActorToAxis()
 {

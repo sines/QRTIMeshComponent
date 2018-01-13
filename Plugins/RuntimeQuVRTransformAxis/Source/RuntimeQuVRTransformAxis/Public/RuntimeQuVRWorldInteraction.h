@@ -51,7 +51,11 @@ public:
 	*/
 	void AddMouseDelta(const float InDeltaX, const float InDeltaY);
 
-
+	/**
+	* Subtracts the specified value from End and EndSnapped.
+	*/
+	void ReduceBy(const FVector& In);
+	
 	/** Gets the current Gizmo handle type */
 	RuntimeQuVRtransformType::EQuVRMode GetCurrentGizmoType() const;
 
@@ -66,7 +70,28 @@ public:
 
 	/** Returns which transform gizmo coordinate space we're using, world or local */
 	RuntimeQuVRtransformType::EQuVRCoordSystem GetTransformGizmoCoordinateSpace();
+public:
+	/**
+	* Used to store the required cursor visibility states and override cursor appearance
+	*/
+	struct FQuVRRequiredCursorState
+	{
+		/** Should the software cursor be visible */
+		bool	bSoftwareCursorVisible;
 
+		/** Should the hardware be visible */
+		bool	bHardwareCursorVisible;
+
+		/** Should the software cursor position be reset to pre-drag */
+		bool	bDontResetCursor;
+
+		/** Should we override the cursor appearance with the value in RequiredCursor */
+		bool	bOverrideAppearance;
+
+		/** What the cursor should look like */
+		EMouseCursor::Type RequiredCursor;
+	};
+	FQuVRRequiredCursorState QuVRCursorState;
 private:
 	/** The current gizmo type */ //@todo ViewportInteraction: Currently this is only used for universal gizmo.
 	TOptional<RuntimeQuVRtransformType::EQuVRMode> CurrentGizmoType;

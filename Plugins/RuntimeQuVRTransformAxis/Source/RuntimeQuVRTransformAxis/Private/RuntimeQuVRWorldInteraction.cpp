@@ -3,13 +3,14 @@
 #include "RuntimeQuVRWorldInteraction.h"
 #include "RuntimeQuVRTransformType.h"
 #include "InputCoreTypes.h"
+#include "ICursor.h"
 
 using namespace RuntimeQuVRtransformType;
 
 URuntimeQuVRWorldInteraction::URuntimeQuVRWorldInteraction():Super(),
 								AppTimeEntered(FTimespan::Zero()),
 								MouseDelta(FVector2D::ZeroVector),
-								MouseSensitivty(0.5),
+								MouseSensitivty(1.0f),
 								CurrentCoordSystem(EQuVRCoordSystem::QuVR_COORD_World)
 {
 	Init();
@@ -22,6 +23,13 @@ URuntimeQuVRWorldInteraction::~URuntimeQuVRWorldInteraction()
 
 void URuntimeQuVRWorldInteraction::Init()
 {
+	// Initialize the Cursor visibility struct
+	QuVRCursorState.bSoftwareCursorVisible = false;
+	QuVRCursorState.bHardwareCursorVisible = true;
+	QuVRCursorState.bDontResetCursor = false;
+	QuVRCursorState.bOverrideAppearance = false;
+	QuVRCursorState.RequiredCursor = EMouseCursor::Default;
+
 	Colors.SetNumZeroed((int32)EQuVRColors::TotalCount);
 	{
 		Colors[(int32)EQuVRColors::DefaultColor] = FLinearColor(0.7f, 0.7f, 0.7f, 1.0f);
@@ -76,4 +84,10 @@ void URuntimeQuVRWorldInteraction::AddMouseDelta(const float InDeltaX, const flo
 	Wk *= MouseSensitivty;
  	End += Wk;
 }
+
+void URuntimeQuVRWorldInteraction::ReduceBy(const FVector& In)
+{
+	End -= In;
+}
+
 

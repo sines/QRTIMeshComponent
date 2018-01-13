@@ -86,10 +86,11 @@ public:
 	virtual void UpdateAxisToDragActorScale(FVector& scale);
 	virtual void UpdateDragActorToAxis();
 
+	/** Record Actor */
 	class AActor* GetDragActor() { return DragActor; };
-	void StartTracking(class AActor* actor);
-	void EndTracking();
-	void SetIsDrag(bool& inIsDrag);
+	virtual void StartTracking(class AActor* actor);
+	virtual void EndTracking();
+	virtual void SetIsDrag(bool& inIsDrag);
 //	class UViewportDragOperationComponent* GetDragOperationComponent();
 
 	/** Finds the index of DraggedMesh in HandleMeshes */
@@ -169,6 +170,7 @@ private:
 	/** If this handlegroup will be visible with the universal gizmo */
 	bool bShowOnUniversalGizmo;
 
+	FTransform DragActorTransform;
 protected:
 	RuntimeQuVRtransformType::EQuVRGizmoHandleHoveredTypes eQuVRHandleHoveredType;
 
