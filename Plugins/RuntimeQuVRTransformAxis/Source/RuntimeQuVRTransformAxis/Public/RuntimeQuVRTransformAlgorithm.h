@@ -205,7 +205,7 @@ public:
 
 	void SetModeType(RuntimeQuVRtransformType::EQuVRMode InModeType) { ModeType = InModeType; };
 
-	void GetRotationArc(const FSceneView* View, const FVector& InLocation, const FVector& InDirectionToWidget, const float InScale);
+	void GetRotationArc(const FSceneView* View, EQuVRGizmoHandleHoveredTypes InAxis, const FVector& InLocation, const FVector& InDirectionToWidget, const float InScale);
 private:
 
 	/**

@@ -204,7 +204,7 @@ protected:
 	void UpdateHandlesRelativeTransformOnAxis(const FTransform& HandleToCenter, const float AnimationAlpha, const float GizmoScale, const float GizmoHoverScale,
 		const FVector& ViewLocation, class UActorComponent* DraggingHandle, const TArray< UActorComponent* >& HoveringOverHandles);
 
-protected:
+public:
 	virtual class URuntimeQuVRHandleMeshComponent* GetHandleMesh(const EAxisList::Type type);
 
 	UFUNCTION()
@@ -315,6 +315,12 @@ public:
 	/** Gets the GizmoType for this Gizmo handle */
 	virtual RuntimeQuVRtransformType::EQuVRMode  GetHandleType() const override;
 
+	/** Sets if the pivot point is used as location for the handle */
+	void SetUsePivotPointAsLocation(const bool bInUsePivotAsLocation);
+private:
+
+	/** If the pivot point is used for the uniform scaling handle */
+	bool bUsePivotAsLocation;
 };
 
 
@@ -338,6 +344,26 @@ public:
 	/** Gets the GizmoType for this Gizmo handle */
 	virtual RuntimeQuVRtransformType::EQuVRMode  GetHandleType() const override;
 
+	class UPrimitiveComponent* GetDraggingGizmoComponent() {return DraggingGizmoComponent;}
+
+	UFUNCTION()
+		virtual	void OnHoverAxisX(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+		virtual	void OnReleaseAxisX(class UPrimitiveComponent* OtherComp);
+
+	UFUNCTION()
+		virtual	void OnHoverAxisY(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+		virtual	void OnReleaseAxisY(class UPrimitiveComponent* OtherComp);
+
+	UFUNCTION()
+		virtual	void OnHoverAxisZ(class UPrimitiveComponent* OtherComp);
+	UFUNCTION()
+		virtual	void OnReleaseAxisZ(class UPrimitiveComponent* OtherComp);
+
+	virtual void StartTracking(class AActor* actor);
+	virtual void EndTracking();
+	bool GetAllHandlesVisible();
 private:
 
 	/** Updates the root of an indicator to rotate the indicator itself */
@@ -373,6 +399,9 @@ private:
 	/** The root component of the delta rotation indicator */
 	UPROPERTY()
 		USceneComponent* RootDeltaRotationIndicatorComponent;
+
+	/** Gizmo component that we're hovering over, or nullptr if not hovering over any */
+	class UPrimitiveComponent*	DraggingGizmoComponent;
 
 	/** The rotation when starting to drag the gizmo */
 	TOptional<FQuat> StartDragRotation;

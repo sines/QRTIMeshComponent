@@ -84,6 +84,8 @@ public:
 
 	/** Gets the current gizmo handle type */
 	RuntimeQuVRtransformType::EQuVRMode GetGizmoType() const;
+
+	void ShowMouseCursor(const bool& inShow);
 private:
 	// Get GWorld
 	UWorld* QuVRWorld;
@@ -132,9 +134,6 @@ private:
 	/** Real time that the gizmo was last attached to a selected set of objects.  This is used for animation transitions */
 	FTimespan SelectedAtTime;
 
-	UFUNCTION()
-		void OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
-	
 	/** Left Mouse  Hit object */
 	void HitObject();
 
@@ -161,5 +160,6 @@ private:
 	bool bIsMouseButtonDown;
 
 	FVector vDragV3D;
+	FVector2D v2MousePosition;
 
 };

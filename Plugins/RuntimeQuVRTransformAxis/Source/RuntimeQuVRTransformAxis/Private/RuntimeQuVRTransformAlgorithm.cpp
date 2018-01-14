@@ -709,15 +709,30 @@ void FRuntimeQuVRTransformAlgorithm::UpdateDeltaRotation()
 	}
 }
 
-void FRuntimeQuVRTransformAlgorithm::GetRotationArc(const FSceneView* View, const FVector& InLocation, const FVector& InDirectionToWidget, const float InScale)
+void FRuntimeQuVRTransformAlgorithm::GetRotationArc(const FSceneView* View, EQuVRGizmoHandleHoveredTypes InAxis,const FVector& InLocation, const FVector& InDirectionToWidget, const float InScale)
 {
 	//get the axes 
 	FVector XAxis = CustomCoordSystem.TransformVector(FVector(1, 0, 0));
 	FVector YAxis = CustomCoordSystem.TransformVector(FVector(0, 1, 0));
 	FVector ZAxis = CustomCoordSystem.TransformVector(FVector(0, 0, 1));
 
-	const FVector& Axis0 = ZAxis;
-	const FVector& Axis1 = YAxis;
+	FVector& Axis0 = ZAxis;
+	FVector& Axis1 = YAxis;
+	switch (InAxis)
+	{
+	case EQuVRGizmoHandleHoveredTypes::QUVR_X:
+		Axis0 = ZAxis;
+		Axis1 = YAxis;
+		break;
+	case EQuVRGizmoHandleHoveredTypes::QUVR_Y:
+		Axis0 = ZAxis;
+		Axis1 = XAxis;
+		break;
+	case EQuVRGizmoHandleHoveredTypes::QUVR_Z:
+		Axis0 = YAxis;
+		Axis1 = XAxis;
+		break;
+	}
 
 	bool bIsPerspective = (View->ViewMatrices.GetProjectionMatrix().M[3][3] < 1.0f);
 	bool bIsOrtho = !bIsPerspective;
@@ -749,8 +764,19 @@ void FRuntimeQuVRTransformAlgorithm::GetRotationArc(const FSceneView* View, cons
 		{
 			Axis1ScreenLocation.X = Axis1ScreenLocation.Y = 0;
 		}
+		switch (InAxis)
+		{
+		case EQuVRGizmoHandleHoveredTypes::QUVR_X:
+			XAxisDir = ((Axis1ScreenLocation - Axis0ScreenLocation) * Direction).GetSafeNormal();
+			break;
+		case EQuVRGizmoHandleHoveredTypes::QUVR_Y:
+			YAxisDir = ((Axis1ScreenLocation - Axis0ScreenLocation) * Direction).GetSafeNormal();
+			break;
+		case EQuVRGizmoHandleHoveredTypes::QUVR_Z:
+			ZAxisDir = ((Axis1ScreenLocation - Axis0ScreenLocation) * Direction).GetSafeNormal();
+			break;
+		}
 
-		XAxisDir = ((Axis1ScreenLocation - Axis0ScreenLocation) * Direction).GetSafeNormal();
 	}
 }
 

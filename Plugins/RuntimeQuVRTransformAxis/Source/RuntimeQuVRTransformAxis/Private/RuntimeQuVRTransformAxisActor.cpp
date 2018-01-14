@@ -159,7 +159,7 @@ void ARuntimeQuVRTransformAxisActor::LeftButtonPressed()
 
 void ARuntimeQuVRTransformAxisActor::LeftButtonReleased()
 {
-//	QuVRLocalPlayer->GetPlayerController(QuVRWorld)->bShowMouseCursor = true;
+	ShowMouseCursor(true);
 	EndTracking();
 	/**	clear state*/
 	bIsMouseButtonDown = false;
@@ -168,14 +168,17 @@ void ARuntimeQuVRTransformAxisActor::LeftButtonReleased()
 	if (TranslationGizmoHandleGroup)
 	{
 		TranslationGizmoHandleGroup->SetIsDrag(bIsDrag);
+		TranslationGizmoHandleGroup->EndTracking();
 	}
-	if (false)//RotationGizmoHandleGroup)
+	if (RotationGizmoHandleGroup)
 	{
 		RotationGizmoHandleGroup->SetIsDrag(bIsDrag);
+		RotationGizmoHandleGroup->EndTracking();
 	}
-	if (false)//ScaleGizmoHandleGroup)
+	if (ScaleGizmoHandleGroup)
 	{
 		ScaleGizmoHandleGroup->SetIsDrag(bIsDrag);
+		ScaleGizmoHandleGroup->EndTracking();
 	}
 }
 
@@ -187,6 +190,12 @@ void ARuntimeQuVRTransformAxisActor::RightButtonPressed()
 void ARuntimeQuVRTransformAxisActor::HideGizemo()
 {
 	SetActorHiddenInGame(true);
+}
+
+void ARuntimeQuVRTransformAxisActor::ShowMouseCursor(const bool& inShow)
+{
+
+	QuVRLocalPlayer->GetPlayerController(QuVRWorld)->bShowMouseCursor = inShow;
 }
 
 void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
@@ -235,9 +244,6 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 	RotationGizmoHandleGroup->SetupAttachment(SceneComponent);
 	AllHandleGroups.Add(RotationGizmoHandleGroup);
 
-
-/*
-
 	// add scale
 	ScaleGizmoHandleGroup = CreateDefaultSubobject<URuntimeQuVRPivotScaleGizmoHandleGroup>(TEXT("ScaleHandles"), true);
 	ScaleGizmoHandleGroup->SetQuVROwningTransformGizmo(this);
@@ -246,15 +252,8 @@ void ARuntimeQuVRTransformAxisActor::CrateHandleGroups()
 	ScaleGizmoHandleGroup->SetupAttachment(SceneComponent);
 	AllHandleGroups.Add(ScaleGizmoHandleGroup);
 
-*/
-
-}
 
 
-void ARuntimeQuVRTransformAxisActor::OnClicked_AxisX(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-//	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++ ") + Hit.Location.ToString());
-//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnClicked_AxisX"), TEXT("OnClicked_AxisX"));
 }
 
 float ARuntimeQuVRTransformAxisActor::GetAnimationAlpha()
@@ -297,7 +296,6 @@ void ARuntimeQuVRTransformAxisActor::UpdateGizmoGroupDraw()
 	check(cameraManager);
 	InViewLocation = cameraManager->GetCameraLocation();
 
-	bool bInAllHandlesVisible = true;
 	float AnimationAlpha = GetAnimationAlpha();
 	float InGizmoHoverScale = 1.0f;
 	float InGizmoHoverAnimationDuration = 0.10f;
@@ -312,8 +310,8 @@ void ARuntimeQuVRTransformAxisActor::UpdateGizmoGroupDraw()
 			InLocalToWorld,
 			InLocalBounds,
 			InViewLocation,
-			bInAllHandlesVisible,
-			RotationGizmoHandleGroup->DraggingTransformGizmoComponent,
+			RotationGizmoHandleGroup->GetAllHandlesVisible(),
+			RotationGizmoHandleGroup->GetDraggingGizmoComponent(),
 			HoveringOverHandles,
 			AnimationAlpha,
 			InGizmoHoverScale,
@@ -332,7 +330,7 @@ void ARuntimeQuVRTransformAxisActor::UpdateGizmoGroupDraw()
 			InLocalToWorld,
 			InLocalBounds,
 			InViewLocation,
-			bInAllHandlesVisible,
+			true,
 			TranslationGizmoHandleGroup->DraggingTransformGizmoComponent,
 			HoveringOverHandles,
 			AnimationAlpha,
@@ -342,7 +340,7 @@ void ARuntimeQuVRTransformAxisActor::UpdateGizmoGroupDraw()
 			bIsHoveringOrDraggingThisHandleGroup
 		);
 	}
-	if (false)//ScaleGizmoHandleGroup)
+	if (ScaleGizmoHandleGroup)
 	{
 		HoveringOverHandles.Reset();
 		HoveringOverHandles.Add(ScaleGizmoHandleGroup->HoveringOverTransformGizmoComponent);
@@ -351,7 +349,7 @@ void ARuntimeQuVRTransformAxisActor::UpdateGizmoGroupDraw()
 			InLocalToWorld,
 			InLocalBounds,
 			InViewLocation,
-			bInAllHandlesVisible,
+			true,
 			ScaleGizmoHandleGroup->DraggingTransformGizmoComponent,
 			HoveringOverHandles,
 			AnimationAlpha,
@@ -385,7 +383,6 @@ void ARuntimeQuVRTransformAxisActor::HitObject()
 			{
 				ScaleGizmoHandleGroup->StartTracking(HitResult.GetActor());
 			}
-			PlayController->bShowMouseCursor = false;
 			SetActorHiddenInGame(false);
 		}
 	}
@@ -415,10 +412,8 @@ void ARuntimeQuVRTransformAxisActor::GizmoRotation(const FVector& InLocation, FV
 	InOutDragDelta = WorldInteraction->GetMouseDelta();
 	FVector DirectionToWidget = SceneView->IsPerspectiveProjection() ? (InLocation - SceneView->ViewMatrices.GetViewOrigin()) : -SceneView->GetViewDirection();
 	DirectionToWidget.Normalize();
-	QuVRTransformAlgorithm->GetRotationArc(SceneView, InLocation, DirectionToWidget,1);
+	QuVRTransformAlgorithm->GetRotationArc(SceneView, RotationGizmoHandleGroup->GetHandleHoveredType(),InLocation, DirectionToWidget,1);
 	QuVRTransformAlgorithm->ConvertMouseMovementToAxisMovement(bUsedDragModifier, InOutDragDelta, OutDrag, OutRotation, OutScale);
-
-//	WorldInteraction->ReduceBy(InOutDragDelta);
 }
 
 void ARuntimeQuVRTransformAxisActor::GizmoTranslation(const FVector& InLocation, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
@@ -458,7 +453,7 @@ EQuVRMode ARuntimeQuVRTransformAxisActor::GetGizmoType() const
 void ARuntimeQuVRTransformAxisActor::UpdateGizmoAxis()
 {
 	// translation
-//	UpdateTranslation();
+	UpdateTranslation();
 
 	// Rotation
 	UpdateRotation();
@@ -503,26 +498,26 @@ void ARuntimeQuVRTransformAxisActor::UpdateRotation()
 	// Rotate
 	if (bIsHover && bIsMouseButtonDown)
 	{
+		QuVRLocalPlayer->GetPlayerController(QuVRWorld)->bShowMouseCursor = false;
 		bIsDrag = true;
 		FRotator rot;
 		FVector scale;
-		check(TranslationGizmoHandleGroup->GetDragActor());
-		if (EComponentMobility::Movable == TranslationGizmoHandleGroup->GetDragActor()->GetDefaultAttachComponent()->Mobility)
+		check(RotationGizmoHandleGroup->GetDragActor());
+		if (EComponentMobility::Movable == RotationGizmoHandleGroup->GetDragActor()->GetDefaultAttachComponent()->Mobility)
 		{
 			float fDeltaX = 0;
 			float fDeltaY = 0;
 			QuVRLocalPlayer->GetPlayerController(QuVRWorld)->GetInputMouseDelta(fDeltaX, fDeltaY);
 			WorldInteraction->AddMouseDelta(fDeltaX, fDeltaY);
-			
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("GetMouseDelta ") + WorldInteraction->GetMouseDelta().ToString());
 			GizmoRotation(GetActorLocation(), vDragV3D, rot, scale);
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX ")+ rot.ToString());
 			if (!rot.IsZero())
 			{
 				QuVRTransformAlgorithm->UpdateDeltaRotation();
 			}
 
-			TranslationGizmoHandleGroup->SetIsDrag(bIsDrag);
-			TranslationGizmoHandleGroup->UpdateAxisToDragActorRotation(rot);
+			RotationGizmoHandleGroup->SetIsDrag(bIsDrag);
+			RotationGizmoHandleGroup->UpdateAxisToDragActorRotation(rot);
 			vDragV3D = FVector::ZeroVector;
 			rot = FRotator::ZeroRotator;
 		}
@@ -530,7 +525,7 @@ void ARuntimeQuVRTransformAxisActor::UpdateRotation()
 	else
 	{
 		bIsDrag = false;
-		TranslationGizmoHandleGroup->UpdateDragActorToAxis();
+		RotationGizmoHandleGroup->UpdateDragActorToAxis();
 	}
 }
 

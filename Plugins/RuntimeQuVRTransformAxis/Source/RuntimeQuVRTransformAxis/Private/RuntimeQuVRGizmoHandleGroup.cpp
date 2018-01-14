@@ -161,10 +161,7 @@ void URuntimeQuVRGizmoHandleGroup::StartTracking(class AActor* actor)
 
 void URuntimeQuVRGizmoHandleGroup::EndTracking()
 {
-	if (DragActor)
-	{
-		DragActor = NULL;
-	}
+	// void
 };
 
 void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActorTranslational(FVector& pos)
@@ -959,29 +956,101 @@ bool URuntimeQuVRStretchGizmoHandleGroup::SupportsWorldCoordinateSpace() const
 /************************************************************************/
 /* Axis Gizmo handle for scaling										*/
 /************************************************************************/
-URuntimeQuVRPivotScaleGizmoHandleGroup::URuntimeQuVRPivotScaleGizmoHandleGroup():Super()
+URuntimeQuVRPivotScaleGizmoHandleGroup::URuntimeQuVRPivotScaleGizmoHandleGroup():Super(),bUsePivotAsLocation(true)
 {
+	// Setup uniform scaling
+	UStaticMesh* UniformScaleMesh = nullptr;
+	{
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> ObjectFinder(TEXT("/Engine/VREditor/TransformGizmo/UniformScaleHandle"));
+		UniformScaleMesh = ObjectFinder.Object;
+		check(UniformScaleMesh != nullptr);
+	}
+
+	URuntimeQuVRHandleMeshComponent* UniformScaleHandle = CreateMeshHandle(UniformScaleMesh, FString("UniformScaleHandle"));
+	check(UniformScaleHandle != nullptr);
+
+	FQuVRGizmoHandle& NewHandle = *new(Handles) FQuVRGizmoHandle();
+	NewHandle.HandleMesh = UniformScaleHandle;
 
 }
 
 
 void URuntimeQuVRPivotScaleGizmoHandleGroup::UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray<UActorComponent *>& HoveringOverHandles, float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup)
 {
+	// Call parent implementation (updates hover animation)
+	Super::UpdateGizmoHandleGroup(LocalToWorld, LocalBounds, ViewLocation, bAllHandlesVisible, DraggingHandle, HoveringOverHandles,
+		AnimationAlpha, GizmoScale, GizmoHoverScale, GizmoHoverAnimationDuration, bOutIsHoveringOrDraggingThisHandleGroup);
 
+	FQuVRGizmoHandle& Handle = Handles[0];
+	UStaticMeshComponent* UniformScaleHandle = Handle.HandleMesh;
+	if (UniformScaleHandle != nullptr)	// Can be null if no handle for this specific placement
+	{
+		FVector HandleRelativeLocation;
+		if (!bUsePivotAsLocation)
+		{
+			UniformScaleHandle->SetRelativeLocation(HandleRelativeLocation);
+		}
+
+		float GizmoHandleScale = GizmoScale;
+
+		// Make the handle bigger while hovered (but don't affect the offset -- we want it to scale about it's origin)
+		GizmoHandleScale *= FMath::Lerp(1.0f, GizmoHoverScale, Handle.HoverAlpha);
+
+		UniformScaleHandle->SetRelativeScale3D(FVector(GizmoHandleScale));
+
+		// Update material
+		{
+			if (!UniformScaleHandle->GetMaterial(0)->IsA(UMaterialInstanceDynamic::StaticClass()))
+			{
+				UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(GizmoMaterial, this);
+				UniformScaleHandle->SetMaterial(0, MID);
+			}
+			if (!UniformScaleHandle->GetMaterial(1)->IsA(UMaterialInstanceDynamic::StaticClass()))
+			{
+				UMaterialInstanceDynamic* MID = UMaterialInstanceDynamic::Create(TranslucentGizmoMaterial, this);
+				UniformScaleHandle->SetMaterial(1, MID);
+			}
+			UMaterialInstanceDynamic* MID0 = CastChecked<UMaterialInstanceDynamic>(UniformScaleHandle->GetMaterial(0));
+			UMaterialInstanceDynamic* MID1 = CastChecked<UMaterialInstanceDynamic>(UniformScaleHandle->GetMaterial(1));
+			if (QuVROwningTransformGizmoActor)
+			{
+				URuntimeQuVRWorldInteraction* WorldInteraction = QuVROwningTransformGizmoActor->GetOwnerWorldInteraction();
+				if (WorldInteraction)
+				{
+					FLinearColor HandleColor = WorldInteraction->GetColor(RuntimeQuVRtransformType::EQuVRColors::DefaultColor);
+					if (UniformScaleHandle == DraggingHandle)
+					{
+						HandleColor = WorldInteraction->GetColor(RuntimeQuVRtransformType::EQuVRColors::GizmoDragging);
+					}
+					else if (HoveringOverHandles.Contains(UniformScaleHandle))
+					{
+						HandleColor = FLinearColor::LerpUsingHSV(HandleColor, WorldInteraction->GetColor(RuntimeQuVRtransformType::EQuVRColors::GizmoHover), Handle.HoverAlpha);
+					}
+
+					MID0->SetVectorParameterValue("Color", HandleColor);
+					MID1->SetVectorParameterValue("Color", HandleColor);
+				}
+			}
+		}
+	}
 }
 
 
 EQuVRMode URuntimeQuVRPivotScaleGizmoHandleGroup::GetHandleType() const
 {
-	return EQuVRMode::QuVR_WM_Translate;
+	return EQuVRMode::QuVR_WM_Scale;
 }
 
+void URuntimeQuVRPivotScaleGizmoHandleGroup::SetUsePivotPointAsLocation(const bool bInUsePivotAsLocation)
+{
+	bUsePivotAsLocation = bInUsePivotAsLocation;
+}
 
 
 /************************************************************************/
 /* Axis Gizmo handle for rotation										*/
 /************************************************************************/
-URuntimeQuVRPivotRotationGizmoHandleGroup::URuntimeQuVRPivotRotationGizmoHandleGroup():Super()
+URuntimeQuVRPivotRotationGizmoHandleGroup::URuntimeQuVRPivotRotationGizmoHandleGroup():Super(), DraggingGizmoComponent(nullptr)
 {
 	const URuntimeQuVRAssetContainer& AssetContainer = URuntimeQuVRAssetContainer::LoadAssetContainer();
 	if (!IsValid(&AssetContainer))
@@ -1046,6 +1115,7 @@ URuntimeQuVRPivotRotationGizmoHandleGroup::URuntimeQuVRPivotRotationGizmoHandleG
 
 void URuntimeQuVRPivotRotationGizmoHandleGroup::UpdateGizmoHandleGroup(const FTransform& LocalToWorld, const FBox& LocalBounds, const FVector ViewLocation, const bool bAllHandlesVisible, class UActorComponent* DraggingHandle, const TArray<UActorComponent *>& HoveringOverHandles, float AnimationAlpha, float GizmoScale, const float GizmoHoverScale, const float GizmoHoverAnimationDuration, bool& bOutIsHoveringOrDraggingThisHandleGroup)
 {
+//	DraggingHandle = HoveringOverTransformGizmoComponent;
 	// Call parent implementation (updates hover animation)
 	Super::UpdateGizmoHandleGroup(GetOwner()->GetActorTransform(), LocalBounds, ViewLocation, bAllHandlesVisible, DraggingHandle, HoveringOverHandles, AnimationAlpha,
 		GizmoScale, GizmoHoverScale, GizmoHoverAnimationDuration, bOutIsHoveringOrDraggingThisHandleGroup);
@@ -1244,4 +1314,85 @@ void URuntimeQuVRPivotRotationGizmoHandleGroup::SetIndicatorColor(UStaticMeshCom
 	static FName StaticHandleColorParameter("Color");
 	MID0->SetVectorParameterValue(StaticHandleColorParameter, InHandleColor);
 	MID1->SetVectorParameterValue(StaticHandleColorParameter, InHandleColor);
+}
+
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::OnHoverAxisX(class UPrimitiveComponent* OtherComp)
+{
+	Super::OnHoverAxisX(OtherComp);
+	if (QuVROwningTransformGizmoActor)
+	{
+		QuVROwningTransformGizmoActor->ShowMouseCursor(false);
+	}
+}
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::OnReleaseAxisX(class UPrimitiveComponent* OtherComp)
+{
+	Super::OnReleaseAxisX(OtherComp);
+	if (QuVROwningTransformGizmoActor)
+	{
+		QuVROwningTransformGizmoActor->ShowMouseCursor(true);
+	}
+}
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::OnHoverAxisY(class UPrimitiveComponent* OtherComp)
+{
+	Super::OnHoverAxisY(OtherComp);
+	if (QuVROwningTransformGizmoActor)
+	{
+		QuVROwningTransformGizmoActor->ShowMouseCursor(false);
+	}
+}
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::OnReleaseAxisY(class UPrimitiveComponent* OtherComp)
+{
+	Super::OnReleaseAxisY(OtherComp);
+	if (QuVROwningTransformGizmoActor)
+	{
+		QuVROwningTransformGizmoActor->ShowMouseCursor(true);
+	}
+}
+
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::OnHoverAxisZ(class UPrimitiveComponent* OtherComp)
+{
+	Super::OnHoverAxisZ(OtherComp);
+	if (QuVROwningTransformGizmoActor)
+	{
+		QuVROwningTransformGizmoActor->ShowMouseCursor(false);
+	}
+
+}
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::OnReleaseAxisZ(class UPrimitiveComponent* OtherComp)
+{
+	Super::OnReleaseAxisZ(OtherComp);
+	if (QuVROwningTransformGizmoActor)
+	{
+		QuVROwningTransformGizmoActor->ShowMouseCursor(true);
+	}
+}
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::StartTracking(class AActor* actor)
+{
+	Super::StartTracking(actor);
+	DraggingGizmoComponent = HoveringOverTransformGizmoComponent;
+};
+
+void URuntimeQuVRPivotRotationGizmoHandleGroup::EndTracking()
+{
+	DraggingGizmoComponent = NULL;
+	HoveringOverTransformGizmoComponent = NULL;
+}
+
+bool URuntimeQuVRPivotRotationGizmoHandleGroup::GetAllHandlesVisible()
+{
+	if (DraggingGizmoComponent)
+	{
+		return false;
+	}
+	else {
+		return true;
+	}
+	
 }
