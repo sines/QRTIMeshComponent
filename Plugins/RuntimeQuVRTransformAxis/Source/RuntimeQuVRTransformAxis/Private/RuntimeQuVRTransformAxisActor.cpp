@@ -510,7 +510,7 @@ void ARuntimeQuVRTransformAxisActor::UpdateRotation()
 			QuVRLocalPlayer->GetPlayerController(QuVRWorld)->GetInputMouseDelta(fDeltaX, fDeltaY);
 			WorldInteraction->AddMouseDelta(fDeltaX, fDeltaY);
 			GizmoRotation(GetActorLocation(), vDragV3D, rot, scale);
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX ")+ rot.ToString());
+	//		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX ")+ rot.ToString());
 			if (!rot.IsZero())
 			{
 				QuVRTransformAlgorithm->UpdateDeltaRotation();

@@ -176,7 +176,8 @@ void URuntimeQuVRGizmoHandleGroup::UpdateAxisToDragActorRotation(FRotator& rotat
 {
 	if (DragActor)
 	{
-		DragActor->SetActorRotation(DragActorTransform.GetRotation().Rotator()+ rotator);
+		DragActor->SetActorRotation(DragActorTransform.GetRotation().Rotator()+rotator);
+	//	DragActor->SetActorRelativeRotation()
 	}
 }
 

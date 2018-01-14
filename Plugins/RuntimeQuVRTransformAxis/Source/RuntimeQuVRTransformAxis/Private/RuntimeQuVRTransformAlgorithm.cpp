@@ -725,12 +725,12 @@ void FRuntimeQuVRTransformAlgorithm::GetRotationArc(const FSceneView* View, EQuV
 		Axis1 = YAxis;
 		break;
 	case EQuVRGizmoHandleHoveredTypes::QUVR_Y:
-		Axis0 = ZAxis;
-		Axis1 = XAxis;
+		Axis0 = XAxis;
+		Axis1 = ZAxis;
 		break;
 	case EQuVRGizmoHandleHoveredTypes::QUVR_Z:
-		Axis0 = YAxis;
-		Axis1 = XAxis;
+		Axis0 = XAxis;
+		Axis1 = YAxis;
 		break;
 	}
 
