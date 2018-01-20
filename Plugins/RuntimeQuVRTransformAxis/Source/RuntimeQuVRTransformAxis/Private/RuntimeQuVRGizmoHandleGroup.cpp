@@ -155,7 +155,10 @@ void URuntimeQuVRGizmoHandleGroup::StartTracking(class AActor* actor)
 			DragActor = actor;
 			GetOwner()->SetActorLocation(DragActor->GetActorLocation());
 		}
-		DragActorTransform = DragActor->GetActorTransform();
+		if (DragActor)
+		{
+			DragActorTransform = DragActor->GetActorTransform();
+		}
 	}
 };
 
@@ -534,8 +537,6 @@ void URuntimeQuVRAxisGizmoHandleGroup::OnHoverAxisX(class UPrimitiveComponent* O
 	{
 		eQuVRHandleHoveredType = EQuVRGizmoHandleHoveredTypes::QUVR_X;
 		HoveringOverTransformGizmoComponent = OtherComp;
-		//	FPlatformMisc::MessageBoxExt(EAppMsgType::Ok, TEXT("OnHover_AxisX"),TEXT("OnHover_AxisX"));
-		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_AxisX "));
 	}
 }
 

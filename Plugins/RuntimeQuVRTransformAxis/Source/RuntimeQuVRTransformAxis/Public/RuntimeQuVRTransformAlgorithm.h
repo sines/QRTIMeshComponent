@@ -97,7 +97,7 @@ public:
 	/**
 	* Converts mouse movement on the screen to widget axis movement/rotation.
 	*/
-	void ConvertMouseMovementToAxisMovement(bool bInUsedDragModifier, FVector& InDiff, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
+	void ConvertMouseMovementToAxisMovement(const FVector2D& InOrigin, bool bInUsedDragModifier, FVector& InDiff, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale);
 
 	/**
 	* Absolute Translation conversion from mouse movement on the screen to widget axis movement/rotation.

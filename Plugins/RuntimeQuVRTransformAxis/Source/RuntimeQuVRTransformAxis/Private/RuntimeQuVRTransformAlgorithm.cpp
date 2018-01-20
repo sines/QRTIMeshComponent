@@ -92,7 +92,7 @@ FQuViewportCursorLocation::FQuViewportCursorLocation(const FSceneView* View, int
 	const float ScreenX = ScreenPos.X;
 	const float ScreenY = ScreenPos.Y;
 	
-	if (true)//View->IsPerspectiveProjection())
+	if (View->IsPerspectiveProjection())
 	{
 		Origin = View->ViewMatrices.GetViewOrigin();
 		Direction = InvViewMatrix.TransformVector(FVector(InvProjMatrix.TransformFVector4(FVector4(ScreenX * GNearClippingPlane, ScreenY * GNearClippingPlane, 0.0f, GNearClippingPlane)))).GetSafeNormal();
@@ -203,12 +203,12 @@ void FRuntimeQuVRTransformAlgorithm::QuVRSnapRotatorToGrid(FRotator& Rotation)
 * Converts mouse movement on the screen to widget axis movement/rotation.
 */
 
-void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bInUsedDragModifier, FVector& InDiff, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
+void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(const FVector2D& InOrigin, bool bInUsedDragModifier, FVector& InDiff, FVector& OutDrag, FRotator& OutRotation, FVector& OutScale)
 {
 	OutDrag = FVector::ZeroVector;
 	OutRotation = FRotator::ZeroRotator;
 	OutScale = FVector::ZeroVector;
-
+	Origin = InOrigin;
 	// Get input Delta as 2D vector, adjusted for inverted screen space y axis
 	const FVector2D DragDir = FVector2D(InDiff.X, -InDiff.Y);
 	
@@ -228,7 +228,6 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 		// Treat the tangent dir as perpendicular to the relative offset of the cursor from the widget location.
 		TangentDir = FVector2D(-DirectionToMousePos.Y, DirectionToMousePos.X);
 	}
-
 	switch (ModeType)
 	{
 	case EQuVRMode::QuVR_WM_Translate:
@@ -287,7 +286,7 @@ void FRuntimeQuVRTransformAlgorithm::ConvertMouseMovementToAxisMovement(bool bIn
 				{
 					const FVector2D AxisDir = bIsOrthoDrawingFullRing ? TangentDir : ZAxisDir;
 
-					Rotation = FRotator(0, FVector2D::DotProduct(AxisDir, DragDir), 0);
+					Rotation = FRotator(0, 0.1/*FVector2D::DotProduct(AxisDir, DragDir)*/, 0);
 					QuVRSnapRotatorToGrid(Rotation);
 
 					CurrentDeltaRotation = Rotation.Yaw;
@@ -768,15 +767,17 @@ void FRuntimeQuVRTransformAlgorithm::GetRotationArc(const FSceneView* View, EQuV
 		{
 		case EQuVRGizmoHandleHoveredTypes::QUVR_X:
 			XAxisDir = ((Axis1ScreenLocation - Axis0ScreenLocation) * Direction).GetSafeNormal();
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_QUVR_X ") + XAxisDir.ToString());
 			break;
 		case EQuVRGizmoHandleHoveredTypes::QUVR_Y:
 			YAxisDir = ((Axis1ScreenLocation - Axis0ScreenLocation) * Direction).GetSafeNormal();
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_QUVR_Y ") + YAxisDir.ToString());
 			break;
 		case EQuVRGizmoHandleHoveredTypes::QUVR_Z:
 			ZAxisDir = ((Axis1ScreenLocation - Axis0ScreenLocation) * Direction).GetSafeNormal();
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Begin++++++++++++OnHover_QUVR_Y ") + YAxisDir.ToString());
 			break;
 		}
-
 	}
 }
 
