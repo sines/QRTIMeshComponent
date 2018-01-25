@@ -6,6 +6,7 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Layout/SSpacer.h"
 #include "Widgets/Layout/SScrollBar.h"
+#include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/SListView.h"
@@ -22,50 +23,14 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	ActiveTabName = TEXT("Models");
 	GenerateItemsByCatalog(ActiveTabName.ToString());
 
-	// Construct the tab1
-	TSharedRef<SVerticalBox> Tab1 = SNew(SVerticalBox);
-	
-	// Construct the tab2
-	TSharedRef<SVerticalBox> Tab2 = SNew(SVerticalBox);
+	TSharedRef<SVerticalBox> VerticalBoxPrimary = SNew(SVerticalBox);
 
-	// Construct the tab3
-	TSharedRef<SVerticalBox> Tab3 = SNew(SVerticalBox);
+	TSharedRef<SVerticalBox> VerticalBoxSection = SNew(SVerticalBox);
+	
+	CreateGroupTabData(VerticalBoxPrimary, VerticalBoxSection);
+
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(5, 5));
-
-	// Add each catalog item
-	Tab1->AddSlot().AutoHeight()
-	[
-		CreateCatalogGroupTab(TEXT("Models"))
-	];
-
-	Tab1->AddSlot().AutoHeight()
-	[
-		CreateCatalogGroupTab(TEXT("Materials"))
-	];
-
-	Tab1->AddSlot().AutoHeight()
-	[
-		CreateCatalogGroupTab(TEXT("MEIWU"))
-	];
-	
-	for (int i=0;i<100;  ++i)
-	{
-		Tab2->AddSlot().AutoHeight()
-		[
-			CreateCatalogGroupTab(TEXT("Tab2Iteam1") + FString::FromInt(i))
-		];
-
-	}
-
-	Tab3->AddSlot().AutoHeight()
-	[
-		CreateCatalogGroupTab(TEXT("T2Models1"))
-	];
-	Tab3->AddSlot().AutoHeight()
-	[
-		CreateCatalogGroupTab(TEXT("T2Models2"))
-	];
-
+	// add ChildSlot
 	ChildSlot
 	[
 		SNew(SVerticalBox)
@@ -76,17 +41,21 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
 			[
-				Tab1
+				SNew(SScrollBox)
+				+SScrollBox::Slot()
+				[
+					VerticalBoxPrimary
+				]
 			]
+
 			+ SHorizontalBox::Slot()
 			[
-				Tab2
+				SNew(SScrollBox)
+				+ SScrollBox::Slot()
+				[
+					VerticalBoxSection
+				]
 			]
-			+ SHorizontalBox::Slot()
-			[
-				Tab3
-			]
-#if 0
 
 
 			+ SHorizontalBox::Slot()
@@ -104,11 +73,20 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 							+ SHorizontalBox::Slot()
 							[
 
-								SAssignNew(ListView, SListView<TSharedPtr<FCatalogItem>>)
+								SAssignNew(ListViewLeft, SListView<TSharedPtr<FCatalogItem>>)
 								.ListItemsSource(&GFilteredItems)
 								.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
 								.ExternalScrollbar(ScrollBar)
 
+							]
+
+							+SHorizontalBox::Slot()
+							[
+
+								SAssignNew(ListViewRight, SListView<TSharedPtr<FCatalogItem>>)
+								.ListItemsSource(&GFilteredItems)
+								.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
+								.ExternalScrollbar(ScrollBar)
 							]
 
 							+SHorizontalBox::Slot().AutoWidth()
@@ -126,6 +104,25 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	
 }
 
+
+void SQuVRCatalogWidget::CreateWidgetElement()
+{
+
+}
+
+void SQuVRCatalogWidget::CreateGroupTabData(TSharedRef<SVerticalBox> InPrimary, TSharedRef<SVerticalBox> InSection)
+{
+	/*InPrimary->AddSlot().AutoHeight()
+	[
+		CreateGroupGroupTabPrimary(FString(TEXT("土豆土豆")))
+	];
+*/
+
+	InSection->AddSlot().AutoHeight()
+	[
+		CreateCatalogGroupTabSection(FString(TEXT("西瓜西瓜")))
+	];
+}
 void SQuVRCatalogWidget::GenerateItemsByCatalog(const FString& CatalogName)
 {
 	GFilteredItems.Reset();
@@ -175,12 +172,47 @@ void SQuVRCatalogWidget::GenerateItemsByCatalog(const FString& CatalogName)
 
 }
 
-TSharedRef<SWidget> SQuVRCatalogWidget::CreateCatalogGroupTab(const FString& CatalogName)
+
+TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(const FString& CatalogName)
 {
-	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(5, 5));
 	return SNew(SCheckBox)
-			.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChanged, FName(*CatalogName))
-			.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedState, FName(*CatalogName))
+		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, FName(*CatalogName))
+		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*CatalogName))
+		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
+		[
+
+			SNew(SOverlay)
+			+ SOverlay::Slot()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SSpacer)
+			.Size(FVector2D(1, 30))
+		]
+	+ SOverlay::Slot()
+		.Padding(FMargin(6, 0, 15, 0))
+		.VAlign(VAlign_Center)
+		[
+
+			SNew(STextBlock)
+			.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
+		.Text(FText::FromString(CatalogName))
+		]
+	+ SOverlay::Slot()
+		.VAlign(VAlign_Fill)
+		.HAlign(HAlign_Left)
+		[
+			SNew(SImage)
+			.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*CatalogName))
+		]
+		];
+}
+
+
+TSharedRef<SWidget> SQuVRCatalogWidget::CreateCatalogGroupTabSection(const FString& CatalogName)
+{
+	return SNew(SCheckBox)
+			.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedSection, FName(*CatalogName))
+			.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStateSection, FName(*CatalogName))
 			.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
 			[
 
@@ -208,7 +240,6 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateCatalogGroupTab(const FString& Cat
 						.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*CatalogName))
 					]
 			];
-
 }
 
 void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
@@ -216,26 +247,41 @@ void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	if (bNeedsUpdate)
 	{
 		bNeedsUpdate = false;
-		ListView->RequestListRefresh();
+		ListViewRight->RequestListRefresh();
+		ListViewLeft->RequestListRefresh();
 	}
-
 }
 
+ECheckBoxState SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary(FName CategoryName) const
+{
+	return ActiveTabName == CategoryName ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+}
 
-void SQuVRCatalogWidget::OnCatalogTabChanged(ECheckBoxState NewState, FName CategoryName)
+void SQuVRCatalogWidget::OnCatalogTabChangedPrimary(ECheckBoxState NewState, FName CategoryName)
 {
 	if (NewState == ECheckBoxState::Checked)
 	{
 		ActiveTabName = CategoryName;
-		GenerateItemsByCatalog(CategoryName.ToString());
+//		GenerateItemsByCatalog(CategoryName.ToString());
 
 		bNeedsUpdate = true;
 	}
 }
 
-ECheckBoxState SQuVRCatalogWidget::GetCatalogTabCheckedState(FName CategoryName) const
+
+void SQuVRCatalogWidget::OnCatalogTabChangedSection(ECheckBoxState NewState, FName CategoryName)
 {
-	return ActiveTabName == CategoryName ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+	if (NewState == ECheckBoxState::Checked)
+	{
+		SectionTabName = CategoryName;
+		//		GenerateItemsByCatalog(CategoryName.ToString());
+		bNeedsUpdate = true;
+	}
+}
+
+ECheckBoxState SQuVRCatalogWidget::GetCatalogTabCheckedStateSection(FName CategoryName) const
+{
+	return SectionTabName == CategoryName ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
 }
 
 

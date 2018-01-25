@@ -25,25 +25,44 @@ public:
 	SLATE_END_ARGS()
 	
 	void Construct(const FArguments& InArgs);
-	
+
 private:
 	/** Flag to indicate that we need to update the filtered items array */
 	bool bNeedsUpdate;
-	FName ActiveTabName;
+
+	/* List_View */
+	/** List view that shows placeable items */
+	TSharedPtr<SListView<TSharedPtr<FCatalogItem>>> ListViewLeft;
 
 	/** List view that shows placeable items */
-	TSharedPtr<SListView<TSharedPtr<FCatalogItem>>> ListView;
+	TSharedPtr<SListView<TSharedPtr<FCatalogItem>>> ListViewRight;
 
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	
-	void OnCatalogTabChanged(ECheckBoxState NewState, FName CategoryName);
-	ECheckBoxState GetCatalogTabCheckedState(FName CategoryName) const;
+	/*Group Tab Data*/
+	void CreateGroupTabData(TSharedRef<SVerticalBox> InPrimary, TSharedRef<SVerticalBox> InSection);
 
-	TSharedRef<SWidget> CreateCatalogGroupTab(const FString& CatalogName);
+	// Create PrimaryTab
+	FName ActiveTabName;
+//	TSharedRef<SVerticalBox> VerticalBoxPrimary;
+	TSharedRef<SWidget> CreateGroupGroupTabPrimary(const FString& CatalogName);
+	void OnCatalogTabChangedPrimary(ECheckBoxState NewState, FName CategoryName);
+	ECheckBoxState GetCatalogTabCheckedStatePrimary(FName CategoryName) const;
+
+	// Create SelectSection
+
+	FName SectionTabName;
+//	TSharedRef<SVerticalBox> VerticalBoxSection;
+	TSharedRef<SWidget> CreateCatalogGroupTabSection(const FString& CatalogName);
+	void OnCatalogTabChangedSection(ECheckBoxState NewState, FName CategoryName);
+	ECheckBoxState GetCatalogTabCheckedStateSection(FName CategoryName) const;
+
+
 	TSharedRef<ITableRow> OnGenerateWidgetForItem(TSharedPtr<FCatalogItem> InItem, const TSharedRef<STableViewBase>& OwnerTable);
 
 	void GenerateItemsByCatalog(const FString& CatalogName);
 
+	void CreateWidgetElement();
 	/** Gets the border image for the tab, this is the 'active' orange bar. */
 	const FSlateBrush* CatalogGroupBorderImage(FName CategoryName) const;
 };
