@@ -5,14 +5,20 @@
 #include "Widgets/SWidget.h"
 #include "Widgets/SUserWidget.h"
 #include "Widgets/SCompoundWidget.h"
+#include "Widgets/Navigation/SBreadcrumbTrail.h"
+
 
 /**
 * Structure defining a catalog item in the placement mode panel
 */
 struct FCatalogItem
 {
+	/** Default constructor */
+	FCatalogItem(){}
+
 	/** This item's display name */
 	FText DisplayName;
+
 };
 
 /**
@@ -41,7 +47,13 @@ private:
 	
 	/*Group Tab Data*/
 	void CreateGroupTabData(TSharedRef<SVerticalBox> InPrimary, TSharedRef<SVerticalBox> InSection);
+	FReply RebuildData();
+	FReply RequestRefresh();
 
+	// Create GridPanel
+	TSharedPtr<SBreadcrumbTrail<int32> > BreadcrumbTrail;
+	TSharedRef<SWidget> CreateGroupTabManufacturer(const FString& CatalogName);
+	FReply HandleBreadcrumbTrailAddButtonClicked();
 	// Create PrimaryTab
 	FName ActiveTabName;
 //	TSharedRef<SVerticalBox> VerticalBoxPrimary;
@@ -73,8 +85,10 @@ private:
 class SQuVRCatalogEntry : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SQuVRCatalogWidget) { }
+	SLATE_BEGIN_ARGS(SQuVRCatalogEntry){ }
 	SLATE_END_ARGS()
-	
+
 	void Construct(const FArguments& InArgs, const TSharedPtr<const FCatalogItem>& InItem);
+
+	TSharedPtr<const FCatalogItem> Item;
 };

@@ -10,9 +10,13 @@
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/SListView.h"
-
+#include "Widgets/Layout/SGridPanel.h"
+#include "Widgets/Layout/SScissorRectBox.h"
+#include "Widgets/Navigation/SBreadcrumbTrail.h"
 #include "LevelEditor.h"
 #include "EditorStyleSet.h"
+#include "QuVRCatalogResGategory.h"
+#include "QuVRCatalogBtDownloader.h"
 
 static TArray<TSharedPtr<FCatalogItem>> GFilteredItems;
 
@@ -20,8 +24,6 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 {
 	
 	bNeedsUpdate = false;
-	ActiveTabName = TEXT("Models");
-	GenerateItemsByCatalog(ActiveTabName.ToString());
 
 	TSharedRef<SVerticalBox> VerticalBoxPrimary = SNew(SVerticalBox);
 
@@ -30,10 +32,33 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	CreateGroupTabData(VerticalBoxPrimary, VerticalBoxSection);
 
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(5, 5));
-	// add ChildSlot
+	// add ChildSlot Layout
 	ChildSlot
 	[
+		
 		SNew(SVerticalBox)
+		// Create ResGategory
+		+SVerticalBox::Slot().AutoHeight()
+		[
+			SNew(SBorder)
+			[
+				SNew(SScissorRectBox)
+				[
+					MakeResGategory()
+				]
+			]
+		]
+		// Create Download
+		+ SVerticalBox::Slot().AutoHeight()
+		[
+			SNew(SBorder)
+			[
+				SNew(SScissorRectBox)
+				[
+					MakeCatalogBtDownload()
+				]
+			]
+		]
 		+ SVerticalBox::Slot()
 		.Padding(0)
 		[
@@ -49,6 +74,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 			]
 
 			+ SHorizontalBox::Slot()
+			.AutoWidth()
 			[
 				SNew(SScrollBox)
 				+ SScrollBox::Slot()
@@ -112,25 +138,58 @@ void SQuVRCatalogWidget::CreateWidgetElement()
 
 void SQuVRCatalogWidget::CreateGroupTabData(TSharedRef<SVerticalBox> InPrimary, TSharedRef<SVerticalBox> InSection)
 {
-	/*InPrimary->AddSlot().AutoHeight()
+	InPrimary->AddSlot().AutoHeight()
 	[
-		CreateGroupGroupTabPrimary(FString(TEXT("土豆土豆")))
+		CreateGroupGroupTabPrimary(FString(TEXT("TabPrimary")))
 	];
-*/
 
 	InSection->AddSlot().AutoHeight()
 	[
-		CreateCatalogGroupTabSection(FString(TEXT("西瓜西瓜")))
+		CreateCatalogGroupTabSection(FString(TEXT("TabSection")))
 	];
 }
+
+/** Request that both Tree and List refresh themselves on the next tick */
+FReply SQuVRCatalogWidget::RequestRefresh()
+{
+	if (ListViewRight.IsValid())
+	{
+		ListViewRight->RequestListRefresh();
+	}
+	if (ListViewLeft.IsValid())
+	{
+		ListViewLeft->RequestListRefresh();
+	}
+	return FReply::Handled();
+}
+
+FReply SQuVRCatalogWidget::RebuildData()
+{
+	GFilteredItems.Empty();
+	GFilteredItems.Reset();
+
+	TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
+	CatalogItem->DisplayName = FText::FromString(TEXT("Model A"));
+	GFilteredItems.Add(CatalogItem);
+
+	RequestRefresh();
+	ListViewLeft->GenerateWidgetForItem(CatalogItem, 0, 0, 0);
+	return FReply::Handled();
+}
+
 void SQuVRCatalogWidget::GenerateItemsByCatalog(const FString& CatalogName)
 {
 	GFilteredItems.Reset();
+	TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
+	CatalogItem->DisplayName = FText::FromString(TEXT("Model A"));
+	GFilteredItems.Add(CatalogItem);
 
+#if 0
 	if (CatalogName.Equals(TEXT("Models")))
 	{
 		TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
 		CatalogItem->DisplayName = FText::FromString(TEXT("Model A"));
+		CatalogItem->widget = MakeCatalogBtDownload();
 		GFilteredItems.Add(CatalogItem);
 
 		TSharedPtr<FCatalogItem> CatalogItem1 = MakeShareable(new FCatalogItem());
@@ -169,9 +228,81 @@ void SQuVRCatalogWidget::GenerateItemsByCatalog(const FString& CatalogName)
 		CatalogItem2->DisplayName = FText::FromString(TEXT("MEIWU C"));
 		GFilteredItems.Add(CatalogItem2);
 	}
-
+#endif
 }
 
+FReply SQuVRCatalogWidget::HandleBreadcrumbTrailAddButtonClicked()
+{
+	// (FString(TEXT("AX")))
+	FString abc(TEXT("测试按钮"));
+	BreadcrumbTrail->PushCrumb(FText::FromString(abc), 0);
+
+	return FReply::Handled();
+}
+
+TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupTabManufacturer(const FString& CatalogName)
+{
+	return 
+		SNew(SBorder)
+		.BorderImage(FCoreStyle::Get().GetBrush("ToolPanel.GroupBorder"))
+		[
+			SNew(SScrollBox)
+			+ SScrollBox::Slot()
+		.Padding(0.0f)
+		[
+			SNew(SGridPanel)
+			.FillColumn(0, 0.5f)
+			.FillColumn(1, 0.5f)
+
+			// SBorder
+			+ SGridPanel::Slot(0, 0)
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(TEXT("SBorder")))
+			]
+
+			+ SGridPanel::Slot(1, 0)
+				.Padding(0.0f, 5.0f)
+			[
+				SNew(SBorder)
+				[
+					SNew(SSpacer)
+					.Size(FVector2D(100.0f, 50.0f))
+				]
+			]
+
+			// SBreadcrumbTrailLabel
+			+ SGridPanel::Slot(0, 1)
+				[
+					SNew(STextBlock)
+					.Text(FText::FromString("SBreadcrumbTrail"))
+				]
+
+			+ SGridPanel::Slot(1, 1)
+				.Padding(0.0f, 5.0f)
+				[
+					SNew(SHorizontalBox)
+
+					+ SHorizontalBox::Slot()
+					.FillWidth(1.0f)
+					[
+						SAssignNew(BreadcrumbTrail, SBreadcrumbTrail<int32>)
+
+					]
+
+				+ SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew(SButton)
+						.Text(FText::FromString("Add"))
+						.HAlign(HAlign_Center)
+						.VAlign(VAlign_Center)
+					.OnClicked(this, &SQuVRCatalogWidget::HandleBreadcrumbTrailAddButtonClicked)
+					]
+				]
+			]
+		];
+}
 
 TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(const FString& CatalogName)
 {
@@ -247,8 +378,7 @@ void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	if (bNeedsUpdate)
 	{
 		bNeedsUpdate = false;
-		ListViewRight->RequestListRefresh();
-		ListViewLeft->RequestListRefresh();
+		RequestRefresh();
 	}
 }
 
@@ -274,7 +404,7 @@ void SQuVRCatalogWidget::OnCatalogTabChangedSection(ECheckBoxState NewState, FNa
 	if (NewState == ECheckBoxState::Checked)
 	{
 		SectionTabName = CategoryName;
-		//		GenerateItemsByCatalog(CategoryName.ToString());
+	//	GenerateItemsByCatalog(CategoryName.ToString());
 		bNeedsUpdate = true;
 	}
 }
@@ -308,8 +438,15 @@ const FSlateBrush* SQuVRCatalogWidget::CatalogGroupBorderImage(FName CategoryNam
 
 void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<const FCatalogItem>& InItem)
 {
+	//
+
 	ChildSlot
 	[
-		SNew(STextBlock).Text(InItem->DisplayName)
+		SNew(SBox)
+		[		
+			SNew(SQuVRCatlogBtDownloader)
+		]
+
+	//	SNew(STextBlock).Text(InItem->DisplayName)
 	];
 }
