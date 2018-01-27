@@ -30,8 +30,9 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	TSharedRef<SVerticalBox> VerticalBoxSection = SNew(SVerticalBox);
 	
 	CreateGroupTabData(VerticalBoxPrimary, VerticalBoxSection);
-
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(5, 5));
+
+#if true
 	// add ChildSlot Layout
 	ChildSlot
 	[
@@ -126,8 +127,8 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 			]
 		]
 	];
-
-	
+#endif
+	RebuildData();
 }
 
 
@@ -171,9 +172,8 @@ FReply SQuVRCatalogWidget::RebuildData()
 	TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
 	CatalogItem->DisplayName = FText::FromString(TEXT("Model A"));
 	GFilteredItems.Add(CatalogItem);
-
 	RequestRefresh();
-	ListViewLeft->GenerateWidgetForItem(CatalogItem, 0, 0, 0);
+	
 	return FReply::Handled();
 }
 
