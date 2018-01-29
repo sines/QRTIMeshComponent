@@ -54,9 +54,9 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 		[
 			SNew(SBorder)
 			[
-				SNew(SScissorRectBox)
+				SNew(SBorder)
 				[
-					MakeCatalogBtDownload()
+					SNew(SBox).HeightOverride(8.0f).WidthOverride(8.0f)
 				]
 			]
 		]
