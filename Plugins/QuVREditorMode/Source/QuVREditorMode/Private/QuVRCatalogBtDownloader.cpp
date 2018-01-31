@@ -14,102 +14,115 @@
 
 
 void SQuVRCatlogBtDownloader::Construct(const FArguments& InDelcaration)
-{
-		const FVector2D HeadingShadowOffset(2, 2);
+{		
 
-		FSlateFontInfo LargeLayoutFont(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 12);
-		FSlateFontInfo SmallLayoutFont(FPaths::EngineContentDir() / TEXT("Slate/Fonts/Roboto-Regular.ttf"), 10);
+	ChildSlot
+		[
+			SNew(SButton).HAlign(HAlign_Fill)
+
+			.VAlign(VAlign_Fill)
+		];
+
+
+#if false
+		/** HorizontalScrollbar  Begin**/
+	TSharedPtr<SScrollBox> HorizontalScrollbar =
+		SNew(SScrollBox)
+		.Orientation(Orient_Horizontal);
+		HorizontalScrollbar->Slot().HAlign(HAlign_Center);
+		HorizontalScrollbar->Slot().VAlign(VAlign_Center);		
+		HorizontalScrollbar->AddSlot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
+			.AutoWidth()
+			[
+				SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Justification(ETextJustify::Center)
+					.TextStyle(FEditorStyle::Get(), "LargeText")
+					.Text(FText::FromString(TEXT("TestButton")))
+				]
+			]
+		];
+		/** HorizontalScrollbar  End**/
 		// Create doc link widget if there is a class to link to
 		TSharedRef<SWidget> DocWidget = SNew(SSpacer);
 		UClass* DocClass = nullptr;
 		if (DocClass != NULL)
 		{
-		//	DocWidget = FEditorClassUtils::GetDocumentationLinkWidget(DocClass);
-		//	DocWidget->SetCursor(EMouseCursor::Default);
 		}
 
-#if 1
+
+/**
+ Add ChildSlot
+*/
 		ChildSlot
 			[
 				SNew(SBorder)
 				.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
 				.Cursor(EMouseCursor::GrabHand)
 				[
-					SNew(SHorizontalBox)
 
-					+ SHorizontalBox::Slot()
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot()
 					.Padding(0)
-					.AutoWidth()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Fill)
+					.AutoHeight()
 					[
 						// Drop shadow border
-						SNew(SBorder)
-						.Padding(4)
-						.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot()
 						[
-							SNew(SBox)
-							.WidthOverride(35)
-							.HeightOverride(35)
-							[
-								SNew(SButton)
-// 				SNew(SPlacementAssetThumbnail, InAsset)
-// 				.ClassThumbnailBrushOverride(Item->ClassThumbnailBrushOverride)
-// 			 .AlwaysUseGenericThumbnail(Item->bAlwaysUseGenericThumbnail)
-// 			.AssetTypeColorOverride(Item->AssetTypeColorOverride)
-							]
+							SNew(SSpacer).Size(FVector2D(1, 1))
 						]
-					]
-
-					+ SHorizontalBox::Slot()
-						.VAlign(VAlign_Center)
-						.Padding(2, 0, 4, 0)
-						[
-							SNew(SVerticalBox)
-							+ SVerticalBox::Slot()
-							.Padding(0, 0, 0, 1)
-							.AutoHeight()
-							[
-								SNew(STextBlock)
-							//	.Text(Item->DisplayName)
-							]
-						]
-
-					+ SHorizontalBox::Slot()
-						.VAlign(VAlign_Center)
+						+SHorizontalBox::Slot()
 						.AutoWidth()
 						[
-							DocWidget
-						]
-				]
-			];
-#endif
-#if 0
-
-		this->ChildSlot
-			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Fill)
-
-			[
-
-
-				SNew(SOverlay)
-				+SOverlay::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
-				[
-					SNew(SSpacer)
-				]
-				+ SOverlay::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
-					[
-						SNew(SBorder).BorderImage(FCoreStyle::Get().GetBrush("ToolPanel.GroupBorder"))
-						[
-							SNew(SBox).HeightOverride(64.0f).WidthOverride(64.0f)
+							SNew(SBorder)
+							.Padding(4)
+							.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
+							.HAlign(HAlign_Fill)
+							.VAlign(VAlign_Fill)
 							[
-								SNew(SButton).Text(LOCTEXT("CatlogBtDownloader-Download", "обть"))
+								SNew(SBox)
+								.HAlign(HAlign_Fill)
+								.VAlign(VAlign_Fill)
+								.WidthOverride(128)
+								.HeightOverride(128)
+								[
+									SNew(SButton)
+									.HAlign(HAlign_Fill)
+									.VAlign(VAlign_Fill)
+								]
 							]
 						]
+						+ SHorizontalBox::Slot()
+							[
+								SNew(SSpacer).Size(FVector2D(1.0f, 1.0f))
+							]
 					]
-
-
+					+ SVerticalBox::Slot()
+						.VAlign(VAlign_Fill)
+						.HAlign(HAlign_Fill)
+						.AutoHeight()
+						[
+							SNew(SSpacer)
+						]
+					+ SVerticalBox::Slot()
+						.VAlign(VAlign_Fill)
+						.HAlign(HAlign_Fill)
+						.AutoHeight()
+						.Padding(2, 0, 4, 0)
+						[
+							HorizontalScrollbar.ToSharedRef()
+						]
+				]
 			];
-
 #endif
 };
 

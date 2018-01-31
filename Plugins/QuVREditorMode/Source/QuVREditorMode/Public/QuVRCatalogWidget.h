@@ -5,6 +5,7 @@
 #include "Widgets/SWidget.h"
 #include "Widgets/SUserWidget.h"
 #include "Widgets/SCompoundWidget.h"
+#include "Widgets/Input/STextComboBox.h"
 #include "Widgets/Navigation/SBreadcrumbTrail.h"
 
 
@@ -27,10 +28,11 @@ struct FCatalogItem
 class SQuVRCatalogWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SQuVRCatalogWidget) { }
-	SLATE_END_ARGS()
+	SLATE_BEGIN_ARGS(SQuVRCatalogWidget) {}
+	SLATE_END_ARGS();
 	
 	void Construct(const FArguments& InArgs);
+	void test();
 
 private:
 	/** Flag to indicate that we need to update the filtered items array */
@@ -55,16 +57,15 @@ private:
 	TSharedRef<SWidget> CreateGroupTabManufacturer(const FString& CatalogName);
 	FReply HandleBreadcrumbTrailAddButtonClicked();
 	// Create PrimaryTab
+	TSharedPtr<SVerticalBox> VerticalBoxPrimary;
 	FName ActiveTabName;
-//	TSharedRef<SVerticalBox> VerticalBoxPrimary;
 	TSharedRef<SWidget> CreateGroupGroupTabPrimary(const FString& CatalogName);
 	void OnCatalogTabChangedPrimary(ECheckBoxState NewState, FName CategoryName);
 	ECheckBoxState GetCatalogTabCheckedStatePrimary(FName CategoryName) const;
 
 	// Create SelectSection
-
+	TSharedPtr<SVerticalBox> VerticalBoxSection;
 	FName SectionTabName;
-//	TSharedRef<SVerticalBox> VerticalBoxSection;
 	TSharedRef<SWidget> CreateCatalogGroupTabSection(const FString& CatalogName);
 	void OnCatalogTabChangedSection(ECheckBoxState NewState, FName CategoryName);
 	ECheckBoxState GetCatalogTabCheckedStateSection(FName CategoryName) const;

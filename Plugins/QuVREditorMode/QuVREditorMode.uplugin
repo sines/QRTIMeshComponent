@@ -5,14 +5,14 @@
 	"FriendlyName": "QuVREditorMode",
 	"Description": "Test plugin for editor mode",
 	"Category": "Other",
-	"CreatedBy": "Dillon",
+	"CreatedBy": "Louis",
 	"CreatedByURL": "",
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",
-	"CanContainContent": false,
-	"IsBetaVersion": false,
-	"Installed": false,
+  "CanContainContent": false,
+  "IsBetaVersion": false,
+  "Installed": false,
 	"Modules": [
 		{
 			"Name": "QuVREditorMode",

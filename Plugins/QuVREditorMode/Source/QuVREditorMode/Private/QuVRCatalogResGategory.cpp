@@ -20,7 +20,7 @@ public:
 
 	SLATE_BEGIN_ARGS(SQuVRCatlogResGategory)
 	{ }
-	SLATE_END_ARGS()
+	SLATE_END_ARGS();
 	
 	/**
 	 * Construct the widget
@@ -49,7 +49,7 @@ public:
 				// Default settings example
 				+ SVerticalBox::Slot() .Padding(5)
 				[
-					SNew(STextBlock) .ShadowOffset(HeadingShadowOffset) .Font( LargeLayoutFont ) .Text( LOCTEXT("CatlogResGategory-DefaultSettingsLabel", "分类选择:") )
+					SNew(STextBlock) .ShadowOffset(HeadingShadowOffset) .Font( LargeLayoutFont ) .Text( LOCTEXT("CatlogResGategory-DefaultSettingsLabel", "Catalog Type:") )
 				]
 				+ SVerticalBox::Slot() .Padding(5,5)
 				[
@@ -57,17 +57,18 @@ public:
 					+SHorizontalBox::Slot()
 					.AutoWidth()
 					[
-						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-All", "全部") )
+						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-All", "All") )
+						.OnClicked(this,&SQuVRCatlogResGategory::RefreshAllButtonClicked)
 					]
 					+SHorizontalBox::Slot()
 					.AutoWidth()
 					[
-						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-Jtl4.0", "金螳螂家4.0") )
+						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-Jtl4.0", "JTL4.0") )
 					]
 					+SHorizontalBox::Slot()
 					.AutoWidth()
 					[
-						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-HD", "恒大御湖山庄") )
+						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-HD", "HDPJ") )
 					]
 			
 				]
@@ -76,9 +77,18 @@ public:
 	}
 
 	END_SLATE_FUNCTION_BUILD_OPTIMIZATION
-	
-
 //  Attribute
+	FReply RefreshAllButtonClicked()
+	{
+	
+		UQuVRAssetDownNet::GetInstance()->GetAllTypeDataFromUrl();
+		
+//		UQuVRAssetDownNet::GetInstance()->GetNodeList();
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("RefreshAllData"));
+		return FReply::Handled();
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 
 };
 

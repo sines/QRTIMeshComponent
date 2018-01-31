@@ -17,22 +17,27 @@
 #include "EditorStyleSet.h"
 #include "QuVRCatalogResGategory.h"
 #include "QuVRCatalogBtDownloader.h"
+#include "QuVRAssetDownNet.h"
 
 static TArray<TSharedPtr<FCatalogItem>> GFilteredItems;
+
+void SQuVRCatalogWidget::test()
+{
+	VerticalBoxPrimary->ClearChildren();
+	VerticalBoxSection->ClearChildren();
+}
 
 void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 {
 	
 	bNeedsUpdate = false;
+	SAssignNew(VerticalBoxPrimary, SVerticalBox);
+	SAssignNew(VerticalBoxSection, SVerticalBox);
+	CreateGroupTabData(VerticalBoxPrimary.ToSharedRef(), VerticalBoxSection.ToSharedRef());
 
-	TSharedRef<SVerticalBox> VerticalBoxPrimary = SNew(SVerticalBox);
-
-	TSharedRef<SVerticalBox> VerticalBoxSection = SNew(SVerticalBox);
-	
-	CreateGroupTabData(VerticalBoxPrimary, VerticalBoxSection);
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(5, 5));
 
-#if true
+#if 1
 	// add ChildSlot Layout
 	ChildSlot
 	[
@@ -43,10 +48,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 		[
 			SNew(SBorder)
 			[
-				SNew(SScissorRectBox)
-				[
-					MakeResGategory()
-				]
+				MakeResGategory()
 			]
 		]
 		// Create Download
@@ -70,7 +72,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 				SNew(SScrollBox)
 				+SScrollBox::Slot()
 				[
-					VerticalBoxPrimary
+					VerticalBoxPrimary.ToSharedRef()
 				]
 			]
 
@@ -80,7 +82,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 				SNew(SScrollBox)
 				+ SScrollBox::Slot()
 				[
-					VerticalBoxSection
+					VerticalBoxSection.ToSharedRef()
 				]
 			]
 
@@ -128,7 +130,8 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 		]
 	];
 #endif
-	RebuildData();
+//	RebuildData();
+	UQuVRAssetDownNet::GetInstance()->SetWidget(SharedThis(this));
 }
 
 
@@ -438,15 +441,106 @@ const FSlateBrush* SQuVRCatalogWidget::CatalogGroupBorderImage(FName CategoryNam
 
 void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<const FCatalogItem>& InItem)
 {
-	//
+/*
 
 	ChildSlot
-	[
-		SNew(SBox)
-		[		
-			SNew(SQuVRCatlogBtDownloader)
-		]
+		[
+			MakeCatalogBtDownload()
+		];
+*/
 
-	//	SNew(STextBlock).Text(InItem->DisplayName)
-	];
+#if true
+		/** HorizontalScrollbar  Begin**/
+		/** HorizontalScrollbar  Begin**/
+	TSharedPtr<SScrollBox> HorizontalScrollbar =
+		SNew(SScrollBox)
+		.Orientation(Orient_Vertical);
+	HorizontalScrollbar->Slot().HAlign(HAlign_Center);
+	HorizontalScrollbar->Slot().VAlign(VAlign_Center);
+	HorizontalScrollbar->AddSlot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0)
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			.HAlign(HAlign_Center)
+			.VAlign(VAlign_Center)
+			.AutoWidth()
+			[
+				SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Justification(ETextJustify::Center)
+			.TextStyle(FEditorStyle::Get(), "LargeText")
+			.Text(FText::FromString(TEXT("TestButton")))
+				]
+			]
+		];
+		/** HorizontalScrollbar  End**/
+
+
+	/**
+	Add ChildSlot
+	*/
+	ChildSlot
+[
+			SNew(SBorder)
+			.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
+		.Cursor(EMouseCursor::GrabHand)
+		[
+
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+		.Padding(0)
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.AutoHeight()
+		[
+			// Drop shadow border
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+		[
+			SNew(SSpacer).Size(FVector2D(1, 1))
+		]
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew(SBorder)
+					.Padding(4)
+				.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Fill)
+				[
+					SNew(SBox)
+					.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Fill)
+				.WidthOverride(128)
+				.HeightOverride(128)
+				[
+					MakeCatalogBtDownload()
+				]
+				]
+				]
+			+ SHorizontalBox::Slot()
+				[
+					SNew(SSpacer).Size(FVector2D(1.0f, 1.0f))
+				]
+				]
+	+ SVerticalBox::Slot()
+		.VAlign(VAlign_Fill)
+		.HAlign(HAlign_Fill)
+		.AutoHeight()
+		[
+			SNew(SSpacer)
+		]
+	+ SVerticalBox::Slot()
+		.VAlign(VAlign_Fill)
+		.HAlign(HAlign_Fill)
+		.AutoHeight()
+		.Padding(2, 0, 4, 0)
+		[
+			HorizontalScrollbar.ToSharedRef()
+		]
+		]
+];
+#endif
+
 }

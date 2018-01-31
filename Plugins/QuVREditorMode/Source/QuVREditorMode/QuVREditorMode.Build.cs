@@ -47,7 +47,9 @@ public class QuVREditorMode : ModuleRules
 				"UnrealEd",
 				"LevelEditor",
                 "EditorStyle",
-                "PlacementMode"
+                "PlacementMode",
+                "HTTP",
+                "Json",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
