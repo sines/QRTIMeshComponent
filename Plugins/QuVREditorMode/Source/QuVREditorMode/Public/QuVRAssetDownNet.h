@@ -17,6 +17,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRequestAllSelectTypeDataDoneDelegat
 USTRUCT()
 struct QUVREDITORMODE_API FQuVRCatalogItem
 {
+	FQuVRCatalogItem() {}
 	GENERATED_BODY()
 	FString Id;
 	FString PId;
@@ -32,7 +33,7 @@ USTRUCT()
 struct QUVREDITORMODE_API FQuVRCatalogNode
 {
 	GENERATED_BODY()
-
+	FQuVRCatalogNode() {}
 	FQuVRCatalogItem NodeData;
 	TArray<FQuVRCatalogItem> ChildList;
 };
@@ -74,6 +75,7 @@ private:
 	void ParseLastTypeData(TArray<TSharedPtr<FJsonValue>> JsonValue);
 
 private:
+	FQuVRCatalogNode CurrentNode;
 	TArray<FQuVRCatalogNode> NodeList;
 	static TSharedPtr<UQuVRAssetDownNet> StaticInstance;
 	TSharedPtr<SQuVRCatalogWidget> Catawidget;

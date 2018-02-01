@@ -1,6 +1,6 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 
-#include "QuVRCatalogBtDownloader.h"
+#include "QuVRCatalogEntryWidget.h"
 #include "Widgets/SWidget.h"
 #include "Widgets/SUserWidget.h"
 #include "Widgets/SCompoundWidget.h"
@@ -10,12 +10,11 @@
 
 #if !UE_BUILD_SHIPPING
 
-#define LOCTEXT_NAMESPACE "CatlogBtDownloader"
+#define LOCTEXT_NAMESPACE "SQuVRCatlogEntryWidget"
 
 
-void SQuVRCatlogBtDownloader::Construct(const FArguments& InDelcaration)
+void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 {		
-
 	ChildSlot
 		[
 			SNew(SButton).HAlign(HAlign_Fill)
@@ -129,9 +128,9 @@ void SQuVRCatlogBtDownloader::Construct(const FArguments& InDelcaration)
 
 
 
-TSharedRef<SWidget> MakeCatalogBtDownload()
+TSharedRef<SWidget> MakeCatalogEntryWidget()
 {
-	return SNew(SQuVRCatlogBtDownloader);}
+	return SNew(SQuVRCatlogEntryWidget);}
 
 #undef LOCTEXT_NAMESPACE
 

@@ -4,6 +4,6 @@
 
 #if !UE_BUILD_SHIPPING
 
-TSharedRef<SWidget> MakeResGategory();
+TSharedRef<SWidget> MakeGategoryWidget();
 
 #endif // #if !UE_BUILD_SHIPPING

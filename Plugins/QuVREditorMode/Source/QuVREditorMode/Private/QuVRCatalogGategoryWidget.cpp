@@ -1,6 +1,6 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 
-#include "QuVRCatalogResGategory.h"
+#include "QuVRCatalogGategoryWidget.h"
 #include "Widgets/SWidget.h"
 #include "Widgets/SUserWidget.h"
 #include "Widgets/SCompoundWidget.h"
@@ -13,12 +13,12 @@
 #define LOCTEXT_NAMESPACE "CatlogResGategory"
 
 
-class SQuVRCatlogResGategory
+class QuVRCatalogGategoryWidget
 	: public SCompoundWidget
 {
 public:
 
-	SLATE_BEGIN_ARGS(SQuVRCatlogResGategory)
+	SLATE_BEGIN_ARGS(QuVRCatalogGategoryWidget)
 	{ }
 	SLATE_END_ARGS();
 	
@@ -42,6 +42,7 @@ public:
 			+ SScrollBox::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
 			[
 				SNew(SSpacer)
+				.Size(FVector2D(2, 2))
 			]
 			+ SScrollBox::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
 			[
@@ -55,17 +56,20 @@ public:
 				[
 					SNew(SHorizontalBox)
 					+SHorizontalBox::Slot()
+					.Padding(2)
 					.AutoWidth()
 					[
-						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-All", "All") )
-						.OnClicked(this,&SQuVRCatlogResGategory::RefreshAllButtonClicked)
+						SNew(SButton).Text(LOCTEXT("CatlogResGategory-All", "All"))
+						.OnClicked(this,&QuVRCatalogGategoryWidget::RefreshAllButtonClicked)
 					]
 					+SHorizontalBox::Slot()
+					.Padding(2)
 					.AutoWidth()
 					[
 						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-Jtl4.0", "JTL4.0") )
 					]
 					+SHorizontalBox::Slot()
+					.Padding(2)
 					.AutoWidth()
 					[
 						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-HD", "HDPJ") )
@@ -95,12 +99,12 @@ public:
 
 
 
-TSharedRef<SWidget> MakeResGategory()
+TSharedRef<SWidget> MakeGategoryWidget()
 {
 // 	extern TOptional<FSlateRenderTransform> GetTestRenderTransform();
 // 	extern FVector2D GetTestRenderTransformPivot();
 	return
-		SNew(SQuVRCatlogResGategory);
+		SNew(QuVRCatalogGategoryWidget);
 //		.RenderTransform_Static(&GetTestRenderTransform)
 //		.RenderTransformPivot_Static(&GetTestRenderTransformPivot);
 }

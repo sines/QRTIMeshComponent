@@ -5,12 +5,12 @@
 #if !UE_BUILD_SHIPPING
 
 
-class SQuVRCatlogBtDownloader
+class SQuVRCatlogEntryWidget
 	: public SCompoundWidget
 {
 public:
 
-	SLATE_BEGIN_ARGS(SQuVRCatlogBtDownloader){ }
+	SLATE_BEGIN_ARGS(SQuVRCatlogEntryWidget){ }
 	SLATE_END_ARGS()
 
 		/**
@@ -21,7 +21,7 @@ public:
 	void Construct(const FArguments& InDelcaration);
 };
 
-TSharedRef<SWidget> MakeCatalogBtDownload();
+TSharedRef<SWidget> MakeCatalogEntryWidget();
 
 
 #endif // #if !UE_BUILD_SHIPPING

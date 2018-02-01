@@ -15,8 +15,8 @@
 #include "Widgets/Navigation/SBreadcrumbTrail.h"
 #include "LevelEditor.h"
 #include "EditorStyleSet.h"
-#include "QuVRCatalogResGategory.h"
-#include "QuVRCatalogBtDownloader.h"
+#include "QuVRCatalogGategoryWidget.h"
+#include "QuVRCatalogEntryWidget.h"
 #include "QuVRAssetDownNet.h"
 
 static TArray<TSharedPtr<FCatalogItem>> GFilteredItems;
@@ -25,6 +25,18 @@ void SQuVRCatalogWidget::test()
 {
 	VerticalBoxPrimary->ClearChildren();
 	VerticalBoxSection->ClearChildren();
+
+	//////////////////////////////////////////////////////////////////////////
+	TArray<FQuVRCatalogNode> NodeList = UQuVRAssetDownNet::GetInstance()->GetInstance()->GetNodeList();
+	for (auto node : NodeList)
+	{
+
+		VerticalBoxPrimary->AddSlot().AutoHeight()
+		[
+			CreateGroupGroupTabPrimary(node.NodeData.DisplayName)
+		];
+
+	}
 }
 
 void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
@@ -35,7 +47,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	SAssignNew(VerticalBoxSection, SVerticalBox);
 	CreateGroupTabData(VerticalBoxPrimary.ToSharedRef(), VerticalBoxSection.ToSharedRef());
 
-	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(5, 5));
+	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(1, 1));
 
 #if 1
 	// add ChildSlot Layout
@@ -48,7 +60,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 		[
 			SNew(SBorder)
 			[
-				MakeResGategory()
+				MakeGategoryWidget()
 			]
 		]
 		// Create Download
@@ -63,24 +75,27 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 			]
 		]
 		+ SVerticalBox::Slot()
-		.Padding(0)
 		[
 			SNew(SHorizontalBox)
 			+ SHorizontalBox::Slot()
+			.Padding(0)
 			.AutoWidth()
 			[
-				SNew(SScrollBox)
+				SNew(SScrollBox).ScrollBarThickness(FVector2D(1,1))
 				+SScrollBox::Slot()
+				.Padding(0)
 				[
 					VerticalBoxPrimary.ToSharedRef()
 				]
 			]
 
 			+ SHorizontalBox::Slot()
+			.Padding(0)
 			.AutoWidth()
 			[
-				SNew(SScrollBox)
+				SNew(SScrollBox).ScrollBarThickness(FVector2D(1, 1))
 				+ SScrollBox::Slot()
+				.Padding(0)
 				[
 					VerticalBoxSection.ToSharedRef()
 				]
@@ -314,30 +329,29 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(const FString
 		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*CatalogName))
 		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
 		[
-
 			SNew(SOverlay)
 			+ SOverlay::Slot()
-		.VAlign(VAlign_Center)
-		[
-			SNew(SSpacer)
-			.Size(FVector2D(1, 30))
-		]
-	+ SOverlay::Slot()
-		.Padding(FMargin(6, 0, 15, 0))
-		.VAlign(VAlign_Center)
-		[
+			.VAlign(VAlign_Center)
+			[
+				SNew(SSpacer)
+				.Size(FVector2D(1, 30))
+			]
+			+ SOverlay::Slot()
+			.Padding(FMargin(6, 0, 30, 0))
+			.VAlign(VAlign_Center)
+			[
 
-			SNew(STextBlock)
-			.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
-		.Text(FText::FromString(CatalogName))
-		]
-	+ SOverlay::Slot()
-		.VAlign(VAlign_Fill)
-		.HAlign(HAlign_Left)
-		[
-			SNew(SImage)
-			.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*CatalogName))
-		]
+				SNew(STextBlock)
+				.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
+			.Text(FText::FromString(CatalogName))
+			]
+			+ SOverlay::Slot()
+			.VAlign(VAlign_Fill)
+			.HAlign(HAlign_Left)
+			[
+				SNew(SImage)
+				.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*CatalogName))
+			]
 		];
 }
 
@@ -445,7 +459,7 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<con
 
 	ChildSlot
 		[
-			MakeCatalogBtDownload()
+			MakeCatalogEntryWidget()
 		];
 */
 
@@ -515,7 +529,7 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<con
 				.WidthOverride(128)
 				.HeightOverride(128)
 				[
-					MakeCatalogBtDownload()
+					MakeCatalogEntryWidget()
 				]
 				]
 				]

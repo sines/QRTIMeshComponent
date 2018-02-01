@@ -9,6 +9,7 @@
 #include "Widgets/Navigation/SBreadcrumbTrail.h"
 
 
+
 /**
 * Structure defining a catalog item in the placement mode panel
 */
@@ -29,11 +30,12 @@ class SQuVRCatalogWidget : public SCompoundWidget
 {
 public:
 	SLATE_BEGIN_ARGS(SQuVRCatalogWidget) {}
-	SLATE_END_ARGS();
-	
-	void Construct(const FArguments& InArgs);
-	void test();
+	SLATE_END_ARGS()
 
+	void Construct(const FArguments& InArgs);
+
+public:
+	void test();
 private:
 	/** Flag to indicate that we need to update the filtered items array */
 	bool bNeedsUpdate;
