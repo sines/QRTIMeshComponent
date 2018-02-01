@@ -17,6 +17,7 @@
 #include "EditorStyleSet.h"
 #include "QuVRCatalogGategoryWidget.h"
 #include "QuVRCatalogEntryWidget.h"
+#include "QuVRCatalogSectionButton.h"
 #include "QuVRAssetDownNet.h"
 
 static TArray<TSharedPtr<FCatalogItem>> GFilteredItems;
@@ -33,7 +34,7 @@ void SQuVRCatalogWidget::test()
 
 		VerticalBoxPrimary->AddSlot().AutoHeight()
 		[
-			CreateGroupGroupTabPrimary(node.NodeData.DisplayName)
+			CreateGroupGroupTabPrimary(node)
 		];
 
 	}
@@ -157,10 +158,12 @@ void SQuVRCatalogWidget::CreateWidgetElement()
 
 void SQuVRCatalogWidget::CreateGroupTabData(TSharedRef<SVerticalBox> InPrimary, TSharedRef<SVerticalBox> InSection)
 {
+/*
 	InPrimary->AddSlot().AutoHeight()
 	[
-		CreateGroupGroupTabPrimary(FString(TEXT("TabPrimary")))
-	];
+	//	CreateGroupGroupTabPrimary()
+	//	CreateGroupGroupTabPrimary(FString(TEXT("TabPrimary")))
+	];*/
 
 	InSection->AddSlot().AutoHeight()
 	[
@@ -322,37 +325,73 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupTabManufacturer(const FString
 		];
 }
 
-TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(const FString& CatalogName)
+TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(const FQuVRCatalogNode& node)
 {
+//	SCheckBox
+	TSharedRef<SCheckBox> checkBox =
+	SNew(SCheckBox)
+		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, FName(*node.NodeData.DisplayName))
+		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node.NodeData.DisplayName))
+		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
+	[
+		SNew(SOverlay)
+		+ SOverlay::Slot()
+		.VAlign(VAlign_Center)
+		[
+			SNew(SSpacer)
+			.Size(FVector2D(1, 30))
+		]
+		+ SOverlay::Slot()
+		.Padding(FMargin(6, 0, 30, 0))
+		.VAlign(VAlign_Center)
+		[
+
+			SNew(STextBlock)
+			.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
+			.Text(FText::FromString(node.NodeData.DisplayName))
+		]
+		+ SOverlay::Slot()
+		.VAlign(VAlign_Fill)
+		.HAlign(HAlign_Left)
+		[
+			SNew(SImage)
+			.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node.NodeData.DisplayName))
+		]
+	];
+//	return checkBox;
+	return SNew(SQuVRCatalogSectionButton).TreeItem(node).SectionScheckBox(checkBox);
+#if 0
 	return SNew(SCheckBox)
-		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, FName(*CatalogName))
-		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*CatalogName))
+		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, FName(*node.NodeData.DisplayName))
+		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node.NodeData.DisplayName))
 		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
 		[
 			SNew(SOverlay)
 			+ SOverlay::Slot()
-			.VAlign(VAlign_Center)
-			[
-				SNew(SSpacer)
-				.Size(FVector2D(1, 30))
-			]
-			+ SOverlay::Slot()
-			.Padding(FMargin(6, 0, 30, 0))
-			.VAlign(VAlign_Center)
-			[
+		.VAlign(VAlign_Center)
+		[
+			SNew(SSpacer)
+			.Size(FVector2D(1, 30))
+		]
+	+ SOverlay::Slot()
+		.Padding(FMargin(6, 0, 30, 0))
+		.VAlign(VAlign_Center)
+		[
 
-				SNew(STextBlock)
-				.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
-			.Text(FText::FromString(CatalogName))
-			]
-			+ SOverlay::Slot()
-			.VAlign(VAlign_Fill)
-			.HAlign(HAlign_Left)
-			[
-				SNew(SImage)
-				.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*CatalogName))
-			]
-		];
+			SNew(STextBlock)
+			.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
+		.Text(FText::FromString(node.NodeData.DisplayName))
+		]
+	+ SOverlay::Slot()
+		.VAlign(VAlign_Fill)
+		.HAlign(HAlign_Left)
+		[
+			SNew(SImage)
+			.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node.NodeData.DisplayName))
+		]
+	];
+
+#endif
 }
 
 

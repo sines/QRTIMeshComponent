@@ -13,30 +13,45 @@
 DECLARE_LOG_CATEGORY_EXTERN(UploadAssetDialog, Log, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRequestAllSelectTypeDataDoneDelegate, UQuVRAssetDownNet*, net);
 
+	USTRUCT()
+	struct QUVREDITORMODE_API FQuVRCatalogItem
+	{
+		GENERATED_USTRUCT_BODY()
+			FQuVRCatalogItem()
+		{
+			Id = FString(TEXT("-1"));
+			PId = FString(TEXT("-1"));
+			Name = FString(TEXT("-1"));
+			DisplayName = FString(TEXT("-1"));
+			Description = FString(TEXT("-1"));
+			OrderNo = FString(TEXT("-1"));
+			CatalogType = FString(TEXT("-1"));
+			HasChilder = false;
+		}
+		FString Id;
+		FString PId;
+		FString Name;
+		FString DisplayName;
+		FString Description;
+		FString OrderNo;
+		FString CatalogType;
+		bool HasChilder;
+	};
 
-USTRUCT()
-struct QUVREDITORMODE_API FQuVRCatalogItem
-{
-	FQuVRCatalogItem() {}
-	GENERATED_BODY()
-	FString Id;
-	FString PId;
-	FString Name;
-	FString DisplayName;
-	FString Description;
-	FString OrderNo;
-	FString CatalogType;
-	bool HasChilder;
-};
-
-USTRUCT()
-struct QUVREDITORMODE_API FQuVRCatalogNode
-{
-	GENERATED_BODY()
-	FQuVRCatalogNode() {}
-	FQuVRCatalogItem NodeData;
-	TArray<FQuVRCatalogItem> ChildList;
-};
+	USTRUCT()
+	struct QUVREDITORMODE_API  FQuVRCatalogNode
+	{
+		GENERATED_USTRUCT_BODY()
+			FQuVRCatalogNode()
+		{
+			ChildList.Empty();
+			ChildList.Reset();
+		}
+		//	UPROPERTY()
+		FQuVRCatalogItem NodeData;
+		//	UPROPERTY()
+		TArray<FQuVRCatalogItem> ChildList;
+	};
 
 /**
  * UQuVRAssetDownNet

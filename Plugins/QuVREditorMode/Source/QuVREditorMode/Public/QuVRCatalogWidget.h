@@ -8,8 +8,9 @@
 #include "Widgets/Input/STextComboBox.h"
 #include "Widgets/Navigation/SBreadcrumbTrail.h"
 
+#if !UE_BUILD_SHIPPING
 
-
+extern struct FQuVRCatalogNode;
 /**
 * Structure defining a catalog item in the placement mode panel
 */
@@ -61,7 +62,7 @@ private:
 	// Create PrimaryTab
 	TSharedPtr<SVerticalBox> VerticalBoxPrimary;
 	FName ActiveTabName;
-	TSharedRef<SWidget> CreateGroupGroupTabPrimary(const FString& CatalogName);
+	TSharedRef<SWidget> CreateGroupGroupTabPrimary(const FQuVRCatalogNode& node);
 	void OnCatalogTabChangedPrimary(ECheckBoxState NewState, FName CategoryName);
 	ECheckBoxState GetCatalogTabCheckedStatePrimary(FName CategoryName) const;
 
@@ -95,3 +96,5 @@ public:
 
 	TSharedPtr<const FCatalogItem> Item;
 };
+
+#endif

@@ -13,23 +13,69 @@
 #define LOCTEXT_NAMESPACE "SQuVRCatalogSectionButton"
 
 
-void SQuVRCatalogSectionButton::Construct(const FArguments& InDelcaration)
-{		
+void SQuVRCatalogSectionButton::Construct(const SQuVRCatalogSectionButton::FArguments& InDelcaration)
+{
 
-	ChildSlot
+	TreeItem = InDelcaration._TreeItem;
+	OnCheckStateChanged = InDelcaration._OnCheckStateChanged;
+	IsCheckboxChecked = InDelcaration._IsChecked;
+	SectionScheckBox = InDelcaration._SectionScheckBox;
+	if (SectionScheckBox.IsValid())
+	{
+	// Check boxes use a separate check button to the side of the user's content (often, a text label or icon.)
+		this->ChildSlot
 		[
-			SNew(SButton).HAlign(HAlign_Fill)
-
+			SNew(SOverlay)
+			+ SOverlay::Slot()
 			.VAlign(VAlign_Fill)
+			.HAlign(HAlign_Fill)
+			[
+				SectionScheckBox.ToSharedRef()
+			]
+
+		+ SOverlay::Slot()
+			.VAlign(VAlign_Fill)
+			.HAlign(HAlign_Fill)
+			[
+				InDelcaration._Content.Widget
+			]
 		];
+	}
 };
 
-
-
-
-TSharedRef<SWidget> MakeCatalogSectionButton()
+void SQuVRCatalogSectionButton::OnSectionButtonChanged(ECheckBoxState NewState, FName CategoryName)
 {
-	return SNew(SQuVRCatalogSectionButton);}
+	const ECheckBoxState State = NewState;
+
+	// If the current check box state is checked OR undetermined we set the check box to checked.
+	if (State == ECheckBoxState::Checked || State == ECheckBoxState::Undetermined)
+	{
+		if (!IsCheckboxChecked.IsBound())
+		{
+			// When we are not bound, just toggle the current state.
+			IsCheckboxChecked.Set(ECheckBoxState::Unchecked);
+		}
+
+		// The state of the check box changed.  Execute the delegate to notify users
+		OnCheckStateChanged.ExecuteIfBound(ECheckBoxState::Unchecked);
+	}
+	else if (State == ECheckBoxState::Unchecked)
+	{
+		if (!IsCheckboxChecked.IsBound())
+		{
+			// When we are not bound, just toggle the current state.
+			IsCheckboxChecked.Set(ECheckBoxState::Checked);
+		}
+
+		// The state of the check box changed.  Execute the delegate to notify users
+		OnCheckStateChanged.ExecuteIfBound(ECheckBoxState::Checked);
+	}
+}
+
+
+TSharedRef<SWidget> MakeCatalogSectionButton(const FQuVRCatalogNode& node)
+{
+	return SNew(SQuVRCatalogSectionButton).TreeItem(node);}
 
 #undef LOCTEXT_NAMESPACE
 

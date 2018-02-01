@@ -18,7 +18,6 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 	ChildSlot
 		[
 			SNew(SButton).HAlign(HAlign_Fill)
-
 			.VAlign(VAlign_Fill)
 		];
 
