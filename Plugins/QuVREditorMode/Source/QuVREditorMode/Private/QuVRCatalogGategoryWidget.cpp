@@ -66,7 +66,7 @@ public:
 					.Padding(2)
 					.AutoWidth()
 					[
-						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-Jtl4.0", "JTL4.0") )
+						SNew(SButton).Text( LOCTEXT("CatlogResGategory-Jtl4.0", "JTL4.0") )
 					]
 					+SHorizontalBox::Slot()
 					.Padding(2)
@@ -93,7 +93,10 @@ public:
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-
+	FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+	{
+		return FReply::Handled();
+	}
 };
 
 

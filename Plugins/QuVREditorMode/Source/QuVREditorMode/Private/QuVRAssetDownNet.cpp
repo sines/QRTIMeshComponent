@@ -4,9 +4,12 @@
 
 const FString UQuVRAssetDownNet::CatalogHttpURL = FString(TEXT("http://dev-vrservice.jtl3d.com/api/VRCatalog/GetCatalogsByType?type=modelCatalog"));
 
+//////////////////////////////////////////////////////////////////////////
+/**UQuVRAssetDownNet*/
+//////////////////////////////////////////////////////////////////////////
 UQuVRAssetDownNet::UQuVRAssetDownNet()
 {
-
+	RootNode = MakeShareable(new(FQuVRCatalogNode));
 }
 
 
@@ -39,7 +42,7 @@ void UQuVRAssetDownNet::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpR
 	check(bResult);
 
 	TArray<TSharedPtr<FJsonValue>>TypeData = JsonObject->GetArrayField(TEXT("items"));
-	ParseSelectorTypeData(TypeData);
+	ParseListData(TypeData);
 	GenerateCatalog();
 	// OnRequset Data Done
 	OnRequestAllSelectTypeDataDone.Broadcast(this);
@@ -64,8 +67,8 @@ void UQuVRAssetDownNet::Initial()
 
 void UQuVRAssetDownNet::GetAllTypeDataFromUrl()
 {
-	NodeList.Empty();
-	NodeList.Reset();
+	RootNode->ChildList.Empty();
+	RootNode->ChildList.Reset();
 	FString TrimmedUrl = CatalogHttpURL;
 	TrimmedUrl.Trim();
 	TrimmedUrl.TrimTrailing();
@@ -81,37 +84,57 @@ void UQuVRAssetDownNet::GetAllTypeDataFromUrl()
 
 }
 
-void UQuVRAssetDownNet::ParseSelectorTypeData(TArray<TSharedPtr<FJsonValue>> JsonValue)
+void UQuVRAssetDownNet::ParseItemData(FQuVRCatalogNode& node, TArray<TSharedPtr<FJsonValue>> JsonValue)
 {
+	node.ChildList.Empty();
+	node.ChildList.Reset();
 	for (auto Value : JsonValue)
 	{
-		FQuVRCatalogNode item;
+		FQuVRCatalogNode* item = new FQuVRCatalogNode();
 		TSharedPtr<FJsonObject>TempJsonObject = Value->AsObject();
-		item.NodeData.Id=TempJsonObject->GetStringField(TEXT("ID"));
-		item.NodeData.PId = TempJsonObject->GetStringField(TEXT("PID"));
-		item.NodeData.Name = TempJsonObject->GetStringField(TEXT("Name"));
-		item.NodeData.DisplayName = TempJsonObject->GetStringField(TEXT("DisplayName"));
-		item.NodeData.Description = TempJsonObject->GetStringField(TEXT("Description"));
-		item.NodeData.OrderNo = TempJsonObject->GetStringField(TEXT("OrderNo"));
-		item.NodeData.CatalogType = TempJsonObject->GetStringField(TEXT("CatalogType"));
-		NodeList.Add(item);
+		item->NodeData.Id=TempJsonObject->GetStringField(TEXT("ID"));
+		item->NodeData.PId = TempJsonObject->GetStringField(TEXT("PID"));
+		item->NodeData.Name = TempJsonObject->GetStringField(TEXT("Name"));
+		item->NodeData.DisplayName = TempJsonObject->GetStringField(TEXT("DisplayName"));
+		item->NodeData.Description = TempJsonObject->GetStringField(TEXT("Description"));
+		item->NodeData.OrderNo = TempJsonObject->GetStringField(TEXT("OrderNo"));
+		item->NodeData.CatalogType = TempJsonObject->GetStringField(TEXT("CatalogType"));
+		node.ChildList.Add(MakeShareable(item));
 	}
 }
 
-void UQuVRAssetDownNet::ParseSecondTypeData(TArray<TSharedPtr<FJsonValue>> JsonValue)
+void UQuVRAssetDownNet::ParseListData(TArray<TSharedPtr<FJsonValue>> JsonValue)
 {
-
-}
-
-void UQuVRAssetDownNet::ParseLastTypeData(TArray<TSharedPtr<FJsonValue>> JsonValue)
-{
-
+	for (auto Value : JsonValue)
+	{
+		auto item = new FQuVRCatalogNode();
+		TSharedPtr<FJsonObject>TempJsonObject = Value->AsObject();
+		item->NodeData.Id = TempJsonObject->GetStringField(TEXT("ID"));
+		item->NodeData.PId = TempJsonObject->GetStringField(TEXT("PID"));
+		item->NodeData.Name = TempJsonObject->GetStringField(TEXT("Name"));
+		item->NodeData.DisplayName = TempJsonObject->GetStringField(TEXT("DisplayName"));
+		item->NodeData.Description = TempJsonObject->GetStringField(TEXT("Description"));
+		item->NodeData.OrderNo = TempJsonObject->GetStringField(TEXT("OrderNo"));
+		item->NodeData.CatalogType = TempJsonObject->GetStringField(TEXT("CatalogType"));
+		RootNode->ChildList.Add(MakeShareable(item));
+		
+		if (TempJsonObject->HasField(TEXT("Children")))
+		{
+			TArray<TSharedPtr<FJsonValue>>ChildrenData = TempJsonObject->GetArrayField(TEXT("Children"));
+			if (0 < ChildrenData.Num())
+			{
+				ParseListData(ChildrenData);
+			}
+		}
+	
+	//	RootNode->ChildList.Add(item);
+	}
 }
 
 void UQuVRAssetDownNet::GenerateCatalog()
 {
 	if (Catawidget.IsValid())
 	{
-		Catawidget->test();
+	//	Catawidget->CreateGroupGroupTabPrimaryList(NodeList);
 	}
 }

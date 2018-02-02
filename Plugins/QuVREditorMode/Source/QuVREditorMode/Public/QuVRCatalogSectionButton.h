@@ -4,10 +4,8 @@
 #include "Widgets/Input/SButton.h"
 #if !UE_BUILD_SHIPPING
 
-extern struct FQuVRCatalogNode;
+/*class FQuVRCatalogNode;*/
 
-/** Delegate that is executed when the check box state changes */
-DECLARE_DELEGATE_OneParam(FOnCheckStateChanged, ECheckBoxState);
 
 class SQuVRCatalogSectionButton
 	: public SCompoundWidget
@@ -17,23 +15,30 @@ public:
 	SLATE_BEGIN_ARGS(SQuVRCatalogSectionButton)
 		: _TreeItem()
 		,_Content()
+		, _IsChecked(ECheckBoxState::Unchecked)
 		,_OnCheckStateChanged()
-		,_IsChecked(ECheckBoxState::Unchecked)
-		,_SectionScheckBox(SNew(SCheckBox))
+		,_BkImage(FCoreStyle::Get().GetDefaultBrush())
+		,_ParentWidget()
 	{ }
 
 	/** Data for the collection this item represents */
-	SLATE_ARGUMENT(FQuVRCatalogNode, TreeItem)
+	SLATE_ARGUMENT(TSharedPtr<class FQuVRCatalogNode>, TreeItem)
 
 	/** Data for the collection this item represents */
 	SLATE_ARGUMENT(TSharedPtr<SCheckBox>, SectionScheckBox)
+	
+	/** SHOW IMAGE */
+	SLATE_ATTRIBUTE(const FSlateBrush*, BkImage)
+
+	/** SHOW ParentWidget */
+	SLATE_ARGUMENT(TSharedPtr<class SQuVRCatalogWidget>, ParentWidget)
 
 	/** Called when the checked state has changed */
 	SLATE_EVENT(FOnCheckStateChanged, OnCheckStateChanged)
-	
+
 	/** Whether the check box is currently in a checked state */
 	SLATE_ATTRIBUTE(ECheckBoxState, IsChecked)
-	
+
 	/** Content to be placed next to the check box, or for a toggle button, the content to be placed inside the button */
 	SLATE_DEFAULT_SLOT(FArguments, Content)
 	
@@ -41,23 +46,30 @@ public:
 
 	void Construct(const FArguments& InDelcaration);
 
-	void OnSectionButtonChanged(ECheckBoxState NewState, FName CategoryName);	
+	FReply OnSectionButtonChanged();
 
 protected:
+
+void OnSectionButtonChanged(ECheckBoxState NewState);
+/** The list of active system messages */
+TSharedPtr<SNotificationList> NotificationListPtr;
+
 /** Delegate called when the check box changes state */
 FOnCheckStateChanged OnCheckStateChanged;
 
 /** Are we checked */
-TAttribute<ECheckBoxState> IsCheckboxChecked;
+TAttribute<ECheckBoxState> IsSectionButtonChecked;
 
-TSharedPtr<SCheckBox> SectionScheckBox;
-private:
+/** The FName of the image resource to show */
+TAttribute< const FSlateBrush* > BkImage;
 /** The data for this item */
-FQuVRCatalogNode TreeItem;
+TSharedPtr<class FQuVRCatalogNode> TreeItem;
 
+/*Parent Widget*/
+TSharedPtr<class SQuVRCatalogWidget> ParentWidget;
 };
 
-TSharedRef<SWidget> MakeCatalogSectionButton(const FQuVRCatalogNode& node);
+TSharedRef<SWidget> MakeCatalogSectionButton(const TSharedRef<class FQuVRCatalogNode> node);
 
 
 #endif // #if !UE_BUILD_SHIPPING

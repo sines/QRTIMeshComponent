@@ -10,7 +10,7 @@
 
 #if !UE_BUILD_SHIPPING
 
-extern struct FQuVRCatalogNode;
+class FQuVRCatalogNode;
 /**
 * Structure defining a catalog item in the placement mode panel
 */
@@ -36,7 +36,9 @@ public:
 	void Construct(const FArguments& InArgs);
 
 public:
-	void test();
+	void CreateGroupGroupTabPrimaryList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
+	void CreateCatalogGroupTabSectionList(TArray<TSharedPtr<FQuVRCatalogNode>> nodeList);
+	
 private:
 	/** Flag to indicate that we need to update the filtered items array */
 	bool bNeedsUpdate;
@@ -62,14 +64,14 @@ private:
 	// Create PrimaryTab
 	TSharedPtr<SVerticalBox> VerticalBoxPrimary;
 	FName ActiveTabName;
-	TSharedRef<SWidget> CreateGroupGroupTabPrimary(const FQuVRCatalogNode& node);
-	void OnCatalogTabChangedPrimary(ECheckBoxState NewState, FName CategoryName);
+	TSharedRef<SWidget> CreateGroupGroupTabPrimary(TSharedRef<FQuVRCatalogNode> node);
+	void OnCatalogTabChangedPrimary(ECheckBoxState NewState, TSharedRef<FQuVRCatalogNode> node);
 	ECheckBoxState GetCatalogTabCheckedStatePrimary(FName CategoryName) const;
 
 	// Create SelectSection
 	TSharedPtr<SVerticalBox> VerticalBoxSection;
 	FName SectionTabName;
-	TSharedRef<SWidget> CreateCatalogGroupTabSection(const FString& CatalogName);
+	TSharedRef<SWidget> CreateCatalogGroupTabSection(TSharedRef<FQuVRCatalogNode> node);
 	void OnCatalogTabChangedSection(ECheckBoxState NewState, FName CategoryName);
 	ECheckBoxState GetCatalogTabCheckedStateSection(FName CategoryName) const;
 

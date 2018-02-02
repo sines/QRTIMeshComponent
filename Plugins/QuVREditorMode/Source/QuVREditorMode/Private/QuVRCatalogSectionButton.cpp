@@ -7,7 +7,7 @@
 #include "Runtime/Slate/Public/SlateOptMacros.h"
 #include "Core.h"
 #include "SlateBasics.h"
-
+#include "SNotificationList.h"
 #if !UE_BUILD_SHIPPING
 
 #define LOCTEXT_NAMESPACE "SQuVRCatalogSectionButton"
@@ -15,65 +15,76 @@
 
 void SQuVRCatalogSectionButton::Construct(const SQuVRCatalogSectionButton::FArguments& InDelcaration)
 {
-
 	TreeItem = InDelcaration._TreeItem;
+	IsSectionButtonChecked = InDelcaration._IsChecked;
 	OnCheckStateChanged = InDelcaration._OnCheckStateChanged;
-	IsCheckboxChecked = InDelcaration._IsChecked;
-	SectionScheckBox = InDelcaration._SectionScheckBox;
-	if (SectionScheckBox.IsValid())
-	{
-	// Check boxes use a separate check button to the side of the user's content (often, a text label or icon.)
-		this->ChildSlot
+	BkImage = InDelcaration._BkImage;
+	ParentWidget = InDelcaration._ParentWidget;
+#if 1 // Create ChildSlot
+this->ChildSlot
+	[
+	SNew(SCheckBox)
+		.OnCheckStateChanged(this, &SQuVRCatalogSectionButton::OnSectionButtonChanged)
+		.IsChecked(IsSectionButtonChecked)
+		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
 		[
 			SNew(SOverlay)
 			+ SOverlay::Slot()
-			.VAlign(VAlign_Fill)
-			.HAlign(HAlign_Fill)
-			[
-				SectionScheckBox.ToSharedRef()
-			]
+		.VAlign(VAlign_Center)
+		[
+			SNew(SSpacer)
+			.Size(FVector2D(1, 30))
+		]
+	+ SOverlay::Slot()
+		.Padding(FMargin(6, 0, 30, 0))
+		.VAlign(VAlign_Center)
+		[
 
-		+ SOverlay::Slot()
-			.VAlign(VAlign_Fill)
-			.HAlign(HAlign_Fill)
-			[
-				InDelcaration._Content.Widget
-			]
-		];
-	}
+			SNew(STextBlock)
+			.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
+			.Text(FText::FromString(TreeItem->NodeData.DisplayName))
+		]
+	+ SOverlay::Slot()
+		.VAlign(VAlign_Fill)
+		.HAlign(HAlign_Left)
+		[
+			SNew(SImage)
+			.Image(BkImage)
+		]
+	// Bottom-right corner text for notification list position
+	+ SOverlay::Slot()
+		.Padding(15.f)
+		.VAlign(VAlign_Bottom)
+		.HAlign(HAlign_Right)
+		[
+			SAssignNew(NotificationListPtr, SNotificationList)
+			.Visibility(EVisibility::HitTestInvisible)
+		]
+		]
+	];
+#endif
+
 };
 
-void SQuVRCatalogSectionButton::OnSectionButtonChanged(ECheckBoxState NewState, FName CategoryName)
+void SQuVRCatalogSectionButton::OnSectionButtonChanged(ECheckBoxState NewState)
 {
-	const ECheckBoxState State = NewState;
+	OnCheckStateChanged.ExecuteIfBound(NewState);
+	// The state of the check box changed.  Execute the delegate to notify users
+	FNotificationInfo Info(FText::FromString(TreeItem->NodeData.DisplayName));//LOCTEXT("TestNotification01", "OnMouseButtonDown"));
+	NotificationListPtr->AddNotification(Info);
 
-	// If the current check box state is checked OR undetermined we set the check box to checked.
-	if (State == ECheckBoxState::Checked || State == ECheckBoxState::Undetermined)
-	{
-		if (!IsCheckboxChecked.IsBound())
-		{
-			// When we are not bound, just toggle the current state.
-			IsCheckboxChecked.Set(ECheckBoxState::Unchecked);
-		}
-
+	ParentWidget->CreateCatalogGroupTabSectionList(TreeItem->ChildList);
+}
+FReply SQuVRCatalogSectionButton::OnSectionButtonChanged()
+{
 		// The state of the check box changed.  Execute the delegate to notify users
-		OnCheckStateChanged.ExecuteIfBound(ECheckBoxState::Unchecked);
-	}
-	else if (State == ECheckBoxState::Unchecked)
-	{
-		if (!IsCheckboxChecked.IsBound())
-		{
-			// When we are not bound, just toggle the current state.
-			IsCheckboxChecked.Set(ECheckBoxState::Checked);
-		}
-
-		// The state of the check box changed.  Execute the delegate to notify users
-		OnCheckStateChanged.ExecuteIfBound(ECheckBoxState::Checked);
-	}
+	FNotificationInfo Info(FText::FromString(TreeItem->NodeData.DisplayName));//LOCTEXT("TestNotification01", "OnMouseButtonDown"));
+	NotificationListPtr->AddNotification(Info);
+	return FReply::Handled();
 }
 
 
-TSharedRef<SWidget> MakeCatalogSectionButton(const FQuVRCatalogNode& node)
+TSharedRef<SWidget> MakeCatalogSectionButton(const TSharedRef<class FQuVRCatalogNode> node)
 {
 	return SNew(SQuVRCatalogSectionButton).TreeItem(node);}
 

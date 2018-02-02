@@ -22,21 +22,32 @@
 
 static TArray<TSharedPtr<FCatalogItem>> GFilteredItems;
 
-void SQuVRCatalogWidget::test()
+/* Group Tab Primary List*/
+void SQuVRCatalogWidget::CreateGroupGroupTabPrimaryList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList)
 {
 	VerticalBoxPrimary->ClearChildren();
 	VerticalBoxSection->ClearChildren();
 
-	//////////////////////////////////////////////////////////////////////////
-	TArray<FQuVRCatalogNode> NodeList = UQuVRAssetDownNet::GetInstance()->GetInstance()->GetNodeList();
-	for (auto node : NodeList)
+	for (auto node : nodeList)
 	{
-
 		VerticalBoxPrimary->AddSlot().AutoHeight()
 		[
-			CreateGroupGroupTabPrimary(node)
+			CreateGroupGroupTabPrimary(node.ToSharedRef())
 		];
+	}
+}
 
+/* Group Tab Section List*/
+void SQuVRCatalogWidget::CreateCatalogGroupTabSectionList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList)
+{
+	VerticalBoxSection->ClearChildren();
+
+	for (auto node : nodeList)
+	{
+		VerticalBoxSection->AddSlot().AutoHeight()
+			[
+				CreateCatalogGroupTabSection(node.ToSharedRef())
+			];
 	}
 }
 
@@ -163,12 +174,15 @@ void SQuVRCatalogWidget::CreateGroupTabData(TSharedRef<SVerticalBox> InPrimary, 
 	[
 	//	CreateGroupGroupTabPrimary()
 	//	CreateGroupGroupTabPrimary(FString(TEXT("TabPrimary")))
-	];*/
+	];
+*/
 
+/*
 	InSection->AddSlot().AutoHeight()
 	[
 		CreateCatalogGroupTabSection(FString(TEXT("TabSection")))
 	];
+*/
 }
 
 /** Request that both Tree and List refresh themselves on the next tick */
@@ -325,12 +339,19 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupTabManufacturer(const FString
 		];
 }
 
-TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(const FQuVRCatalogNode& node)
+TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(TSharedRef<FQuVRCatalogNode> node)
 {
+	return	SNew(SQuVRCatalogSectionButton)
+		.TreeItem(node)
+		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, node)
+		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node->NodeData.DisplayName))
+		.BkImage(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node->NodeData.DisplayName))
+		.ParentWidget(SharedThis(this));
+#if 0
 //	SCheckBox
 	TSharedRef<SCheckBox> checkBox =
 	SNew(SCheckBox)
-		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, FName(*node.NodeData.DisplayName))
+		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, node)//FName(*node.NodeData.DisplayName))
 		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node.NodeData.DisplayName))
 		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
 	[
@@ -355,11 +376,12 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(const FQuVRCa
 		.HAlign(HAlign_Left)
 		[
 			SNew(SImage)
-			.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node.NodeData.DisplayName))
+			.Image()
 		]
 	];
-//	return checkBox;
 	return SNew(SQuVRCatalogSectionButton).TreeItem(node).SectionScheckBox(checkBox);
+#endif
+
 #if 0
 	return SNew(SCheckBox)
 		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, FName(*node.NodeData.DisplayName))
@@ -395,11 +417,23 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(const FQuVRCa
 }
 
 
-TSharedRef<SWidget> SQuVRCatalogWidget::CreateCatalogGroupTabSection(const FString& CatalogName)
+TSharedRef<SWidget> SQuVRCatalogWidget::CreateCatalogGroupTabSection(const TSharedRef<FQuVRCatalogNode> node)
 {
+
+#if 1
+	return	SNew(SQuVRCatalogSectionButton)
+		.TreeItem(node)
+		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, node)
+		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node->NodeData.DisplayName))
+		.BkImage(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node->NodeData.DisplayName))
+		.ParentWidget(SharedThis(this));
+
+#endif
+
+#if 0
 	return SNew(SCheckBox)
-			.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedSection, FName(*CatalogName))
-			.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStateSection, FName(*CatalogName))
+			.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedSection, FName(*node.NodeData.DisplayName))
+			.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStateSection, FName(*node.NodeData.DisplayName))
 			.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
 			[
 
@@ -417,16 +451,18 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateCatalogGroupTabSection(const FStri
 					
 					SNew(STextBlock)
 					.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
-					.Text(FText::FromString(CatalogName))
+					.Text(FText::FromString(node.NodeData.DisplayName))
 				]
 				+ SOverlay::Slot()
 					.VAlign(VAlign_Fill)
 					.HAlign(HAlign_Left)
 					[
 						SNew(SImage)
-						.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*CatalogName))
+						.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node.NodeData.DisplayName))
 					]
 			];
+
+#endif
 }
 
 void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
@@ -443,15 +479,16 @@ ECheckBoxState SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary(FName Catego
 	return ActiveTabName == CategoryName ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
 }
 
-void SQuVRCatalogWidget::OnCatalogTabChangedPrimary(ECheckBoxState NewState, FName CategoryName)
+void SQuVRCatalogWidget::OnCatalogTabChangedPrimary(ECheckBoxState NewState, TSharedRef<FQuVRCatalogNode> node)
 {
 	if (NewState == ECheckBoxState::Checked)
 	{
-		ActiveTabName = CategoryName;
+		ActiveTabName = FName(*node->NodeData.DisplayName);
 //		GenerateItemsByCatalog(CategoryName.ToString());
 
 		bNeedsUpdate = true;
 	}
+
 }
 
 

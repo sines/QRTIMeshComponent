@@ -38,20 +38,22 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRequestAllSelectTypeDataDoneDelegat
 		bool HasChilder;
 	};
 
-	USTRUCT()
-	struct QUVREDITORMODE_API  FQuVRCatalogNode
+class QUVREDITORMODE_API FQuVRCatalogNode : public FGCObject
+{
+public:
+
+	FQuVRCatalogNode()
 	{
-		GENERATED_USTRUCT_BODY()
-			FQuVRCatalogNode()
-		{
-			ChildList.Empty();
-			ChildList.Reset();
-		}
-		//	UPROPERTY()
-		FQuVRCatalogItem NodeData;
-		//	UPROPERTY()
-		TArray<FQuVRCatalogItem> ChildList;
+		ChildList.Empty();
+		ChildList.Reset();
 	};
+
+	FQuVRCatalogItem NodeData;
+	TArray<TSharedPtr<FQuVRCatalogNode>> ChildList;
+
+public:
+	virtual void AddReferencedObjects(FReferenceCollector& Collector)override {};
+};
 
 /**
  * UQuVRAssetDownNet
@@ -66,8 +68,11 @@ public:
 	/** Request we're currently processing */
 	static UQuVRAssetDownNet* GetInstance();
 	void GetAllTypeDataFromUrl();
-	TArray<FQuVRCatalogNode>& GetNodeList() { return NodeList; }
+	TArray<TSharedPtr<FQuVRCatalogNode>> & GetNodeList() { return RootNode->ChildList; }
 	void SetWidget(const TSharedPtr<SQuVRCatalogWidget> widget) { Catawidget = widget; }
+
+protected:
+//	virtual void Destroyed();
 private:
 	static const FString CatalogHttpURL;
 
@@ -83,15 +88,14 @@ private:
 private:
 	void Initial();
 
-	void ParseSelectorTypeData(TArray<TSharedPtr<FJsonValue>> JsonValue);
+	void ParseItemData(class FQuVRCatalogNode& node,TArray<TSharedPtr<FJsonValue>> JsonValue);
 
-	void ParseSecondTypeData(TArray<TSharedPtr<FJsonValue>> JsonValue);
+	void ParseListData(TArray<TSharedPtr<FJsonValue>> JsonValue);
 
-	void ParseLastTypeData(TArray<TSharedPtr<FJsonValue>> JsonValue);
 
 private:
-	FQuVRCatalogNode CurrentNode;
-	TArray<FQuVRCatalogNode> NodeList;
+	TSharedPtr<FQuVRCatalogNode>  RootNode;
+//	TArray<FQuVRCatalogNode> NodeList;
 	static TSharedPtr<UQuVRAssetDownNet> StaticInstance;
 	TSharedPtr<SQuVRCatalogWidget> Catawidget;
 public:
