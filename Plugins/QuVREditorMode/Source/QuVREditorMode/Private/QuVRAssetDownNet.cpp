@@ -155,6 +155,7 @@ void UQuVRAssetDownNet::GenerateCatalog()
 {
 	if (Catawidget.IsValid())
 	{
-		Catawidget->CreateGroupGroupTabPrimaryList(RootNode->ChildList);
+	//	Catawidget->CreateGroupGroupTabPrimaryList(RootNode->ChildList);
+		Catawidget->CreateGroupGroupTabRoot(RootNode);
 	}
 }

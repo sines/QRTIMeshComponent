@@ -8,6 +8,7 @@
 #include "Core.h"
 #include "SlateBasics.h"
 #include "SNotificationList.h"
+#include "QuVRCatalogPlaneWidget.h"
 #if !UE_BUILD_SHIPPING
 
 #define LOCTEXT_NAMESPACE "SQuVRCatalogNodeButton"
@@ -78,16 +79,17 @@ void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
 #endif
 
 	int32 ZOrder = TreeItem->NodeData.ZOrder;
+
 	switch (ZOrder)
 	{
 	case PrimaryListPanel:
-		ParentWidget->CreateCatalogGroupTabSectionList(TreeItem->ChildList);
+		ParentWidget->AddGroupTabPlane(TreeItem);
 		break;
 	case SectionListPanel:
-		ParentWidget->CreateCatalogGroupTabAssetList(TreeItem->ChildList);
+		ParentWidget->AddGroupTabAssetList(TreeItem);
 		break;
 	default:
-		ParentWidget->CreateCatalogGroupTabSectionList(TreeItem->ChildList);
+		ParentWidget->AddGroupTabPlane(TreeItem);
 		break;
 	}
 }

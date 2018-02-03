@@ -31,7 +31,7 @@ public:
 	SLATE_ATTRIBUTE(const FSlateBrush*, BkImage)
 
 	/** SHOW ParentWidget */
-	SLATE_ARGUMENT(TSharedPtr<class SQuVRCatalogWidget>, ParentWidget)
+	SLATE_ARGUMENT(TSharedPtr<class SQuVRCatalogPlaneWidget>, ParentWidget)
 
 	/** Called when the checked state has changed */
 	SLATE_EVENT(FOnCheckStateChanged, OnCheckStateChanged)
@@ -66,7 +66,8 @@ TAttribute< const FSlateBrush* > BkImage;
 TSharedPtr<class FQuVRCatalogNode> TreeItem;
 
 /*Parent Widget*/
-TSharedPtr<class SQuVRCatalogWidget> ParentWidget;
+//TSharedPtr<class SQuVRCatalogWidget> ParentWidget;
+TSharedPtr<class SQuVRCatalogPlaneWidget> ParentWidget;
 };
 
 TSharedRef<SWidget> MakeCatalogSectionButton(const TSharedRef<class FQuVRCatalogNode> node);

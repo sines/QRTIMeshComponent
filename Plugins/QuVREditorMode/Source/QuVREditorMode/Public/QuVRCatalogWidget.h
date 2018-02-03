@@ -38,7 +38,9 @@ public:
 public:
 	void CreateGroupGroupTabPrimaryList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
 	void CreateCatalogGroupTabSectionList(TArray<TSharedPtr<FQuVRCatalogNode>> nodeList);
-	FReply CreateCatalogGroupTabAssetList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
+	void CreateCatalogGroupTabAssetList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
+
+	void CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > node);
 private:
 	/** Flag to indicate that we need to update the filtered items array */
 	bool bNeedsUpdate;
@@ -79,6 +81,10 @@ private:
 	void CreateWidgetElement();
 	/** Gets the border image for the tab, this is the 'active' orange bar. */
 	const FSlateBrush* CatalogGroupBorderImage(FName CategoryName) const;
+
+	//////////////////////////////////////////////////////////////////////////
+	TSharedPtr<SHorizontalBox> HTB;
+	void AddListViewLR();
 };
 
 /**
