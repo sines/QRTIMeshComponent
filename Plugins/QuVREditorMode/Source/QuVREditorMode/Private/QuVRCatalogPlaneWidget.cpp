@@ -101,7 +101,7 @@ void SQuVRCatalogPlaneWidget::AddGroupTabAssetList(TSharedPtr<FQuVRCatalogNode> 
 {
 	if (RootWidget.IsValid())
 	{
-		if (node.IsValid() && 0 < node->ChildList.Num())
+		if (node.IsValid())
 		{
 			RootWidget->CreateCatalogGroupTabAssetList(node->ChildList);
 		}
