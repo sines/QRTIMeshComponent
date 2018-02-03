@@ -1,6 +1,6 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 
-#include "QuVRCatalogSectionButton.h"
+#include "QuVRCatalogNodeButton.h"
 #include "Widgets/SWidget.h"
 #include "Widgets/SUserWidget.h"
 #include "Widgets/SCompoundWidget.h"
@@ -10,10 +10,12 @@
 #include "SNotificationList.h"
 #if !UE_BUILD_SHIPPING
 
-#define LOCTEXT_NAMESPACE "SQuVRCatalogSectionButton"
+#define LOCTEXT_NAMESPACE "SQuVRCatalogNodeButton"
 
+#define PrimaryListPanel 1
+#define SectionListPanel 2
 
-void SQuVRCatalogSectionButton::Construct(const SQuVRCatalogSectionButton::FArguments& InDelcaration)
+void SQuVRCatalogNodeButton::Construct(const SQuVRCatalogNodeButton::FArguments& InDelcaration)
 {
 	TreeItem = InDelcaration._TreeItem;
 	IsSectionButtonChecked = InDelcaration._IsChecked;
@@ -24,7 +26,7 @@ void SQuVRCatalogSectionButton::Construct(const SQuVRCatalogSectionButton::FArgu
 this->ChildSlot
 	[
 	SNew(SCheckBox)
-		.OnCheckStateChanged(this, &SQuVRCatalogSectionButton::OnSectionButtonChanged)
+		.OnCheckStateChanged(this, &SQuVRCatalogNodeButton::OnSectionButtonChanged)
 		.IsChecked(IsSectionButtonChecked)
 		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
 		[
@@ -66,16 +68,31 @@ this->ChildSlot
 
 };
 
-void SQuVRCatalogSectionButton::OnSectionButtonChanged(ECheckBoxState NewState)
+void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
 {
 	OnCheckStateChanged.ExecuteIfBound(NewState);
+#if 0 // SHOW DEBUG INFO
 	// The state of the check box changed.  Execute the delegate to notify users
 	FNotificationInfo Info(FText::FromString(TreeItem->NodeData.DisplayName));//LOCTEXT("TestNotification01", "OnMouseButtonDown"));
 	NotificationListPtr->AddNotification(Info);
+#endif
 
-	ParentWidget->CreateCatalogGroupTabSectionList(TreeItem->ChildList);
+	int32 ZOrder = TreeItem->NodeData.ZOrder;
+	switch (ZOrder)
+	{
+	case PrimaryListPanel:
+		ParentWidget->CreateCatalogGroupTabSectionList(TreeItem->ChildList);
+		break;
+	case SectionListPanel:
+		ParentWidget->CreateCatalogGroupTabAssetList(TreeItem->ChildList);
+		break;
+	default:
+		ParentWidget->CreateCatalogGroupTabSectionList(TreeItem->ChildList);
+		break;
+	}
 }
-FReply SQuVRCatalogSectionButton::OnSectionButtonChanged()
+
+FReply SQuVRCatalogNodeButton::OnSectionButtonChanged()
 {
 		// The state of the check box changed.  Execute the delegate to notify users
 	FNotificationInfo Info(FText::FromString(TreeItem->NodeData.DisplayName));//LOCTEXT("TestNotification01", "OnMouseButtonDown"));
@@ -86,7 +103,7 @@ FReply SQuVRCatalogSectionButton::OnSectionButtonChanged()
 
 TSharedRef<SWidget> MakeCatalogSectionButton(const TSharedRef<class FQuVRCatalogNode> node)
 {
-	return SNew(SQuVRCatalogSectionButton).TreeItem(node);}
+	return SNew(SQuVRCatalogNodeButton).TreeItem(node);}
 
 #undef LOCTEXT_NAMESPACE
 

@@ -5,12 +5,12 @@
 #if !UE_BUILD_SHIPPING
 
 
-class SQuVRCatalogAssetButton
+class SQuVRCatalogPlaneWidget
 	: public SCompoundWidget
 {
 public:
 
-	SLATE_BEGIN_ARGS(SQuVRCatalogAssetButton){ }
+	SLATE_BEGIN_ARGS(SQuVRCatalogPlaneWidget){ }
 	SLATE_END_ARGS()
 
 		/**
@@ -21,7 +21,7 @@ public:
 	void Construct(const FArguments& InDelcaration);
 };
 
-TSharedRef<SWidget> MakeCatalogAssetButton();
+TSharedRef<SWidget> MakeCatalogPlaneWidget();
 
 
 #endif // #if !UE_BUILD_SHIPPING

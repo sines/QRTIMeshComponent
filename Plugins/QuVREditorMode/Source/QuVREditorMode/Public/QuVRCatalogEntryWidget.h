@@ -19,6 +19,10 @@ public:
 		* @param InArgs   Declaration from which to construct the widget.
 		*/
 	void Construct(const FArguments& InDelcaration);
+
+	// Void DownLoad Asset.zip
+	FReply OnDownloadAsset();
+
 };
 
 TSharedRef<SWidget> MakeCatalogEntryWidget();

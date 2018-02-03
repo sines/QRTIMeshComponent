@@ -17,17 +17,22 @@
 #include "EditorStyleSet.h"
 #include "QuVRCatalogGategoryWidget.h"
 #include "QuVRCatalogEntryWidget.h"
-#include "QuVRCatalogSectionButton.h"
+#include "QuVRCatalogNodeButton.h"
 #include "QuVRAssetDownNet.h"
 
-static TArray<TSharedPtr<FCatalogItem>> GFilteredItems;
+static TArray<TSharedPtr<FCatalogItem>> GFilteredLeftItems;
+static TArray<TSharedPtr<FCatalogItem>> GFilteredRightItems;
 
 /* Group Tab Primary List*/
 void SQuVRCatalogWidget::CreateGroupGroupTabPrimaryList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList)
 {
+	GFilteredLeftItems.Empty();
+	GFilteredLeftItems.Reset();
+	GFilteredRightItems.Empty();
+	GFilteredRightItems.Reset();
+	RequestRefresh();
 	VerticalBoxPrimary->ClearChildren();
 	VerticalBoxSection->ClearChildren();
-
 	for (auto node : nodeList)
 	{
 		VerticalBoxPrimary->AddSlot().AutoHeight()
@@ -40,8 +45,12 @@ void SQuVRCatalogWidget::CreateGroupGroupTabPrimaryList(TArray <TSharedPtr<FQuVR
 /* Group Tab Section List*/
 void SQuVRCatalogWidget::CreateCatalogGroupTabSectionList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList)
 {
+	GFilteredLeftItems.Empty();
+	GFilteredLeftItems.Reset();
+	GFilteredRightItems.Empty();
+	GFilteredRightItems.Reset();
+	RequestRefresh();
 	VerticalBoxSection->ClearChildren();
-
 	for (auto node : nodeList)
 	{
 		VerticalBoxSection->AddSlot().AutoHeight()
@@ -51,18 +60,45 @@ void SQuVRCatalogWidget::CreateCatalogGroupTabSectionList(TArray <TSharedPtr<FQu
 	}
 }
 
+/* Group Tab Asset List*/
+FReply SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList)
+{
+	GFilteredLeftItems.Empty();
+	GFilteredLeftItems.Reset();
+	GFilteredRightItems.Empty();
+	GFilteredRightItems.Reset();
+
+	bool NFlip = true;
+	for (auto node : nodeList)
+	{
+		TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
+		CatalogItem->DisplayName = FText::FromString(node->NodeData.DisplayName);
+		if (NFlip)
+		{
+			GFilteredLeftItems.Add(CatalogItem);
+		}
+		else
+		{
+			GFilteredRightItems.Add(CatalogItem);
+		}
+		NFlip = !NFlip;
+	}
+	RequestRefresh();
+
+	return FReply::Handled();
+}
+
+
 void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 {
 	
 	bNeedsUpdate = false;
 	SAssignNew(VerticalBoxPrimary, SVerticalBox);
 	SAssignNew(VerticalBoxSection, SVerticalBox);
-	CreateGroupTabData(VerticalBoxPrimary.ToSharedRef(), VerticalBoxSection.ToSharedRef());
 
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(1, 1));
 
-#if 1
-	// add ChildSlot Layout
+#if 1 // add ChildSlot Layout
 	ChildSlot
 	[
 		
@@ -130,7 +166,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 							[
 
 								SAssignNew(ListViewLeft, SListView<TSharedPtr<FCatalogItem>>)
-								.ListItemsSource(&GFilteredItems)
+								.ListItemsSource(&GFilteredLeftItems)
 								.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
 								.ExternalScrollbar(ScrollBar)
 
@@ -140,7 +176,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 							[
 
 								SAssignNew(ListViewRight, SListView<TSharedPtr<FCatalogItem>>)
-								.ListItemsSource(&GFilteredItems)
+								.ListItemsSource(&GFilteredRightItems)
 								.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
 								.ExternalScrollbar(ScrollBar)
 							]
@@ -157,7 +193,6 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 		]
 	];
 #endif
-//	RebuildData();
 	UQuVRAssetDownNet::GetInstance()->SetWidget(SharedThis(this));
 }
 
@@ -165,24 +200,6 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 void SQuVRCatalogWidget::CreateWidgetElement()
 {
 
-}
-
-void SQuVRCatalogWidget::CreateGroupTabData(TSharedRef<SVerticalBox> InPrimary, TSharedRef<SVerticalBox> InSection)
-{
-/*
-	InPrimary->AddSlot().AutoHeight()
-	[
-	//	CreateGroupGroupTabPrimary()
-	//	CreateGroupGroupTabPrimary(FString(TEXT("TabPrimary")))
-	];
-*/
-
-/*
-	InSection->AddSlot().AutoHeight()
-	[
-		CreateCatalogGroupTabSection(FString(TEXT("TabSection")))
-	];
-*/
 }
 
 /** Request that both Tree and List refresh themselves on the next tick */
@@ -197,73 +214,6 @@ FReply SQuVRCatalogWidget::RequestRefresh()
 		ListViewLeft->RequestListRefresh();
 	}
 	return FReply::Handled();
-}
-
-FReply SQuVRCatalogWidget::RebuildData()
-{
-	GFilteredItems.Empty();
-	GFilteredItems.Reset();
-
-	TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
-	CatalogItem->DisplayName = FText::FromString(TEXT("Model A"));
-	GFilteredItems.Add(CatalogItem);
-	RequestRefresh();
-	
-	return FReply::Handled();
-}
-
-void SQuVRCatalogWidget::GenerateItemsByCatalog(const FString& CatalogName)
-{
-	GFilteredItems.Reset();
-	TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
-	CatalogItem->DisplayName = FText::FromString(TEXT("Model A"));
-	GFilteredItems.Add(CatalogItem);
-
-#if 0
-	if (CatalogName.Equals(TEXT("Models")))
-	{
-		TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
-		CatalogItem->DisplayName = FText::FromString(TEXT("Model A"));
-		CatalogItem->widget = MakeCatalogBtDownload();
-		GFilteredItems.Add(CatalogItem);
-
-		TSharedPtr<FCatalogItem> CatalogItem1 = MakeShareable(new FCatalogItem());
-		CatalogItem1->DisplayName = FText::FromString(TEXT("Model B"));
-		GFilteredItems.Add(CatalogItem1);
-
-		TSharedPtr<FCatalogItem> CatalogItem2 = MakeShareable(new FCatalogItem());
-		CatalogItem2->DisplayName = FText::FromString(TEXT("Model C"));
-		GFilteredItems.Add(CatalogItem2);
-	}
-	else if (CatalogName.Equals(TEXT("Materials")))
-	{
-		TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
-		CatalogItem->DisplayName = FText::FromString(TEXT("Material A"));
-		GFilteredItems.Add(CatalogItem);
-
-		TSharedPtr<FCatalogItem> CatalogItem1 = MakeShareable(new FCatalogItem());
-		CatalogItem1->DisplayName = FText::FromString(TEXT("Material B"));
-		GFilteredItems.Add(CatalogItem1);
-
-		TSharedPtr<FCatalogItem> CatalogItem2 = MakeShareable(new FCatalogItem());
-		CatalogItem2->DisplayName = FText::FromString(TEXT("Material C"));
-		GFilteredItems.Add(CatalogItem2);
-	}
-	else if (CatalogName.Equals(TEXT("MEIWU")))
-	{
-		TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
-		CatalogItem->DisplayName = FText::FromString(TEXT("MEIWU A"));
-		GFilteredItems.Add(CatalogItem);
-
-		TSharedPtr<FCatalogItem> CatalogItem1 = MakeShareable(new FCatalogItem());
-		CatalogItem1->DisplayName = FText::FromString(TEXT("MEIWU B"));
-		GFilteredItems.Add(CatalogItem1);
-
-		TSharedPtr<FCatalogItem> CatalogItem2 = MakeShareable(new FCatalogItem());
-		CatalogItem2->DisplayName = FText::FromString(TEXT("MEIWU C"));
-		GFilteredItems.Add(CatalogItem2);
-	}
-#endif
 }
 
 FReply SQuVRCatalogWidget::HandleBreadcrumbTrailAddButtonClicked()
@@ -341,46 +291,13 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupTabManufacturer(const FString
 
 TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(TSharedRef<FQuVRCatalogNode> node)
 {
-	return	SNew(SQuVRCatalogSectionButton)
+	return	SNew(SQuVRCatalogNodeButton)
 		.TreeItem(node)
 		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, node)
 		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node->NodeData.DisplayName))
 		.BkImage(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node->NodeData.DisplayName))
 		.ParentWidget(SharedThis(this));
-#if 0
-//	SCheckBox
-	TSharedRef<SCheckBox> checkBox =
-	SNew(SCheckBox)
-		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, node)//FName(*node.NodeData.DisplayName))
-		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node.NodeData.DisplayName))
-		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
-	[
-		SNew(SOverlay)
-		+ SOverlay::Slot()
-		.VAlign(VAlign_Center)
-		[
-			SNew(SSpacer)
-			.Size(FVector2D(1, 30))
-		]
-		+ SOverlay::Slot()
-		.Padding(FMargin(6, 0, 30, 0))
-		.VAlign(VAlign_Center)
-		[
 
-			SNew(STextBlock)
-			.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
-			.Text(FText::FromString(node.NodeData.DisplayName))
-		]
-		+ SOverlay::Slot()
-		.VAlign(VAlign_Fill)
-		.HAlign(HAlign_Left)
-		[
-			SNew(SImage)
-			.Image()
-		]
-	];
-	return SNew(SQuVRCatalogSectionButton).TreeItem(node).SectionScheckBox(checkBox);
-#endif
 
 #if 0
 	return SNew(SCheckBox)
@@ -421,10 +338,10 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateCatalogGroupTabSection(const TShar
 {
 
 #if 1
-	return	SNew(SQuVRCatalogSectionButton)
+	return	SNew(SQuVRCatalogNodeButton)
 		.TreeItem(node)
-		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, node)
-		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node->NodeData.DisplayName))
+		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedSection, node)
+		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStateSection, FName(*node->NodeData.DisplayName))
 		.BkImage(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node->NodeData.DisplayName))
 		.ParentWidget(SharedThis(this));
 
@@ -484,20 +401,17 @@ void SQuVRCatalogWidget::OnCatalogTabChangedPrimary(ECheckBoxState NewState, TSh
 	if (NewState == ECheckBoxState::Checked)
 	{
 		ActiveTabName = FName(*node->NodeData.DisplayName);
-//		GenerateItemsByCatalog(CategoryName.ToString());
-
 		bNeedsUpdate = true;
 	}
 
 }
 
 
-void SQuVRCatalogWidget::OnCatalogTabChangedSection(ECheckBoxState NewState, FName CategoryName)
+void SQuVRCatalogWidget::OnCatalogTabChangedSection(ECheckBoxState NewState, TSharedRef<FQuVRCatalogNode> node)
 {
 	if (NewState == ECheckBoxState::Checked)
 	{
-		SectionTabName = CategoryName;
-	//	GenerateItemsByCatalog(CategoryName.ToString());
+		SectionTabName = FName(*node->NodeData.DisplayName);
 		bNeedsUpdate = true;
 	}
 }
@@ -541,7 +455,6 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<con
 
 #if true
 		/** HorizontalScrollbar  Begin**/
-		/** HorizontalScrollbar  Begin**/
 	TSharedPtr<SScrollBox> HorizontalScrollbar =
 		SNew(SScrollBox)
 		.Orientation(Orient_Vertical);
@@ -559,8 +472,8 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<con
 				[
 					SNew(STextBlock)
 					.Justification(ETextJustify::Center)
-			.TextStyle(FEditorStyle::Get(), "LargeText")
-			.Text(FText::FromString(TEXT("TestButton")))
+					.TextStyle(FEditorStyle::Get(), "LargeText")
+					.Text(InItem->DisplayName)
 				]
 			]
 		];
@@ -570,9 +483,9 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<con
 	/**
 	Add ChildSlot
 	*/
-	ChildSlot
+ChildSlot
 [
-			SNew(SBorder)
+	SNew(SBorder)
 			.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
 		.Cursor(EMouseCursor::GrabHand)
 		[
@@ -602,8 +515,8 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<con
 					SNew(SBox)
 					.HAlign(HAlign_Fill)
 				.VAlign(VAlign_Fill)
-				.WidthOverride(128)
-				.HeightOverride(128)
+				.WidthOverride(112)
+				.HeightOverride(112)
 				[
 					MakeCatalogEntryWidget()
 				]
@@ -614,21 +527,21 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<con
 					SNew(SSpacer).Size(FVector2D(1.0f, 1.0f))
 				]
 				]
-	+ SVerticalBox::Slot()
-		.VAlign(VAlign_Fill)
-		.HAlign(HAlign_Fill)
-		.AutoHeight()
-		[
-			SNew(SSpacer)
-		]
-	+ SVerticalBox::Slot()
-		.VAlign(VAlign_Fill)
-		.HAlign(HAlign_Fill)
-		.AutoHeight()
-		.Padding(2, 0, 4, 0)
-		[
-			HorizontalScrollbar.ToSharedRef()
-		]
+			+ SVerticalBox::Slot()
+				.VAlign(VAlign_Fill)
+				.HAlign(HAlign_Fill)
+				.AutoHeight()
+				[
+					SNew(SSpacer)
+				]
+			+ SVerticalBox::Slot()
+				.VAlign(VAlign_Fill)
+				.HAlign(HAlign_Fill)
+				.AutoHeight()
+				.Padding(2, 0, 4, 0)
+				[
+					HorizontalScrollbar.ToSharedRef()
+				]
 		]
 ];
 #endif

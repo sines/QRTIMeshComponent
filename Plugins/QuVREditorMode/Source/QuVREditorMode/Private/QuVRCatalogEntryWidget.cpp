@@ -19,6 +19,7 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 		[
 			SNew(SButton).HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
+			.OnClicked(this, &SQuVRCatlogEntryWidget::OnDownloadAsset)
 		];
 
 
@@ -125,7 +126,12 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 };
 
 
+FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("DownloadAsset"));
 
+	return FReply::Handled();
+}
 
 TSharedRef<SWidget> MakeCatalogEntryWidget()
 {

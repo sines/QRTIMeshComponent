@@ -7,12 +7,12 @@
 /*class FQuVRCatalogNode;*/
 
 
-class SQuVRCatalogSectionButton
+class SQuVRCatalogNodeButton
 	: public SCompoundWidget
 {
 public:
 
-	SLATE_BEGIN_ARGS(SQuVRCatalogSectionButton)
+	SLATE_BEGIN_ARGS(SQuVRCatalogNodeButton)
 		: _TreeItem()
 		,_Content()
 		, _IsChecked(ECheckBoxState::Unchecked)

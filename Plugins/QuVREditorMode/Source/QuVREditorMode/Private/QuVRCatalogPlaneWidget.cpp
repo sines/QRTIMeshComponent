@@ -1,6 +1,6 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 
-#include "QuVRCatalogAssetButton.h"
+#include "QuVRCatalogPlaneWidget.h"
 #include "Widgets/SWidget.h"
 #include "Widgets/SUserWidget.h"
 #include "Widgets/SCompoundWidget.h"
@@ -10,10 +10,10 @@
 
 #if !UE_BUILD_SHIPPING
 
-#define LOCTEXT_NAMESPACE "SQuVRCatlogBtDownloader"
+#define LOCTEXT_NAMESPACE "SQuVRCatalogPlaneWidget"
 
 
-void SQuVRCatalogAssetButton::Construct(const FArguments& InDelcaration)
+void SQuVRCatalogPlaneWidget::Construct(const FArguments& InDelcaration)
 {		
 	ChildSlot
 		[
@@ -28,7 +28,7 @@ void SQuVRCatalogAssetButton::Construct(const FArguments& InDelcaration)
 
 TSharedRef<SWidget> MakeCatalogAssetButton()
 {
-	return SNew(SQuVRCatalogAssetButton);}
+	return SNew(SQuVRCatalogPlaneWidget);}
 
 #undef LOCTEXT_NAMESPACE
 

@@ -24,14 +24,28 @@ void UQuVRAssetDownNet::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpR
 	// Check we have result to process futher
 	if (!bWasSuccessful || !Response.IsValid())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Request failed (%d): %s ")+ FString::FromInt(ResponseCode)+ *Request->GetURL());
 		return;
 	}
 
-	// Save response data as a string
+	// Save response data as a string	
 	ResponseContent = Response->GetContentAsString();
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("Response(%d) : %sJSON(%s%s%s)JSON")+ FString::FromInt(ResponseCode)+ *ResponseContent);
 	
+	//////////////////////////////////////////////////////////////////////////
+	// TEST LOCAL JSON
+#if 1 // Read Local json
+	FString FileName = FPaths::GameDir() + FString(TEXT("format.json"));
+	FString myString;
+	if (FPaths::FileExists(FileName))
+	{
+		if (FFileHelper::LoadFileToString(myString, *(FileName)))
+		{
+			ResponseContent = myString;
+		}
+	}
+
+#endif
+	//////////////////////////////////////////////////////////////////////////
+
 	// Analyze Json Data
 	//Read Json Data
 	TSharedPtr<FJsonObject> JsonObject;
@@ -42,7 +56,7 @@ void UQuVRAssetDownNet::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpR
 	check(bResult);
 
 	TArray<TSharedPtr<FJsonValue>>TypeData = JsonObject->GetArrayField(TEXT("items"));
-	ParseListData(TypeData);
+	ParseListData(RootNode,TypeData);
 	GenerateCatalog();
 	// OnRequset Data Done
 	OnRequestAllSelectTypeDataDone.Broadcast(this);
@@ -84,57 +98,63 @@ void UQuVRAssetDownNet::GetAllTypeDataFromUrl()
 
 }
 
-void UQuVRAssetDownNet::ParseItemData(FQuVRCatalogNode& node, TArray<TSharedPtr<FJsonValue>> JsonValue)
+void UQuVRAssetDownNet::ParseItemData(TSharedPtr<FQuVRCatalogNode> node, TSharedPtr<FJsonValue> JsonValue)
 {
-	node.ChildList.Empty();
-	node.ChildList.Reset();
-	for (auto Value : JsonValue)
+	if (node.IsValid())
 	{
-		FQuVRCatalogNode* item = new FQuVRCatalogNode();
-		TSharedPtr<FJsonObject>TempJsonObject = Value->AsObject();
-		item->NodeData.Id=TempJsonObject->GetStringField(TEXT("ID"));
-		item->NodeData.PId = TempJsonObject->GetStringField(TEXT("PID"));
-		item->NodeData.Name = TempJsonObject->GetStringField(TEXT("Name"));
-		item->NodeData.DisplayName = TempJsonObject->GetStringField(TEXT("DisplayName"));
-		item->NodeData.Description = TempJsonObject->GetStringField(TEXT("Description"));
-		item->NodeData.OrderNo = TempJsonObject->GetStringField(TEXT("OrderNo"));
-		item->NodeData.CatalogType = TempJsonObject->GetStringField(TEXT("CatalogType"));
-		node.ChildList.Add(MakeShareable(item));
+		FQuVRCatalogItem item;
+		TSharedPtr<FJsonObject>TempJsonObject = JsonValue->AsObject();
+		item.Id = TempJsonObject->GetStringField(TEXT("ID"));
+		item.PId = TempJsonObject->GetStringField(TEXT("PID"));
+		item.Name = TempJsonObject->GetStringField(TEXT("Name"));
+		item.DisplayName = TempJsonObject->GetStringField(TEXT("DisplayName"));
+		item.Description = TempJsonObject->GetStringField(TEXT("Description"));
+		item.OrderNo = TempJsonObject->GetStringField(TEXT("OrderNo"));
+		item.CatalogType = TempJsonObject->GetStringField(TEXT("CatalogType"));
+		node->NodeData = item;
+		if (node->ParentNode.IsValid())
+		{
+			node->NodeData.ZOrder = node->ParentNode->NodeData.ZOrder + 1;
+		}
 	}
 }
 
-void UQuVRAssetDownNet::ParseListData(TArray<TSharedPtr<FJsonValue>> JsonValue)
+void UQuVRAssetDownNet::ParseListData(TSharedPtr<FQuVRCatalogNode> node, TArray<TSharedPtr<FJsonValue>> JsonValue)
 {
 	for (auto Value : JsonValue)
 	{
-		auto item = new FQuVRCatalogNode();
-		TSharedPtr<FJsonObject>TempJsonObject = Value->AsObject();
-		item->NodeData.Id = TempJsonObject->GetStringField(TEXT("ID"));
-		item->NodeData.PId = TempJsonObject->GetStringField(TEXT("PID"));
-		item->NodeData.Name = TempJsonObject->GetStringField(TEXT("Name"));
-		item->NodeData.DisplayName = TempJsonObject->GetStringField(TEXT("DisplayName"));
-		item->NodeData.Description = TempJsonObject->GetStringField(TEXT("Description"));
-		item->NodeData.OrderNo = TempJsonObject->GetStringField(TEXT("OrderNo"));
-		item->NodeData.CatalogType = TempJsonObject->GetStringField(TEXT("CatalogType"));
-		RootNode->ChildList.Add(MakeShareable(item));
-		
+		TSharedPtr<FQuVRCatalogNode> ChildNode = MakeShareable(new(FQuVRCatalogNode));
+		ChildNode->ParentNode = node;
+		node->ChildList.Add(ChildNode);
+		ParseChildData(ChildNode, Value);
+	}
+}
+
+
+void UQuVRAssetDownNet::ParseChildData(TSharedPtr<FQuVRCatalogNode> node, TSharedPtr<FJsonValue> JsonValue)
+{
+		ParseItemData(node, JsonValue);
+		TSharedPtr<FJsonObject>TempJsonObject = JsonValue->AsObject();
 		if (TempJsonObject->HasField(TEXT("Children")))
 		{
 			TArray<TSharedPtr<FJsonValue>>ChildrenData = TempJsonObject->GetArrayField(TEXT("Children"));
 			if (0 < ChildrenData.Num())
 			{
-				ParseListData(ChildrenData);
+				for (auto Value : ChildrenData)
+				{
+					TSharedPtr<FQuVRCatalogNode> addNode = MakeShareable(new(FQuVRCatalogNode));
+					addNode->ParentNode = node;
+					node->ChildList.Add(addNode);
+					ParseChildData(addNode, Value);
+				}
 			}
 		}
-	
-	//	RootNode->ChildList.Add(item);
-	}
 }
 
 void UQuVRAssetDownNet::GenerateCatalog()
 {
 	if (Catawidget.IsValid())
 	{
-	//	Catawidget->CreateGroupGroupTabPrimaryList(NodeList);
+		Catawidget->CreateGroupGroupTabPrimaryList(RootNode->ChildList);
 	}
 }

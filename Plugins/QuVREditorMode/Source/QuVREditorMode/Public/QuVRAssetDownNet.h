@@ -27,30 +27,36 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRequestAllSelectTypeDataDoneDelegat
 			OrderNo = FString(TEXT("-1"));
 			CatalogType = FString(TEXT("-1"));
 			HasChilder = false;
+			ZOrder = 0;
 		}
-		FString Id;
-		FString PId;
-		FString Name;
-		FString DisplayName;
-		FString Description;
-		FString OrderNo;
-		FString CatalogType;
-		bool HasChilder;
-	};
+
+// attribute Json Data
+	FString Id;
+	FString PId;
+	FString Name;
+	FString DisplayName;
+	FString Description;
+	FString OrderNo;
+	FString CatalogType;
+	bool HasChilder;
+
+// button Iteration 
+	int32 ZOrder;
+};
 
 class QUVREDITORMODE_API FQuVRCatalogNode : public FGCObject
 {
 public:
 
-	FQuVRCatalogNode()
+	FQuVRCatalogNode():ParentNode(nullptr)
 	{
 		ChildList.Empty();
 		ChildList.Reset();
 	};
 
 	FQuVRCatalogItem NodeData;
+	TSharedPtr<FQuVRCatalogNode> ParentNode;
 	TArray<TSharedPtr<FQuVRCatalogNode>> ChildList;
-
 public:
 	virtual void AddReferencedObjects(FReferenceCollector& Collector)override {};
 };
@@ -88,10 +94,9 @@ private:
 private:
 	void Initial();
 
-	void ParseItemData(class FQuVRCatalogNode& node,TArray<TSharedPtr<FJsonValue>> JsonValue);
-
-	void ParseListData(TArray<TSharedPtr<FJsonValue>> JsonValue);
-
+	void ParseItemData(TSharedPtr<FQuVRCatalogNode> node,TSharedPtr<FJsonValue> JsonValue);
+	void ParseChildData(TSharedPtr<FQuVRCatalogNode> node,TSharedPtr<FJsonValue> JsonValue);
+	void ParseListData(TSharedPtr<FQuVRCatalogNode> node, TArray<TSharedPtr<FJsonValue>> JsonValue);
 
 private:
 	TSharedPtr<FQuVRCatalogNode>  RootNode;

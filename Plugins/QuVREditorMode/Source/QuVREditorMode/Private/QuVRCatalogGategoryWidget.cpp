@@ -88,7 +88,6 @@ public:
 		UQuVRAssetDownNet::GetInstance()->GetAllTypeDataFromUrl();
 		
 //		UQuVRAssetDownNet::GetInstance()->GetNodeList();
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("RefreshAllData"));
 		return FReply::Handled();
 	}
 

@@ -38,7 +38,7 @@ public:
 public:
 	void CreateGroupGroupTabPrimaryList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
 	void CreateCatalogGroupTabSectionList(TArray<TSharedPtr<FQuVRCatalogNode>> nodeList);
-	
+	FReply CreateCatalogGroupTabAssetList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
 private:
 	/** Flag to indicate that we need to update the filtered items array */
 	bool bNeedsUpdate;
@@ -53,8 +53,6 @@ private:
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	
 	/*Group Tab Data*/
-	void CreateGroupTabData(TSharedRef<SVerticalBox> InPrimary, TSharedRef<SVerticalBox> InSection);
-	FReply RebuildData();
 	FReply RequestRefresh();
 
 	// Create GridPanel
@@ -72,13 +70,11 @@ private:
 	TSharedPtr<SVerticalBox> VerticalBoxSection;
 	FName SectionTabName;
 	TSharedRef<SWidget> CreateCatalogGroupTabSection(TSharedRef<FQuVRCatalogNode> node);
-	void OnCatalogTabChangedSection(ECheckBoxState NewState, FName CategoryName);
+	void OnCatalogTabChangedSection(ECheckBoxState NewState, TSharedRef<FQuVRCatalogNode> node);
 	ECheckBoxState GetCatalogTabCheckedStateSection(FName CategoryName) const;
 
 
 	TSharedRef<ITableRow> OnGenerateWidgetForItem(TSharedPtr<FCatalogItem> InItem, const TSharedRef<STableViewBase>& OwnerTable);
-
-	void GenerateItemsByCatalog(const FString& CatalogName);
 
 	void CreateWidgetElement();
 	/** Gets the border image for the tab, this is the 'active' orange bar. */
