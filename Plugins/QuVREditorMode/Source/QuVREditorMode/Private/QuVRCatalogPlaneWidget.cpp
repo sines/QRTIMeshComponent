@@ -82,6 +82,9 @@ void SQuVRCatalogPlaneWidget::RemoveChildWidget(TSharedRef<SQuVRCatalogPlaneWidg
 }
 void SQuVRCatalogPlaneWidget::AddGroupTabPlane(TSharedPtr<FQuVRCatalogNode > node)
 {
+
+	RootWidget->ClearAssetList();
+
 	if (ChildWidget.IsValid())
 	{
 		RemoveChildWidget(ChildWidget.ToSharedRef());

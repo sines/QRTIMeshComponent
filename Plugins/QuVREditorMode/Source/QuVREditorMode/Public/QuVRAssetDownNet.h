@@ -101,7 +101,7 @@ private:
 private:
 	TSharedPtr<FQuVRCatalogNode>  RootNode;
 //	TArray<FQuVRCatalogNode> NodeList;
-	static TSharedPtr<UQuVRAssetDownNet> StaticInstance;
+	static UQuVRAssetDownNet* StaticInstance;
 	TSharedPtr<SQuVRCatalogWidget> Catawidget;
 public:
 	FRequestAllSelectTypeDataDoneDelegate OnRequestAllSelectTypeDataDone;

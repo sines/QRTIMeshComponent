@@ -36,10 +36,8 @@ public:
 	void Construct(const FArguments& InArgs);
 
 public:
-	void CreateGroupGroupTabPrimaryList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
-	void CreateCatalogGroupTabSectionList(TArray<TSharedPtr<FQuVRCatalogNode>> nodeList);
 	void CreateCatalogGroupTabAssetList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
-
+	void ClearAssetList();
 	void CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > node);
 private:
 	/** Flag to indicate that we need to update the filtered items array */
@@ -56,31 +54,14 @@ private:
 	
 	/*Group Tab Data*/
 	FReply RequestRefresh();
-
 	// Create GridPanel
 	TSharedPtr<SBreadcrumbTrail<int32> > BreadcrumbTrail;
 	TSharedRef<SWidget> CreateGroupTabManufacturer(const FString& CatalogName);
 	FReply HandleBreadcrumbTrailAddButtonClicked();
-	// Create PrimaryTab
-	TSharedPtr<SVerticalBox> VerticalBoxPrimary;
-	FName ActiveTabName;
-	TSharedRef<SWidget> CreateGroupGroupTabPrimary(TSharedRef<FQuVRCatalogNode> node);
-	void OnCatalogTabChangedPrimary(ECheckBoxState NewState, TSharedRef<FQuVRCatalogNode> node);
-	ECheckBoxState GetCatalogTabCheckedStatePrimary(FName CategoryName) const;
-
-	// Create SelectSection
-	TSharedPtr<SVerticalBox> VerticalBoxSection;
-	FName SectionTabName;
-	TSharedRef<SWidget> CreateCatalogGroupTabSection(TSharedRef<FQuVRCatalogNode> node);
-	void OnCatalogTabChangedSection(ECheckBoxState NewState, TSharedRef<FQuVRCatalogNode> node);
-	ECheckBoxState GetCatalogTabCheckedStateSection(FName CategoryName) const;
-
 
 	TSharedRef<ITableRow> OnGenerateWidgetForItem(TSharedPtr<FCatalogItem> InItem, const TSharedRef<STableViewBase>& OwnerTable);
 
 	void CreateWidgetElement();
-	/** Gets the border image for the tab, this is the 'active' orange bar. */
-	const FSlateBrush* CatalogGroupBorderImage(FName CategoryName) const;
 
 	//////////////////////////////////////////////////////////////////////////
 	TSharedPtr<SHorizontalBox> HTB;

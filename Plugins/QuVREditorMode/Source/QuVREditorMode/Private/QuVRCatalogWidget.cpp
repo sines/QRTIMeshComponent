@@ -34,41 +34,14 @@ void SQuVRCatalogWidget::CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > n
 	];
 	AddListViewLR();
 }
-/* Group Tab Primary List*/
-void SQuVRCatalogWidget::CreateGroupGroupTabPrimaryList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList)
-{
-	GFilteredLeftItems.Empty();
-	GFilteredLeftItems.Reset();
-	GFilteredRightItems.Empty();
-	GFilteredRightItems.Reset();
-	RequestRefresh();
-	VerticalBoxPrimary->ClearChildren();
-	VerticalBoxSection->ClearChildren();
-	for (auto node : nodeList)
-	{
-		VerticalBoxPrimary->AddSlot().AutoHeight()
-		[
-			CreateGroupGroupTabPrimary(node.ToSharedRef())
-		];
-	}
-}
 
-/* Group Tab Section List*/
-void SQuVRCatalogWidget::CreateCatalogGroupTabSectionList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList)
+void SQuVRCatalogWidget::ClearAssetList()
 {
 	GFilteredLeftItems.Empty();
 	GFilteredLeftItems.Reset();
 	GFilteredRightItems.Empty();
 	GFilteredRightItems.Reset();
 	RequestRefresh();
-	VerticalBoxSection->ClearChildren();
-	for (auto node : nodeList)
-	{
-		VerticalBoxSection->AddSlot().AutoHeight()
-			[
-				CreateCatalogGroupTabSection(node.ToSharedRef())
-			];
-	}
 }
 
 /* Group Tab Asset List*/
@@ -102,8 +75,6 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 {
 	
 	bNeedsUpdate = false;
-	SAssignNew(VerticalBoxPrimary, SVerticalBox);
-	SAssignNew(VerticalBoxSection, SVerticalBox);
 	SAssignNew(HTB, SHorizontalBox);
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(1, 1));
 
@@ -277,98 +248,6 @@ TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupTabManufacturer(const FString
 }
 
 
-TSharedRef<SWidget> SQuVRCatalogWidget::CreateGroupGroupTabPrimary(TSharedRef<FQuVRCatalogNode> node)
-{
-	return	SNew(SQuVRCatalogNodeButton)
-		.TreeItem(node)
-		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, node)
-		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node->NodeData.DisplayName))
-		.BkImage(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node->NodeData.DisplayName));
-//		.ParentWidget(SharedThis(this));
-
-
-#if 0
-	return SNew(SCheckBox)
-		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedPrimary, FName(*node.NodeData.DisplayName))
-		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary, FName(*node.NodeData.DisplayName))
-		.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
-		[
-			SNew(SOverlay)
-			+ SOverlay::Slot()
-		.VAlign(VAlign_Center)
-		[
-			SNew(SSpacer)
-			.Size(FVector2D(1, 30))
-		]
-	+ SOverlay::Slot()
-		.Padding(FMargin(6, 0, 30, 0))
-		.VAlign(VAlign_Center)
-		[
-
-			SNew(STextBlock)
-			.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
-		.Text(FText::FromString(node.NodeData.DisplayName))
-		]
-	+ SOverlay::Slot()
-		.VAlign(VAlign_Fill)
-		.HAlign(HAlign_Left)
-		[
-			SNew(SImage)
-			.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node.NodeData.DisplayName))
-		]
-	];
-
-#endif
-}
-
-
-TSharedRef<SWidget> SQuVRCatalogWidget::CreateCatalogGroupTabSection(const TSharedRef<FQuVRCatalogNode> node)
-{
-
-#if 1
-	return	SNew(SQuVRCatalogNodeButton)
-		.TreeItem(node)
-		.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedSection, node)
-		.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStateSection, FName(*node->NodeData.DisplayName))
-		.BkImage(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node->NodeData.DisplayName));
-//		.ParentWidget(SharedThis(this));
-
-#endif
-
-#if 0
-	return SNew(SCheckBox)
-			.OnCheckStateChanged(this, &SQuVRCatalogWidget::OnCatalogTabChangedSection, FName(*node.NodeData.DisplayName))
-			.IsChecked(this, &SQuVRCatalogWidget::GetCatalogTabCheckedStateSection, FName(*node.NodeData.DisplayName))
-			.Style(FEditorStyle::Get(), "PlacementBrowser.Tab")
-			[
-
-				SNew(SOverlay)
-				+ SOverlay::Slot()
-				.VAlign(VAlign_Center)
-				[
-					SNew(SSpacer)
-					.Size(FVector2D(1, 30))
-				]
-				+ SOverlay::Slot()
-				.Padding(FMargin(6, 0, 15, 0))
-				.VAlign(VAlign_Center)
-				[
-					
-					SNew(STextBlock)
-					.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
-					.Text(FText::FromString(node.NodeData.DisplayName))
-				]
-				+ SOverlay::Slot()
-					.VAlign(VAlign_Fill)
-					.HAlign(HAlign_Left)
-					[
-						SNew(SImage)
-						.Image(this, &SQuVRCatalogWidget::CatalogGroupBorderImage, FName(*node.NodeData.DisplayName))
-					]
-			];
-
-#endif
-}
 
 void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
 {
@@ -379,56 +258,12 @@ void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	}
 }
 
-ECheckBoxState SQuVRCatalogWidget::GetCatalogTabCheckedStatePrimary(FName CategoryName) const
-{
-	return ActiveTabName == CategoryName ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
-}
-
-void SQuVRCatalogWidget::OnCatalogTabChangedPrimary(ECheckBoxState NewState, TSharedRef<FQuVRCatalogNode> node)
-{
-	if (NewState == ECheckBoxState::Checked)
-	{
-		ActiveTabName = FName(*node->NodeData.DisplayName);
-		bNeedsUpdate = true;
-	}
-
-}
-
-
-void SQuVRCatalogWidget::OnCatalogTabChangedSection(ECheckBoxState NewState, TSharedRef<FQuVRCatalogNode> node)
-{
-	if (NewState == ECheckBoxState::Checked)
-	{
-		SectionTabName = FName(*node->NodeData.DisplayName);
-		bNeedsUpdate = true;
-	}
-}
-
-ECheckBoxState SQuVRCatalogWidget::GetCatalogTabCheckedStateSection(FName CategoryName) const
-{
-	return SectionTabName == CategoryName ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
-}
-
-
 TSharedRef<ITableRow> SQuVRCatalogWidget::OnGenerateWidgetForItem(TSharedPtr<FCatalogItem> InItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	return SNew(STableRow<TSharedPtr<FCatalogItem>>, OwnerTable)
 			[
 				SNew(SQuVRCatalogEntry, InItem.ToSharedRef())
 			];
-}
-
-const FSlateBrush* SQuVRCatalogWidget::CatalogGroupBorderImage(FName CategoryName) const
-{
-	if (ActiveTabName == CategoryName)
-	{
-		static FName QuVRActiveTabBarBrush("PlacementBrowser.ActiveTabBar");
-		return FEditorStyle::GetBrush(QuVRActiveTabBarBrush);
-	}
-	else
-	{
-		return nullptr;
-	}
 }
 
 void SQuVRCatalogEntry::Construct(const FArguments& InArgs, const TSharedPtr<const FCatalogItem>& InItem)

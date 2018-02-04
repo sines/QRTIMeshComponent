@@ -62,16 +62,16 @@ void UQuVRAssetDownNet::OnProcessRequestComplete(FHttpRequestPtr Request, FHttpR
 	OnRequestAllSelectTypeDataDone.Broadcast(this);
 }
 
-TSharedPtr<UQuVRAssetDownNet> UQuVRAssetDownNet::StaticInstance;
+UQuVRAssetDownNet* UQuVRAssetDownNet::StaticInstance;
 UQuVRAssetDownNet* UQuVRAssetDownNet::GetInstance()
 {
-	if (!StaticInstance.IsValid())
+	if (!StaticInstance)
 	{
-		StaticInstance = MakeShareable(NewObject<UQuVRAssetDownNet>());
+		StaticInstance = NewObject<UQuVRAssetDownNet>();
 		StaticInstance->Initial();
 	}
 
-	return StaticInstance.Get();
+	return StaticInstance;
 }
 
 void UQuVRAssetDownNet::Initial()
