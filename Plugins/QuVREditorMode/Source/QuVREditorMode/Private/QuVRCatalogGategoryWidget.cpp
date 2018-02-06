@@ -73,6 +73,7 @@ public:
 					.AutoWidth()
 					[
 						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-HD", "HDPJ") )
+						.OnClicked(this,&QuVRCatalogGategoryWidget::TestButtonClicked)
 					]
 			
 				]
@@ -84,13 +85,17 @@ public:
 //  Attribute
 	FReply RefreshAllButtonClicked()
 	{
-	
-		UQuVRAssetDownNet::GetInstance()->GetAllTypeDataFromUrl();
-		
-//		UQuVRAssetDownNet::GetInstance()->GetNodeList();
+		UQuVRAssetDownNet::GetInstance()->GetAllCatalogNodeListFromUrl();
 		return FReply::Handled();
 	}
 
+	FReply TestButtonClicked()
+	{
+//		TSharedPtr<class FQuVRCatalogNode> node = UQuVRAssetDownNet::GetInstance()->GetRootNode().Get()->ChildList[0];
+		TSharedPtr<class FQuVRCatalogNode> node = MakeShareable(new FQuVRCatalogNode());
+		UQuVRAssetDownNet::GetInstance()->GetCatalogNodeAssetFromUrl(node);
+		return FReply::Handled();
+	}
 	//////////////////////////////////////////////////////////////////////////
 	FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 	{

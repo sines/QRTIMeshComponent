@@ -17,10 +17,15 @@ class FQuVRCatalogNode;
 struct FCatalogItem
 {
 	/** Default constructor */
-	FCatalogItem(){}
+	FCatalogItem()
+	{
+		DisplayName =FText::FromString(TEXT("0000"));
+		image = nullptr;
+	}
 
 	/** This item's display name */
 	FText DisplayName;
+	FSlateBrush* image;
 
 };
 
@@ -36,7 +41,7 @@ public:
 	void Construct(const FArguments& InArgs);
 
 public:
-	void CreateCatalogGroupTabAssetList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList);
+	void CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogNode > node);
 	void ClearAssetList();
 	void CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > node);
 private:

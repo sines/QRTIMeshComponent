@@ -33,6 +33,7 @@ void SQuVRCatalogWidget::CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > n
 		SNew(SQuVRCatalogPlaneWidget).TreeItem(node).RootContent(HTB).RootWidget(SharedThis(this))
 	];
 	AddListViewLR();
+	ClearAssetList();
 }
 
 void SQuVRCatalogWidget::ClearAssetList()
@@ -45,18 +46,24 @@ void SQuVRCatalogWidget::ClearAssetList()
 }
 
 /* Group Tab Asset List*/
-void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TArray <TSharedPtr<FQuVRCatalogNode>> nodeList)
+void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogNode > node)
 {
 	GFilteredLeftItems.Empty();
 	GFilteredLeftItems.Reset();
 	GFilteredRightItems.Empty();
 	GFilteredRightItems.Reset();
-
+	RequestRefresh();
 	bool NFlip = true;
-	for (auto node : nodeList)
+	for (auto asset : node->AssetList)
 	{
 		TSharedPtr<FCatalogItem> CatalogItem = MakeShareable(new FCatalogItem());
-		CatalogItem->DisplayName = FText::FromString(node->NodeData.DisplayName);
+		CatalogItem->DisplayName = FText::FromString(asset->DisplayName);
+		if (asset->Texture2Dimage)
+		{
+			FSlateBrush* tempimage = new FSlateBrush();
+			tempimage->SetResourceObject(asset->Texture2Dimage);
+			CatalogItem->image = tempimage;
+		}
 		if (NFlip)
 		{
 			GFilteredLeftItems.Add(CatalogItem);
@@ -110,6 +117,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 #endif
 	UQuVRAssetDownNet::GetInstance()->SetWidget(SharedThis(this));
 }
+
 void SQuVRCatalogWidget::AddListViewLR()
 {
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(1, 1));
@@ -126,32 +134,29 @@ void SQuVRCatalogWidget::AddListViewLR()
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
-		[
+				[
+					SAssignNew(ListViewLeft, SListView<TSharedPtr<FCatalogItem>>)
+					.ListItemsSource(&GFilteredLeftItems)
+					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
+					.ExternalScrollbar(ScrollBar)
+				]
 
-			SAssignNew(ListViewLeft, SListView<TSharedPtr<FCatalogItem>>)
-			.ListItemsSource(&GFilteredLeftItems)
-			.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
-			.ExternalScrollbar(ScrollBar)
+				+ SHorizontalBox::Slot()
+					[
 
-		]
+						SAssignNew(ListViewRight, SListView<TSharedPtr<FCatalogItem>>)
+						.ListItemsSource(&GFilteredRightItems)
+					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
+					.ExternalScrollbar(ScrollBar)
+					]
 
-	+ SHorizontalBox::Slot()
-		[
-
-			SAssignNew(ListViewRight, SListView<TSharedPtr<FCatalogItem>>)
-			.ListItemsSource(&GFilteredRightItems)
-		.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
-		.ExternalScrollbar(ScrollBar)
-		]
-
-	+ SHorizontalBox::Slot().AutoWidth()
-		[
-			ScrollBar
-		]
+				+ SHorizontalBox::Slot().AutoWidth()
+					[
+						ScrollBar
+					]
+				]
 			]
 		]
-		]
-
 	];
 }
 
@@ -341,15 +346,11 @@ ChildSlot
 				.WidthOverride(112)
 				.HeightOverride(112)
 				[
-					MakeCatalogEntryWidget()
+					MakeCatalogEntryWidget(InItem)
 				]
 				]
 				]
-			+ SHorizontalBox::Slot()
-				[
-					SNew(SSpacer).Size(FVector2D(1.0f, 1.0f))
-				]
-				]
+			]
 			+ SVerticalBox::Slot()
 				.VAlign(VAlign_Fill)
 				.HAlign(HAlign_Fill)

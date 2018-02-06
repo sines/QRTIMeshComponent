@@ -74,6 +74,8 @@ protected:
 	/** Flag to indicate that we need to update the filtered items array */
 	bool bNeedsUpdate;
 
+	const FSlateBrush* ActiveImage;
+
 private:
 	void RemoveChildWidget(TSharedRef<SQuVRCatalogPlaneWidget> widget);
 };

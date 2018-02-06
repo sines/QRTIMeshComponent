@@ -22,7 +22,7 @@ void SQuVRCatalogPlaneWidget::Construct(const FArguments& InDelcaration)
 	ParentWidget = InDelcaration._ParentWidget;
 	RootContent= InDelcaration._RootContent;
 	RootWidget = InDelcaration._RootWidget;
-
+	ActiveImage = nullptr;
 	SAssignNew(VerticalPlane, SVerticalBox);
 	for (auto node : TreeItem->ChildList)
 	{
@@ -80,6 +80,7 @@ void SQuVRCatalogPlaneWidget::RemoveChildWidget(TSharedRef<SQuVRCatalogPlaneWidg
 	}
 	RootContent->RemoveSlot(widget);
 }
+
 void SQuVRCatalogPlaneWidget::AddGroupTabPlane(TSharedPtr<FQuVRCatalogNode > node)
 {
 
@@ -106,7 +107,7 @@ void SQuVRCatalogPlaneWidget::AddGroupTabAssetList(TSharedPtr<FQuVRCatalogNode> 
 	{
 		if (node.IsValid())
 		{
-			RootWidget->CreateCatalogGroupTabAssetList(node->ChildList);
+			RootWidget->CreateCatalogGroupTabAssetList(node);
 		}
 	}
 

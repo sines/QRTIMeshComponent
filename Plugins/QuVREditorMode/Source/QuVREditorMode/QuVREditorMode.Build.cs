@@ -50,6 +50,7 @@ public class QuVREditorMode : ModuleRules
                 "PlacementMode",
                 "HTTP",
                 "Json",
+                "UMG"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

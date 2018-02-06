@@ -4,13 +4,17 @@
 #include "Widgets/Input/SButton.h"
 #if !UE_BUILD_SHIPPING
 
+struct FCatalogItem;
 
 class SQuVRCatlogEntryWidget
 	: public SCompoundWidget
 {
 public:
 
-	SLATE_BEGIN_ARGS(SQuVRCatlogEntryWidget){ }
+	SLATE_BEGIN_ARGS(SQuVRCatlogEntryWidget) :_Item() { }
+
+	/** Data for the collection this item represents */
+	SLATE_ARGUMENT(TSharedPtr<const FCatalogItem>, Item)
 	SLATE_END_ARGS()
 
 		/**
@@ -22,10 +26,15 @@ public:
 
 	// Void DownLoad Asset.zip
 	FReply OnDownloadAsset();
+	const FSlateBrush* SQuVRCatlogEntryWidget::CatalogGroupBorderImage() const;
+	// 
+public:
+	TSharedPtr<class SButton> button;
 
+	TSharedPtr<const FCatalogItem> Item;
 };
 
-TSharedRef<SWidget> MakeCatalogEntryWidget();
+TSharedRef<SWidget> MakeCatalogEntryWidget(TSharedPtr<const FCatalogItem> item);
 
 
 #endif // #if !UE_BUILD_SHIPPING

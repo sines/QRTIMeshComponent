@@ -15,14 +15,21 @@
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 {		
+	Item = InDelcaration._Item;
+
 	ChildSlot
 		[
-			SNew(SButton).HAlign(HAlign_Fill)
+			SAssignNew(button,SButton).HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
 			.OnClicked(this, &SQuVRCatlogEntryWidget::OnDownloadAsset)
 		];
 
-
+	// 
+	FButtonStyle buttonstyle = FButtonStyle();
+	buttonstyle.SetNormal(*CatalogGroupBorderImage());
+	buttonstyle.SetHovered(*CatalogGroupBorderImage());
+	buttonstyle.SetPressed(*CatalogGroupBorderImage());
+	button->SetButtonStyle(&buttonstyle);
 #if false
 		/** HorizontalScrollbar  Begin**/
 	TSharedPtr<SScrollBox> HorizontalScrollbar =
@@ -133,9 +140,17 @@ FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
 	return FReply::Handled();
 }
 
-TSharedRef<SWidget> MakeCatalogEntryWidget()
+TSharedRef<SWidget> MakeCatalogEntryWidget(TSharedPtr<const FCatalogItem> item)
 {
-	return SNew(SQuVRCatlogEntryWidget);}
+	return SNew(SQuVRCatlogEntryWidget).Item(item);
+}
+
+const FSlateBrush* SQuVRCatlogEntryWidget::CatalogGroupBorderImage() const
+{
+	return Item->image;
+//	static FName QuVRActiveTabBarBrush("PlacementBrowser.ActiveTabBar");
+//	return FEditorStyle::GetBrush(QuVRActiveTabBarBrush);
+}
 
 #undef LOCTEXT_NAMESPACE
 

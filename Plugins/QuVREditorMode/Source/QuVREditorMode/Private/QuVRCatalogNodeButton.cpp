@@ -9,6 +9,8 @@
 #include "SlateBasics.h"
 #include "SNotificationList.h"
 #include "QuVRCatalogPlaneWidget.h"
+#include "QuVRAssetDownNet.h"
+
 #if !UE_BUILD_SHIPPING
 
 #define LOCTEXT_NAMESPACE "SQuVRCatalogNodeButton"
@@ -74,7 +76,7 @@ void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
 	OnCheckStateChanged.ExecuteIfBound(NewState);
 #if 0 // SHOW DEBUG INFO
 	// The state of the check box changed.  Execute the delegate to notify users
-	FNotificationInfo Info(FText::FromString(TreeItem->NodeData.DisplayName));//LOCTEXT("TestNotification01", "OnMouseButtonDown"));
+	FNotificationInfo Info(FText::FromString(TreeItem->NodeData.DisplayName+FString::FromInt(TreeItem->NodeData.ZOrder)));//LOCTEXT("TestNotification01", "OnMouseButtonDown"));
 	NotificationListPtr->AddNotification(Info);
 #endif
 
@@ -86,7 +88,7 @@ void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
 		ParentWidget->AddGroupTabPlane(TreeItem);
 		break;
 	case SectionListPanel:
-		ParentWidget->AddGroupTabAssetList(TreeItem);
+		UQuVRAssetDownNet::GetInstance()->GetCatalogNodeAssetFromUrl(TreeItem);
 		break;
 	default:
 		ParentWidget->AddGroupTabPlane(TreeItem);
