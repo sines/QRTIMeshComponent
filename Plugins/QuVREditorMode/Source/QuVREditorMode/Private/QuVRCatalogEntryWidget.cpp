@@ -15,123 +15,41 @@
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 {		
-	Item = InDelcaration._Item;
+	AssetInfo = InDelcaration._AssetInfo;
+	brush = new FSlateBrush();
+	buttonstyle = new FButtonStyle();
+	if (AssetInfo.IsValid())
+	{
+		AssetInfo->ImageDownloadDone.AddSP(this, &SQuVRCatlogEntryWidget::RefreshWidget);
+	}
 
+	RefreshWidget();
 	ChildSlot
 		[
-			SAssignNew(button,SButton).HAlign(HAlign_Fill)
+//			SNew(SImage).Image(brush)
+
+			SAssignNew(button,SButton)
+			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
+			.ButtonStyle(buttonstyle)
 			.OnClicked(this, &SQuVRCatlogEntryWidget::OnDownloadAsset)
 		];
-
-	// 
-	FButtonStyle buttonstyle = FButtonStyle();
-	buttonstyle.SetNormal(*CatalogGroupBorderImage());
-	buttonstyle.SetHovered(*CatalogGroupBorderImage());
-	buttonstyle.SetPressed(*CatalogGroupBorderImage());
-	button->SetButtonStyle(&buttonstyle);
-#if false
-		/** HorizontalScrollbar  Begin**/
-	TSharedPtr<SScrollBox> HorizontalScrollbar =
-		SNew(SScrollBox)
-		.Orientation(Orient_Horizontal);
-		HorizontalScrollbar->Slot().HAlign(HAlign_Center);
-		HorizontalScrollbar->Slot().VAlign(VAlign_Center);		
-		HorizontalScrollbar->AddSlot().HAlign(HAlign_Center).VAlign(VAlign_Center).Padding(0)
-		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Center)
-			.AutoWidth()
-			[
-				SNew(SBox).HAlign(HAlign_Center).VAlign(VAlign_Center)
-				[
-					SNew(STextBlock)
-					.Justification(ETextJustify::Center)
-					.TextStyle(FEditorStyle::Get(), "LargeText")
-					.Text(FText::FromString(TEXT("TestButton")))
-				]
-			]
-		];
-		/** HorizontalScrollbar  End**/
-		// Create doc link widget if there is a class to link to
-		TSharedRef<SWidget> DocWidget = SNew(SSpacer);
-		UClass* DocClass = nullptr;
-		if (DocClass != NULL)
-		{
-		}
-
-
-/**
- Add ChildSlot
-*/
-		ChildSlot
-			[
-				SNew(SBorder)
-				.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
-				.Cursor(EMouseCursor::GrabHand)
-				[
-
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot()
-					.Padding(0)
-					.HAlign(HAlign_Fill)
-					.VAlign(VAlign_Fill)
-					.AutoHeight()
-					[
-						// Drop shadow border
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot()
-						[
-							SNew(SSpacer).Size(FVector2D(1, 1))
-						]
-						+SHorizontalBox::Slot()
-						.AutoWidth()
-						[
-							SNew(SBorder)
-							.Padding(4)
-							.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
-							.HAlign(HAlign_Fill)
-							.VAlign(VAlign_Fill)
-							[
-								SNew(SBox)
-								.HAlign(HAlign_Fill)
-								.VAlign(VAlign_Fill)
-								.WidthOverride(128)
-								.HeightOverride(128)
-								[
-									SNew(SButton)
-									.HAlign(HAlign_Fill)
-									.VAlign(VAlign_Fill)
-								]
-							]
-						]
-						+ SHorizontalBox::Slot()
-							[
-								SNew(SSpacer).Size(FVector2D(1.0f, 1.0f))
-							]
-					]
-					+ SVerticalBox::Slot()
-						.VAlign(VAlign_Fill)
-						.HAlign(HAlign_Fill)
-						.AutoHeight()
-						[
-							SNew(SSpacer)
-						]
-					+ SVerticalBox::Slot()
-						.VAlign(VAlign_Fill)
-						.HAlign(HAlign_Fill)
-						.AutoHeight()
-						.Padding(2, 0, 4, 0)
-						[
-							HorizontalScrollbar.ToSharedRef()
-						]
-				]
-			];
-#endif
 };
+void SQuVRCatlogEntryWidget::RefreshWidget()
+{
+	if (AssetInfo->Texture2Dimage)
+	{
+		Texture2Dimage = AssetInfo->Texture2Dimage;
+		brush->ImageSize.X = AssetInfo->Texture2Dimage->GetSurfaceWidth();
+		brush->ImageSize.Y = AssetInfo->Texture2Dimage->GetSurfaceHeight();
+		brush->DrawAs = ESlateBrushDrawType::Image;
+		brush->SetResourceObject(Texture2Dimage);
+		buttonstyle->SetNormal(*brush);
+		buttonstyle->SetPressed(*brush);
+		buttonstyle->SetHovered(*brush);
 
+	}
+}
 
 FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
 {
@@ -140,16 +58,9 @@ FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
 	return FReply::Handled();
 }
 
-TSharedRef<SWidget> MakeCatalogEntryWidget(TSharedPtr<const FCatalogItem> item)
+TSharedRef<SWidget> MakeCatalogEntryWidget(TSharedPtr<UQuVRcatalogAssetInfo> item)
 {
-	return SNew(SQuVRCatlogEntryWidget).Item(item);
-}
-
-const FSlateBrush* SQuVRCatlogEntryWidget::CatalogGroupBorderImage() const
-{
-	return Item->image;
-//	static FName QuVRActiveTabBarBrush("PlacementBrowser.ActiveTabBar");
-//	return FEditorStyle::GetBrush(QuVRActiveTabBarBrush);
+	return SNew(SQuVRCatlogEntryWidget).AssetInfo(item);
 }
 
 #undef LOCTEXT_NAMESPACE

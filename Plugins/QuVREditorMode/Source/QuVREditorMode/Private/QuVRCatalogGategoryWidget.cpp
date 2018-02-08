@@ -91,8 +91,7 @@ public:
 
 	FReply TestButtonClicked()
 	{
-//		TSharedPtr<class FQuVRCatalogNode> node = UQuVRAssetDownNet::GetInstance()->GetRootNode().Get()->ChildList[0];
-		TSharedPtr<class FQuVRCatalogNode> node = MakeShareable(new FQuVRCatalogNode());
+		TSharedPtr<class FQuVRCatalogNode> node = UQuVRAssetDownNet::GetInstance()->GetRootNode().Get()->ChildList[0];
 		UQuVRAssetDownNet::GetInstance()->GetCatalogNodeAssetFromUrl(node);
 		return FReply::Handled();
 	}

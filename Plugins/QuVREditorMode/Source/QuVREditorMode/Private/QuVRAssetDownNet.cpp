@@ -1,24 +1,83 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "QuVRAssetDownNet.h"
-#include "AsyncTaskDownloadImage.h"
+#include "QuVRFileDownloader.h"
+#include "QuVRCatalogEntryWidget.h"
 
 const FString UQuVRAssetDownNet::CatalogNodeHttpURL = FString(TEXT("http://dev-vrservice.jtl3d.com/api/VRCatalog/GetCatalogsByType?type=modelCatalog"));
 const FString UQuVRAssetDownNet::CatalogAssetHttpURL = FString(TEXT("http://dev-vrservice.jtl3d.com/api/VRCatalog/SearchVRObjects"));
 
-void UQuVRcatalogAsset::Initialise()
+/*FQuVRCatalogNode*/
+void FQuVRCatalogNode::ClearAllData()
 {
-//	DownloadImage.Add
-	TScriptDelegate<> t_de1;
-	t_de1.BindUFunction(this, FName(TEXT("downImagexx")));
-	UAsyncTaskDownloadImage* AsyncTaskDownloadImage = UAsyncTaskDownloadImage::DownloadImage(ImageUrl);
-	AsyncTaskDownloadImage->OnSuccess.Add(t_de1);
-	AsyncTaskDownloadImage->Start(ImageUrl);
+	for (auto cdNode : ChildList)
+	{
+		cdNode->ClearChildNodelist();
+	}
+	ChildList.Reset();
 }
 
-void UQuVRcatalogAsset::downImagexx(UTexture2DDynamic* texture2D)
+void FQuVRCatalogNode::ClearChildNodelist()
+{
+	for (auto cdNode : ChildList)
+	{
+		if (cdNode.IsValid())
+		{
+			cdNode->ClearChildNodelist();
+		}
+	}
+	ClearChildAssetlist();
+	ChildList.Reset();
+}
+static bool IsDataNull(const TSharedPtr<UQuVRcatalogAssetInfo> Dependency)
+{
+	return Dependency.IsValid();
+}
+
+void FQuVRCatalogNode::ClearChildAssetlist()
+{
+	AssetList.Reset();
+	HasAssetList = false;
+}
+
+/*UQuVRcatalogAssetInfo*/
+
+UQuVRcatalogAssetInfo::UQuVRcatalogAssetInfo() :Texture2Dimage(NULL)
+{
+	Id = "0";
+	ObjectType = 0;
+	ObjectTypeDesc = "0";
+	Name = "0";
+	DisplayName = "0";
+	Description = "0";
+	AssetRelativePath = "0";
+	MainCategoryID = "0";
+	SubCategoryID = "0";
+	MainCategory = "0";
+	SubCategory = "0";
+	ImageUrl = "0";
+	PackageUrl = "0";
+	Size = 0;
+	IsDownload = false;
+}
+
+
+void UQuVRcatalogAssetInfo::Initialise(TSharedPtr<FQuVRCatalogNode> node)
+{
+	if (node.IsValid())
+	{
+		UQuVRFileDownloader* AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadFile(ImageUrl);
+		AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRcatalogAssetInfo::DownloadImage);
+		AsyncTaskDownloadImage->AddToRoot();
+	}
+
+}
+
+void UQuVRcatalogAssetInfo::DownloadImage(UTexture2DDynamic* texture2D)
 {
 	Texture2Dimage = texture2D;
+	Texture2Dimage->AddToRoot();
+	ImageDownloadDone.Broadcast();
 }
 
 
@@ -123,6 +182,7 @@ UQuVRAssetDownNet* UQuVRAssetDownNet::GetInstance()
 	if (!StaticInstance)
 	{
 		StaticInstance = NewObject<UQuVRAssetDownNet>();
+		StaticInstance->AddToRoot();
 		StaticInstance->Initial();
 	}
 
@@ -139,6 +199,7 @@ void UQuVRAssetDownNet::ParseAssetListData(TArray<TSharedPtr<FJsonValue>> JsonVa
 {
 	if (CurrentNode.IsValid())
 	{
+		CurrentNode->ClearChildAssetlist();
 		for (auto Value : JsonValue)
 		{
 			ParseAssetItemData(CurrentNode,Value);
@@ -152,16 +213,9 @@ void UQuVRAssetDownNet::ParseAssetItemData(TSharedPtr<FQuVRCatalogNode> node, TS
 {
 	if (node.IsValid())
 	{
-		UQuVRcatalogAsset* AssetItem =NewObject<UQuVRcatalogAsset>();
+		UQuVRcatalogAssetInfo* AssetItem =NewObject<UQuVRcatalogAssetInfo>();
 		TSharedPtr<FJsonObject>TempJsonObject = JsonValue->AsObject();
 		AssetItem->Id = TempJsonObject->GetStringField(TEXT("ID"));
-		for (auto insItem : node->AssetList)
-		{
-			if (insItem->Id == AssetItem->Id)
-			{
-				return;
-			}
-		}
 
 		AssetItem->ObjectType = TempJsonObject->GetIntegerField(TEXT("ObjectType"));
 		AssetItem->ObjectTypeDesc = TempJsonObject->GetStringField(TEXT("ObjectTypeDesc"));
@@ -176,40 +230,17 @@ void UQuVRAssetDownNet::ParseAssetItemData(TSharedPtr<FQuVRCatalogNode> node, TS
 		AssetItem->SubCategory = TempJsonObject->GetStringField(TEXT("SubCategory"));
 		AssetItem->ImageUrl = TempJsonObject->GetStringField(TEXT("ImageUrl"));
 		AssetItem->PackageUrl = TempJsonObject->GetStringField(TEXT("PackageUrl"));
-		AssetItem->Initialise();
+		AssetItem->Initialise(node);
 		node->HasAssetList = true;
 
-		node->AssetList.AddUnique(MakeShareable(AssetItem));
+		node->AssetList.AddUnique(AssetItem);
 	}
 
 }
 
-void UQuVRAssetDownNet::xxdownImage(UTexture2DDynamic* texture2D)
-{
-
-}
-void UQuVRAssetDownNet::ClearChildNodelist(TSharedRef<FQuVRCatalogNode> node)
-{
-	for (auto cdNode:node->ChildList)
-	{
-		if (0 < cdNode->ChildList.Num())
-		{
-			ClearChildNodelist(cdNode.ToSharedRef());
-		}
-		else
-		{
-			cdNode->ChildList.Empty();
-			cdNode->ChildList.Reset();
-			cdNode->ParentNode.Reset();
-			cdNode.Reset();
-		}
-	}
-
-}
 
 void UQuVRAssetDownNet::GetAllCatalogNodeListFromUrl()
 {
-	ClearChildNodelist(RootNode.ToSharedRef());
 	FString TrimmedUrl = CatalogNodeHttpURL;
 	TrimmedUrl.Trim();
 	TrimmedUrl.TrimTrailing();
@@ -223,25 +254,21 @@ void UQuVRAssetDownNet::GetAllCatalogNodeListFromUrl()
 	// Execute the request
 	HttpNodeListRequest->ProcessRequest();
 
+	// Clear NodeData
+	RootNode->ClearAllData();
 }
 
 void UQuVRAssetDownNet::GetCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalogNode>& node)
 {
-	if(node.IsValid())
+	if(node.IsValid()&& node->ParentNode.IsValid())
 	{
 		CurrentNode = node;
 		FString format_CatalogType(TEXT("ModelCatalog"));
-		FString format_MainCatalogID/*(TEXT("c9ec07c9-f944-40c9-9228-bfbe4e2249b8"));*/ = node->ParentNode->NodeData.Id;
-		FString format_SubCatalogID/*(TEXT("5559a4c7-1e02-4dc1-ac21-ab5f29134a71"));*/= node->NodeData.Id;
+		FString format_MainCatalogID = node->ParentNode->NodeData.Id;
+		FString format_SubCatalogID = node->NodeData.Id;
 		int32 format_skip = 0;
 		int32 format_limit = 100;
-		FString TransientArchetypeString = FString::Printf(TEXT("{\"CatalogType\":\"%s\",\"MainCatalogID\":\"%s\",\"SubCatalogID\":\"%s\",\"skip\":%d,\"limit\":%d}"), *format_CatalogType, *format_MainCatalogID, *format_SubCatalogID, format_skip, format_limit);
-
-#if 0 // Read Local json
-		FString FileName = FPaths::GameDir() + FString(TEXT("xxx.json"));
-		FFileHelper::SaveStringToFile(TransientArchetypeString, *(FileName));
-#endif
-		
+		FString TransientArchetypeString = FString::Printf(TEXT("{\"CatalogType\":\"%s\",\"MainCatalogID\":\"%s\",\"SubCatalogID\":\"%s\",\"skip\":%d,\"limit\":%d}"), *format_CatalogType, *format_MainCatalogID, *format_SubCatalogID, format_skip, format_limit);		
 		FString TrimmedUrl = CatalogAssetHttpURL;
 		TrimmedUrl.Trim();
 		TrimmedUrl.TrimTrailing();
@@ -262,7 +289,7 @@ void UQuVRAssetDownNet::ParseNodeItemData(TSharedPtr<FQuVRCatalogNode> node, TSh
 {
 	if (node.IsValid())
 	{
-		FQuVRCatalogItem item;
+		FQuVRCatalogNodeInfo item;
 		TSharedPtr<FJsonObject>TempJsonObject = JsonValue->AsObject();
 		item.Id = TempJsonObject->GetStringField(TEXT("ID"));
 		item.PId = TempJsonObject->GetStringField(TEXT("PID"));

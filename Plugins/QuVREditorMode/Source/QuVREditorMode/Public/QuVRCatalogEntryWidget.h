@@ -4,6 +4,8 @@
 #include "Widgets/Input/SButton.h"
 #if !UE_BUILD_SHIPPING
 
+DECLARE_MULTICAST_DELEGATE(EntryWidgetDone);
+
 struct FCatalogItem;
 
 class SQuVRCatlogEntryWidget
@@ -11,10 +13,10 @@ class SQuVRCatlogEntryWidget
 {
 public:
 
-	SLATE_BEGIN_ARGS(SQuVRCatlogEntryWidget) :_Item() { }
+	SLATE_BEGIN_ARGS(SQuVRCatlogEntryWidget) :_AssetInfo() { }
 
 	/** Data for the collection this item represents */
-	SLATE_ARGUMENT(TSharedPtr<const FCatalogItem>, Item)
+	SLATE_ARGUMENT(TSharedPtr<UQuVRcatalogAssetInfo>, AssetInfo)
 	SLATE_END_ARGS()
 
 		/**
@@ -26,15 +28,19 @@ public:
 
 	// Void DownLoad Asset.zip
 	FReply OnDownloadAsset();
-	const FSlateBrush* SQuVRCatlogEntryWidget::CatalogGroupBorderImage() const;
+
+	void RefreshWidget();
 	// 
-public:
+protected:
 	TSharedPtr<class SButton> button;
 
-	TSharedPtr<const FCatalogItem> Item;
+	TSharedPtr<class UQuVRcatalogAssetInfo> AssetInfo;
+	UTexture2DDynamic* Texture2Dimage;
+	FSlateBrush* brush;
+	FButtonStyle* buttonstyle;
 };
 
-TSharedRef<SWidget> MakeCatalogEntryWidget(TSharedPtr<const FCatalogItem> item);
+TSharedRef<SWidget> MakeCatalogEntryWidget(TSharedPtr<UQuVRcatalogAssetInfo> AssetInfo);
 
 
 #endif // #if !UE_BUILD_SHIPPING

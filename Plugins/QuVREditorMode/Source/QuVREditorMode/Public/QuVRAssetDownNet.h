@@ -16,12 +16,13 @@ DECLARE_LOG_CATEGORY_EXTERN(UploadAssetDialog, Log, All);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRequestNodeDataDoneDelegate, UQuVRAssetDownNet*, net);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRequestAssetDataDoneDelegate, UQuVRAssetDownNet*, net);
 
+DECLARE_MULTICAST_DELEGATE(FQuVRCatalogAssetInfoImageDownloadDone);
 
-	USTRUCT()
-	struct QUVREDITORMODE_API FQuVRCatalogItem
-	{
+USTRUCT()
+struct QUVREDITORMODE_API FQuVRCatalogNodeInfo
+{
 		GENERATED_USTRUCT_BODY()
-			FQuVRCatalogItem()
+			FQuVRCatalogNodeInfo()
 		{
 			Id = FString(TEXT("-1"));
 			PId = FString(TEXT("-1"));
@@ -34,7 +35,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRequestAssetDataDoneDelegate, UQuVR
 			ZOrder = 0;
 		}
 
-// attribute Json Data
+// Json Data
 	FString Id;
 	FString PId;
 	FString Name;
@@ -44,37 +45,22 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRequestAssetDataDoneDelegate, UQuVR
 	FString CatalogType;
 	bool HasChilder;
 
-// button Iteration 
+// layer ZOrder
 	int32 ZOrder;
 };
 
+/**
+* UQuVRcatalogAssetInfo
+*/
 UCLASS()
-class QUVREDITORMODE_API UQuVRcatalogAsset : public UObject
+class QUVREDITORMODE_API UQuVRcatalogAssetInfo:public UObject
 {
 public:
 
 	GENERATED_BODY()
-		UQuVRcatalogAsset():Texture2Dimage(NULL)
-	{
-		Id="0";
-		ObjectType = 0;
-		ObjectTypeDesc = "0";
-		Name = "0";
-		DisplayName = "0";
-		Description = "0";
-		AssetRelativePath = "0";
-		MainCategoryID = "0";
-		SubCategoryID = "0";
-		MainCategory = "0";
-		SubCategory = "0";
-		ImageUrl = "0";
-		PackageUrl = "0";
-		Size =0;
-		IsDownload = false;
-	}
+	UQuVRcatalogAssetInfo();
 
-	~UQuVRcatalogAsset() {};
-	// attribute Json Data
+	// Json Data
 	FString Id;
 	int32 ObjectType;
 	FString ObjectTypeDesc;
@@ -92,14 +78,13 @@ public:
 	int32 Size;
 
 	bool IsDownload;
-
+	FQuVRCatalogAssetInfoImageDownloadDone ImageDownloadDone;
 public:
-	void Initialise();
-	void downImagexx(UTexture2DDynamic* texture2D);
+	void Initialise(TSharedPtr<FQuVRCatalogNode> node);
+	void DownloadImage(UTexture2DDynamic* texture2D);
 
 public:
 };
-
 
 class QUVREDITORMODE_API FQuVRCatalogNode : public FGCObject
 {
@@ -107,21 +92,26 @@ public:
 
 	FQuVRCatalogNode():ParentNode(nullptr)
 	{
-		ChildList.Empty();
 		ChildList.Reset();
 
 		HasAssetList = false;
-		AssetList.Empty();
 		AssetList.Reset();
 	};
 
-	FQuVRCatalogItem NodeData;
+public:
+	void ClearAllData();
+	void ClearChildAssetlist();
+	void ClearChildNodelist();
+
+public:
+	FQuVRCatalogNodeInfo NodeData;
 	
-	TSharedPtr<FQuVRCatalogNode> ParentNode;
-	TArray<TSharedPtr<FQuVRCatalogNode>> ChildList;
-	TArray<TSharedPtr<UQuVRcatalogAsset>> AssetList;
+	TSharedPtr<class FQuVRCatalogNode> ParentNode;
+	TArray<TSharedPtr<class FQuVRCatalogNode>> ChildList;
+	TArray<class UQuVRcatalogAssetInfo*> AssetList;
 	// Asset Data
 	bool HasAssetList;
+
 public:
 	virtual void AddReferencedObjects(FReferenceCollector& Collector)override {};
 };
@@ -146,8 +136,6 @@ public:
 	TArray<TSharedPtr<FQuVRCatalogNode>>& GetNodeList() { return RootNode->ChildList; }
 	void SetWidget(const TSharedPtr<SQuVRCatalogWidget> widget) { Catawidget = widget; }
 
-protected:
-	void ClearChildNodelist(TSharedRef<FQuVRCatalogNode> node);
 private:
 	static const FString CatalogNodeHttpURL;
 	static const FString CatalogAssetHttpURL;
@@ -189,7 +177,4 @@ private:
 public:
 	FRequestAssetDataDoneDelegate OnRequestAssetDataDone;
 	FRequestNodeDataDoneDelegate OnRequestNodeDataDone;
-
-	//////////////////////////////////////////////////////////////////////////
-	void xxdownImage(UTexture2DDynamic* texture2D);
 };

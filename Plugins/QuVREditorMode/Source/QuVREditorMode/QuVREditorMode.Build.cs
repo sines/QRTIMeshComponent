@@ -41,26 +41,47 @@ public class QuVREditorMode : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
-				"Slate",
+                "RHI",
+
+                "Slate",
 				"SlateCore",
-				"InputCore",
-				"UnrealEd",
+                "RenderCore",
+
+                "InputCore",
+
+                "UnrealEd",
 				"LevelEditor",
                 "EditorStyle",
                 "PlacementMode",
+
                 "HTTP",
                 "Json",
-                "UMG"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[]
-			{
-				// ... add any modules that your module loads dynamically here ...
-			}
-			);
-	}
+
+
+        PrivateIncludePathModuleNames.AddRange(
+              new string[] {
+                "ImageWrapper",
+                 "TargetPlatform",
+              }
+          );
+
+        if (Target.Type != TargetType.Server)
+        {
+            PrivateIncludePathModuleNames.AddRange(
+                new string[] {
+                    "SlateRHIRenderer",
+                }
+            );
+
+            DynamicallyLoadedModuleNames.AddRange(
+                new string[] {
+                    "ImageWrapper",
+                    "SlateRHIRenderer",
+                }
+            );
+        };
+    }
 }

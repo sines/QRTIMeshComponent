@@ -14,20 +14,23 @@ class FQuVRCatalogNode;
 /**
 * Structure defining a catalog item in the placement mode panel
 */
+
+/*
 struct FCatalogItem
 {
-	/** Default constructor */
+	/ ** Default constructor * /
 	FCatalogItem()
 	{
 		DisplayName =FText::FromString(TEXT("0000"));
 		image = nullptr;
 	}
 
-	/** This item's display name */
+	/ ** This item's display name * /
 	FText DisplayName;
 	FSlateBrush* image;
 
 };
+*/
 
 /**
 * Catalog widget, display all models and materials data
@@ -49,11 +52,13 @@ private:
 	bool bNeedsUpdate;
 
 	/* List_View */
-	/** List view that shows placeable items */
-	TSharedPtr<SListView<TSharedPtr<FCatalogItem>>> ListViewLeft;
+	/** List view that shows placeable items */\
+	TArray<TSharedPtr<class UQuVRcatalogAssetInfo>> ListViewFilteredLeftItems;
+	TSharedPtr<SListView<TSharedPtr<class UQuVRcatalogAssetInfo>>> ListViewLeft;
 
 	/** List view that shows placeable items */
-	TSharedPtr<SListView<TSharedPtr<FCatalogItem>>> ListViewRight;
+	TArray<TSharedPtr<class UQuVRcatalogAssetInfo>> ListViewFilteredRightItems;
+	TSharedPtr<SListView<TSharedPtr<class UQuVRcatalogAssetInfo>>> ListViewRight;
 
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	
@@ -64,7 +69,7 @@ private:
 	TSharedRef<SWidget> CreateGroupTabManufacturer(const FString& CatalogName);
 	FReply HandleBreadcrumbTrailAddButtonClicked();
 
-	TSharedRef<ITableRow> OnGenerateWidgetForItem(TSharedPtr<FCatalogItem> InItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TSharedRef<ITableRow> OnGenerateWidgetForItem(TSharedPtr<class UQuVRcatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable);
 
 	void CreateWidgetElement();
 
@@ -82,9 +87,7 @@ public:
 	SLATE_BEGIN_ARGS(SQuVRCatalogEntry){ }
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, const TSharedPtr<const FCatalogItem>& InItem);
-
-	TSharedPtr<const FCatalogItem> Item;
+	void Construct(const FArguments& InArgs, TSharedPtr<class UQuVRcatalogAssetInfo> InItem);
 };
 
 #endif
