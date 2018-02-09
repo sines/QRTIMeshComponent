@@ -7,7 +7,7 @@
 #include "Interfaces/IImageWrapperModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include "HttpModule.h"
-
+#include "QuVRUtils.h"
 
 
 //----------------------------------------------------------------------//
@@ -56,23 +56,30 @@ UQuVRFileDownloader::UQuVRFileDownloader(const FObjectInitializer& ObjectInitial
 		AddToRoot();
 	}
 }
+UQuVRFileDownloader* UQuVRFileDownloader::DownloadZipLoader(FString URL)
+{
 
-UQuVRFileDownloader* UQuVRFileDownloader::DownloadFile(FString URL)
+	UQuVRFileDownloader* DownloadTask = NewObject<UQuVRFileDownloader>();
+	DownloadTask->AddToRoot();
+	DownloadTask->StartDownloadZipFile(URL);
+	return DownloadTask;
+}
+
+UQuVRFileDownloader* UQuVRFileDownloader::DownloadImageLoader(FString URL)
 {
 	UQuVRFileDownloader* DownloadTask = NewObject<UQuVRFileDownloader>();
+	DownloadTask->AddToRoot();
 	DownloadTask->StartDownloadImageFile(URL);
-
 	return DownloadTask;
 }
 
 void UQuVRFileDownloader::StartDownloadImageFile(FString URL)
 {
+	FileURL = URL;
 #if !UE_SERVER
 	// Create the Http request and add to pending request list
-	TSharedRef<IHttpRequest> HttpRequest = FHttpModule::Get().CreateRequest();
-
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleImageRequestComplete);
-	HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleImageRequestProgress);
+	HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
 	HttpRequest->SetURL(URL);
 	HttpRequest->SetVerb(TEXT("GET"));
 	HttpRequest->ProcessRequest();
@@ -82,7 +89,41 @@ void UQuVRFileDownloader::StartDownloadImageFile(FString URL)
 #endif
 }
 
+void UQuVRFileDownloader::StartDownloadZipFile(FString URL)
+{
+	FileURL = URL;
+#if !UE_SERVER
+	// Create the Http request and add to pending request list
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleZipRequestComplete);
+	HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
+	HttpRequest->SetURL(URL);
+	HttpRequest->SetVerb(TEXT("GET"));
+	HttpRequest->ProcessRequest();
+#else
+	// On the server we don't execute fail or success we just don't fire the request.
+	RemoveFromRoot();
+#endif
+}
 
+void UQuVRFileDownloader::HandleZipRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded)
+{
+#if !UE_SERVER
+	RemoveFromRoot();
+
+	if (bSucceeded && HttpResponse.IsValid() && HttpResponse->GetContentLength() > 0)
+	{
+		FileLength = HttpResponse->GetContentLength();
+		const TArray<uint8>& fileContent = HttpResponse->GetContent();
+		FString FullPath; FString FilePath;
+		UQuVRUtils::GetObjectPath(FileURL,FullPath, FilePath);
+		FFileHelper::SaveArrayToFile(fileContent, *(FullPath));
+		UQuVRUtils::UnzipFile(FullPath, FilePath);
+	}
+
+	OnDownloadFileDone.Broadcast(HttpResponse->GetResponseCode());
+
+#endif
+}
 
 void UQuVRFileDownloader::HandleImageRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded)
 {
@@ -128,12 +169,17 @@ void UQuVRFileDownloader::HandleImageRequestComplete(FHttpRequestPtr HttpRequest
 		}
 	}
 
+	if (HttpResponse.IsValid())
+	{
+		OnDownloadFileDone.Broadcast(HttpResponse->GetResponseCode());
+	}
 	OnDownloadImageFail.Broadcast(nullptr);
+
 
 #endif
 }
 
-void UQuVRFileDownloader::HandleImageRequestProgress(FHttpRequestPtr HttpRequest, int32 BytesSent, int32 BytesReceived)
+void UQuVRFileDownloader::HandleRequestProgress(FHttpRequestPtr HttpRequest, int32 BytesSent, int32 BytesReceived)
 {
 #if !UE_SERVER
 	if (HttpRequest->GetResponse()->GetContentLength() > 0)

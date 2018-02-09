@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FQuVRFileDownloadUpdateProgressDe
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuVRDownloadImageDelegate, UTexture2DDynamic*, Texture);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRDownloadImageRes, class UTexture2DDynamic*);
-
+DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRFileDownloadDoneDelegate, int32);
 /**
  * 
  */
@@ -25,25 +25,29 @@ class QUVREDITORMODE_API UQuVRFileDownloader : public UBlueprintAsyncActionBase
 	GENERATED_UCLASS_BODY()
 
 public:
-	static UQuVRFileDownloader* DownloadFile(FString URL);
+	static UQuVRFileDownloader* DownloadImageLoader(FString URL);
+	static UQuVRFileDownloader* DownloadZipLoader(FString URL);
 	void StartDownloadImageFile(FString URL);
+	void StartDownloadZipFile(FString URL);
 private:
-	void HandleImageRequestProgress(FHttpRequestPtr HttpRequest, int32 BytesSent, int32 BytesReceived);
+	void HandleZipRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded);
 	void HandleImageRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded);
+	void HandleRequestProgress(FHttpRequestPtr HttpRequest, int32 BytesSent, int32 BytesReceived);
 public:
-	FQuVRFileDownloadUpdateProgressDelegate OnFileDownloadDone;
 	FQuVRFileDownloadUpdateProgressDelegate OnUlpdataProegress;
 
 	FQuVRDownloadImageDelegate OnDownloadImageSuccess;
 	FQuVRDownloadImageDelegate OnDownloadImageFail;
-
 	FQuVRDownloadImageRes OnDownloadImageRes;
+
+
+	FQuVRFileDownloadDoneDelegate OnDownloadFileDone;
 protected:
+	TSharedRef<IHttpRequest> HttpRequest = FHttpModule::Get().CreateRequest();
 /** Http Response code */
 	int32 ResponseCode;
 	FString StatusInfo;
 	int32 FileLength;
 
-	FString FileUrl;
-	FString LocalFilePath;
+	FString FileURL;
 };

@@ -7,6 +7,7 @@
 #include "Runtime/Slate/Public/SlateOptMacros.h"
 #include "Core.h"
 #include "SlateBasics.h"
+#include "QuVRFileDownloader.h"
 
 #if !UE_BUILD_SHIPPING
 
@@ -53,8 +54,11 @@ void SQuVRCatlogEntryWidget::RefreshWidget()
 
 FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("DownloadAsset"));
-
+	FString URL = AssetInfo->PackageUrl;
+	if (5 <URL.Len())
+	{
+		UQuVRFileDownloader* AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadZipLoader(URL);
+	}
 	return FReply::Handled();
 }
 

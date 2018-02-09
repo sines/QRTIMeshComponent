@@ -66,9 +66,8 @@ void UQuVRcatalogAssetInfo::Initialise(TSharedPtr<FQuVRCatalogNode> node)
 {
 	if (node.IsValid())
 	{
-		UQuVRFileDownloader* AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadFile(ImageUrl);
+		UQuVRFileDownloader* AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
 		AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRcatalogAssetInfo::DownloadImage);
-		AsyncTaskDownloadImage->AddToRoot();
 	}
 
 }
