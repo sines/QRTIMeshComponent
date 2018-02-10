@@ -21,11 +21,11 @@ FQuVRPackageModel GetPackageObject(const FString& InPackageUrl)
 		FullName.ParseIntoArray(ParseName, TEXT("_"));
 		if (ParseName[0] == FString(TEXT("SK")) || ParseName[0] == FString(TEXT("SM")))
 		{
-			model.type = FString(TEXT("Model"));//EQuVRObjectType::Model;
+			model.type = FString(TEXT("Models"));//EQuVRObjectType::Model;
 		}
 		else if (ParseName[0] == FString(TEXT("M")))
 		{
-			model.type = FString(TEXT("Material"));//EQuVRObjectType::Material;
+			model.type = FString(TEXT("Materials"));//EQuVRObjectType::Material;
 		
 		}
 
