@@ -21,12 +21,12 @@ struct QUVREDITORMODE_API FQuVRPackageModel
 	GENERATED_USTRUCT_BODY()
 	FQuVRPackageModel() 
 	{
-		type = EQuVRObjectType::Unknown;
+		type = FString(TEXT("Unknown"));
 		FullName = FString(TEXT("Unknown"));
 		Name = FString(TEXT("Unknown"));
 	};
 	
-	EQuVRObjectType type;
+	FString type;
 	FString FullName;
 	FString Name;
 };

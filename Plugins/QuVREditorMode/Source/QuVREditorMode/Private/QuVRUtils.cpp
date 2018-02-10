@@ -21,11 +21,12 @@ FQuVRPackageModel GetPackageObject(const FString& InPackageUrl)
 		FullName.ParseIntoArray(ParseName, TEXT("_"));
 		if (ParseName[0] == FString(TEXT("SK")) || ParseName[0] == FString(TEXT("SM")))
 		{
-			model.type = EQuVRObjectType::Model;
+			model.type = FString(TEXT("Model"));//EQuVRObjectType::Model;
 		}
 		else if (ParseName[0] == FString(TEXT("M")))
 		{
-			model.type = EQuVRObjectType::Material;
+			model.type = FString(TEXT("Material"));//EQuVRObjectType::Material;
+		
 		}
 
 		TArray<FString>modelName;
@@ -49,8 +50,8 @@ FString UQuVRUtils::GetContentPath()
 void UQuVRUtils::GetObjectPath(const FString& InPackageUrl, FString& FullPath, FString& FilePath)
 {
 	FQuVRPackageModel model= GetPackageObject(InPackageUrl);
-	FilePath = FPaths::Combine(GetContentPath(), model.Name);
-	FullPath = FPaths::Combine(GetContentPath(), model.Name, model.FullName); 
+	FilePath = FPaths::Combine(GetContentPath(), model.type, model.Name);
+	FullPath = FPaths::Combine(GetContentPath(), model.type, model.Name, model.FullName);
 }
 
 FString UQuVRUtils::GetObjectName(const FString& InFilePath)
@@ -103,7 +104,7 @@ void UQuVRUtils::UnzipFile(const FString& InZipPath, const FString& InTargetPath
 	// Output the process message!
 	ZipProcess->OnOutput().BindLambda([&](FString Message)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString("Done: ")+Message);
+	//	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString("Done: ")+Message);
 	});
 
 	ZipProcess->Launch();
