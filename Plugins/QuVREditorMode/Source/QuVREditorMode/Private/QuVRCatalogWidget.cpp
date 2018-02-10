@@ -18,7 +18,7 @@
 #include "QuVRCatalogGategoryWidget.h"
 #include "QuVRCatalogEntryWidget.h"
 #include "QuVRCatalogNodeButton.h"
-#include "QuVRAssetDownNet.h"
+#include "QuVRCatalogDataManager.h"
 #include "QuVRCatalogPlaneWidget.h"
 
 void SQuVRCatalogWidget::CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > node)
@@ -35,8 +35,8 @@ void SQuVRCatalogWidget::CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > n
 
 void SQuVRCatalogWidget::ClearAssetList()
 {
-	ListViewFilteredLeftItems.Reset();
-	ListViewFilteredRightItems.Reset();
+	ListViewFilteredLeftItems.Empty();
+	ListViewFilteredRightItems.Empty();
 	RequestRefresh();
 }
 
@@ -49,11 +49,11 @@ void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogN
 	{
 		if (NFlip)
 		{
-			ListViewFilteredLeftItems.Add(MakeShareable(asset));
+			ListViewFilteredLeftItems.AddUnique(asset);
 		}
 		else
 		{
-			ListViewFilteredRightItems.Add(MakeShareable(asset));
+			ListViewFilteredRightItems.AddUnique(asset);
 		}
 		NFlip = !NFlip;
 	}
@@ -98,7 +98,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 		]
 	];
 #endif
-	UQuVRAssetDownNet::GetInstance()->SetWidget(SharedThis(this));
+	UQuVRCatalogDataManager::GetInstance()->SetWidget(SharedThis(this));
 }
 
 void SQuVRCatalogWidget::AddListViewLR()
@@ -118,7 +118,7 @@ void SQuVRCatalogWidget::AddListViewLR()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				[
-					SAssignNew(ListViewLeft, SListView<TSharedPtr<UQuVRcatalogAssetInfo>>)
+					SAssignNew(ListViewLeft, SListView<TWeakObjectPtr<UQuVRcatalogAssetInfo>>)
 					.ListItemsSource(&ListViewFilteredLeftItems)
 					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
 					.ExternalScrollbar(ScrollBar)
@@ -127,7 +127,7 @@ void SQuVRCatalogWidget::AddListViewLR()
 				+ SHorizontalBox::Slot()
 					[
 
-						SAssignNew(ListViewRight, SListView<TSharedPtr<UQuVRcatalogAssetInfo>>)
+						SAssignNew(ListViewRight, SListView<TWeakObjectPtr<UQuVRcatalogAssetInfo>>)
 						.ListItemsSource(&ListViewFilteredRightItems)
 					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
 					.ExternalScrollbar(ScrollBar)
@@ -246,15 +246,15 @@ void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	}
 }
 
-TSharedRef<ITableRow> SQuVRCatalogWidget::OnGenerateWidgetForItem(TSharedPtr<UQuVRcatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SQuVRCatalogWidget::OnGenerateWidgetForItem(TWeakObjectPtr<UQuVRcatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
-	return SNew(STableRow<TSharedPtr<UQuVRcatalogAssetInfo>>, OwnerTable)
+	return SNew(STableRow<TWeakObjectPtr<UQuVRcatalogAssetInfo>>, OwnerTable)
 			[
 				SNew(SQuVRCatalogEntry, InItem)
 			];
 }
 
-void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TSharedPtr<class UQuVRcatalogAssetInfo> InItem)
+void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<class UQuVRcatalogAssetInfo> InItem)
 {
 /*
 

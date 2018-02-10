@@ -9,7 +9,7 @@
 #include "SlateBasics.h"
 #include "SNotificationList.h"
 #include "QuVRCatalogPlaneWidget.h"
-#include "QuVRAssetDownNet.h"
+#include "QuVRCatalogDataManager.h"
 
 #if !UE_BUILD_SHIPPING
 
@@ -88,7 +88,7 @@ void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
 		ParentWidget->AddGroupTabPlane(TreeItem);
 		break;
 	case SectionListPanel:
-		UQuVRAssetDownNet::GetInstance()->GetCatalogNodeAssetFromUrl(TreeItem);
+		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeAssetFromUrl(TreeItem);
 		break;
 	default:
 		ParentWidget->AddGroupTabPlane(TreeItem);

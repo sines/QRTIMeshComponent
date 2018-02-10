@@ -50,4 +50,5 @@ protected:
 	int32 FileLength;
 
 	FString FileURL;
+	TArray<uint8> ProgressEmptyData;
 };

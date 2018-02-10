@@ -16,7 +16,7 @@ public:
 	SLATE_BEGIN_ARGS(SQuVRCatlogEntryWidget) :_AssetInfo() { }
 
 	/** Data for the collection this item represents */
-	SLATE_ARGUMENT(TSharedPtr<UQuVRcatalogAssetInfo>, AssetInfo)
+	SLATE_ARGUMENT(TWeakObjectPtr<UQuVRcatalogAssetInfo>, AssetInfo)
 	SLATE_END_ARGS()
 
 		/**
@@ -34,13 +34,14 @@ public:
 protected:
 	TSharedPtr<class SButton> button;
 
-	TSharedPtr<class UQuVRcatalogAssetInfo> AssetInfo;
+	TWeakObjectPtr<class UQuVRcatalogAssetInfo> AssetInfo;
 	UTexture2DDynamic* Texture2Dimage;
 	FSlateBrush* brush;
 	FButtonStyle* buttonstyle;
+	class UQuVRFileDownloader* AsyncTaskDownloadImage;
 };
 
-TSharedRef<SWidget> MakeCatalogEntryWidget(TSharedPtr<UQuVRcatalogAssetInfo> AssetInfo);
+TSharedRef<SWidget> MakeCatalogEntryWidget(TWeakObjectPtr<UQuVRcatalogAssetInfo> AssetInfo);
 
 
 #endif // #if !UE_BUILD_SHIPPING

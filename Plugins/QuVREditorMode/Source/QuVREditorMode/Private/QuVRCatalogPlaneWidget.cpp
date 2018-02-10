@@ -8,8 +8,7 @@
 #include "Runtime/Core/Public/Templates/SharedPointer.h"
 #include "Core.h"
 #include "SlateBasics.h"
-
-#include "QuVRAssetDownNet.h"
+#include "QuVRCatalogDataManager.h"
 
 #if !UE_BUILD_SHIPPING
 

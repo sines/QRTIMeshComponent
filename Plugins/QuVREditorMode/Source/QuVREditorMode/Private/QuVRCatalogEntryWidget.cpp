@@ -57,12 +57,20 @@ FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
 	FString URL = AssetInfo->PackageUrl;
 	if (5 <URL.Len())
 	{
-		UQuVRFileDownloader* AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadZipLoader(URL);
+		if (AsyncTaskDownloadImage)
+		{
+			AsyncTaskDownloadImage->StartDownloadZipFile(URL);
+		}
+		else
+		{
+			AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadZipLoader(URL);
+		}
+
 	}
 	return FReply::Handled();
 }
 
-TSharedRef<SWidget> MakeCatalogEntryWidget(TSharedPtr<UQuVRcatalogAssetInfo> item)
+TSharedRef<SWidget> MakeCatalogEntryWidget(TWeakObjectPtr<UQuVRcatalogAssetInfo> item)
 {
 	return SNew(SQuVRCatlogEntryWidget).AssetInfo(item);
 }

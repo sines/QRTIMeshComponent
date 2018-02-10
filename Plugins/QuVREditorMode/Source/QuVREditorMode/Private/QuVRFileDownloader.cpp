@@ -51,6 +51,7 @@ static void WriteRawToTexture_RenderThread(FTexture2DDynamicResource* TextureRes
 UQuVRFileDownloader::UQuVRFileDownloader(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	ProgressEmptyData.Empty();
 	if (HasAnyFlags(RF_ClassDefaultObject) == false)
 	{
 		AddToRoot();
@@ -77,32 +78,46 @@ void UQuVRFileDownloader::StartDownloadImageFile(FString URL)
 {
 	FileURL = URL;
 #if !UE_SERVER
-	// Create the Http request and add to pending request list
-	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleImageRequestComplete);
-	HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
-	HttpRequest->SetURL(URL);
-	HttpRequest->SetVerb(TEXT("GET"));
-	HttpRequest->ProcessRequest();
-#else
-	// On the server we don't execute fail or success we just don't fire the request.
-	RemoveFromRoot();
-#endif
+	if (1 > ProgressEmptyData.Num())
+	{
+		ProgressEmptyData.Empty();
+		// Create the Http request and add to pending request list
+		HttpRequest->OnProcessRequestComplete().Unbind();
+		HttpRequest->OnRequestProgress().Unbind();
+		HttpRequest->CancelRequest();
+		HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleImageRequestComplete);
+		HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
+		HttpRequest->SetURL(URL);
+		HttpRequest->SetVerb(TEXT("GET"));
+		HttpRequest->ProcessRequest();
+	#else
+		// On the server we don't execute fail or success we just don't fire the request.
+		RemoveFromRoot();
+	#endif
+	}
 }
 
 void UQuVRFileDownloader::StartDownloadZipFile(FString URL)
 {
 	FileURL = URL;
 #if !UE_SERVER
-	// Create the Http request and add to pending request list
-	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleZipRequestComplete);
-	HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
-	HttpRequest->SetURL(URL);
-	HttpRequest->SetVerb(TEXT("GET"));
-	HttpRequest->ProcessRequest();
+	if (1 > ProgressEmptyData.Num())
+	{
+		ProgressEmptyData.Empty();
+		// Create the Http request and add to pending request list
+		HttpRequest->OnProcessRequestComplete().Unbind();
+		HttpRequest->OnRequestProgress().Unbind();
+		HttpRequest->CancelRequest();
+		HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleZipRequestComplete);
+		HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
+		HttpRequest->SetURL(URL);
+		HttpRequest->SetVerb(TEXT("GET"));
+		HttpRequest->ProcessRequest();
 #else
 	// On the server we don't execute fail or success we just don't fire the request.
 	RemoveFromRoot();
 #endif
+	}
 }
 
 void UQuVRFileDownloader::HandleZipRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded)
@@ -112,12 +127,16 @@ void UQuVRFileDownloader::HandleZipRequestComplete(FHttpRequestPtr HttpRequest, 
 
 	if (bSucceeded && HttpResponse.IsValid() && HttpResponse->GetContentLength() > 0)
 	{
-		FileLength = HttpResponse->GetContentLength();
-		const TArray<uint8>& fileContent = HttpResponse->GetContent();
-		FString FullPath; FString FilePath;
-		UQuVRUtils::GetObjectPath(FileURL,FullPath, FilePath);
-		FFileHelper::SaveArrayToFile(fileContent, *(FullPath));
-		UQuVRUtils::UnzipFile(FullPath, FilePath);
+		// Save File
+		if (!UQuVRUtils::CheckFileExists(FileURL))
+		{
+			FileLength = HttpResponse->GetContentLength();
+			const TArray<uint8>& fileContent = HttpResponse->GetContent();
+			FString FullPath; FString FilePath;
+			UQuVRUtils::GetObjectPath(FileURL, FullPath, FilePath);
+			FFileHelper::SaveArrayToFile(fileContent, *(FullPath));
+			UQuVRUtils::UnzipFile(FullPath, FilePath);
+		}
 	}
 
 	OnDownloadFileDone.Broadcast(HttpResponse->GetResponseCode());
@@ -184,8 +203,7 @@ void UQuVRFileDownloader::HandleRequestProgress(FHttpRequestPtr HttpRequest, int
 #if !UE_SERVER
 	if (HttpRequest->GetResponse()->GetContentLength() > 0)
 	{
-		TArray<uint8> EmptyData;
-		OnUlpdataProegress.Broadcast(BytesReceived, HttpRequest->GetResponse()->GetContentLength(), EmptyData);
+		OnUlpdataProegress.Broadcast(BytesReceived, HttpRequest->GetResponse()->GetContentLength(), ProgressEmptyData);
 	}
 #endif
 }

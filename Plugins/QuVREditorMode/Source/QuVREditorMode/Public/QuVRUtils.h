@@ -54,6 +54,6 @@ public:
 	/************************************************************************/
 	FString static GetZipToolPath();
 	static void UnzipFile(const FString& InZipPath, const FString& InTargetPath);
-	
+	static void DeleteZipFile(const FString& InZipPath);
 	static bool  CheckFileExists(const FString& InPackageUrl);
 };

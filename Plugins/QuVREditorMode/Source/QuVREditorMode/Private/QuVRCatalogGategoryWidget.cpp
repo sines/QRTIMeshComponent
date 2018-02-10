@@ -85,14 +85,14 @@ public:
 //  Attribute
 	FReply RefreshAllButtonClicked()
 	{
-		UQuVRAssetDownNet::GetInstance()->GetAllCatalogNodeListFromUrl();
+		UQuVRCatalogDataManager::GetInstance()->GetAllCatalogNodeListFromUrl();
 		return FReply::Handled();
 	}
 
 	FReply TestButtonClicked()
 	{
-		TSharedPtr<class FQuVRCatalogNode> node = UQuVRAssetDownNet::GetInstance()->GetRootNode().Get()->ChildList[0];
-		UQuVRAssetDownNet::GetInstance()->GetCatalogNodeAssetFromUrl(node);
+		TSharedPtr<class FQuVRCatalogNode> node = UQuVRCatalogDataManager::GetInstance()->GetRootNode().Get()->ChildList[0];
+		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeAssetFromUrl(node);
 		return FReply::Handled();
 	}
 	//////////////////////////////////////////////////////////////////////////

@@ -112,19 +112,33 @@ void UQuVRUtils::UnzipFile(const FString& InZipPath, const FString& InTargetPath
 	{
 		FPlatformProcess::Sleep(0.1f);
 	}
+
+	DeleteZipFile(InZipPath);
+}
+
+void UQuVRUtils::DeleteZipFile(const FString& InZipPath)
+{
+/*
+	if (IFileManager::Get().DirectoryExists(*ExportPath))
+	{
+		IFileManager::Get().DeleteDirectory(*ExportPath);
+	}
+*/
+
+	if (FPaths::FileExists(*InZipPath))
+	{
+		IFileManager::Get().Delete(*InZipPath);
+	}
+	
 }
 
 bool UQuVRUtils::CheckFileExists(const FString& InPackageUrl)
 {
-	return true;
-/*
-	FString FullName;
+	FString FilePath;
 	FString FullPath;
-	//GetObjectPath(InPackageUrl, FullPath,)
-	FString name = GetObjectName(InZipPath);
+	GetObjectPath(InPackageUrl, FullPath, FilePath);
+	FString name = GetObjectName(FullPath);
 	// Test File Exist!
-	if (!FPaths::FileExists(*InZipPath))
-	{
-		return;
-	}*/
+	FString file = FPaths::Combine(FilePath, name);
+	return FPaths::FileExists(*file);
 }
