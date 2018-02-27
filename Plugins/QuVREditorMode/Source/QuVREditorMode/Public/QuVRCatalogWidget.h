@@ -53,12 +53,12 @@ private:
 
 	/* List_View */
 	/** List view that shows placeable items */\
-	TArray<TWeakObjectPtr<class UQuVRcatalogAssetInfo>> ListViewFilteredLeftItems;
-	TSharedPtr<SListView<TWeakObjectPtr<class UQuVRcatalogAssetInfo>>> ListViewLeft;
+	TArray<TWeakObjectPtr<class UQuVRCatalogAssetInfo>> ListViewFilteredLeftItems;
+	TSharedPtr<SListView<TWeakObjectPtr<class UQuVRCatalogAssetInfo>>> ListViewLeft;
 
 	/** List view that shows placeable items */
-	TArray<TWeakObjectPtr<class UQuVRcatalogAssetInfo>> ListViewFilteredRightItems;
-	TSharedPtr<SListView<TWeakObjectPtr<class UQuVRcatalogAssetInfo>>> ListViewRight;
+	TArray<TWeakObjectPtr<class UQuVRCatalogAssetInfo>> ListViewFilteredRightItems;
+	TSharedPtr<SListView<TWeakObjectPtr<class UQuVRCatalogAssetInfo>>> ListViewRight;
 
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	
@@ -69,7 +69,7 @@ private:
 	TSharedRef<SWidget> CreateGroupTabManufacturer(const FString& CatalogName);
 	FReply HandleBreadcrumbTrailAddButtonClicked();
 
-	TSharedRef<ITableRow> OnGenerateWidgetForItem(TWeakObjectPtr<class UQuVRcatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TSharedRef<ITableRow> OnGenerateWidgetForItem(TWeakObjectPtr<class UQuVRCatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable);
 
 	void CreateWidgetElement();
 
@@ -87,7 +87,7 @@ public:
 	SLATE_BEGIN_ARGS(SQuVRCatalogEntry){ }
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, TWeakObjectPtr<class UQuVRcatalogAssetInfo> InItem);
+	void Construct(const FArguments& InArgs, TWeakObjectPtr<class UQuVRCatalogAssetInfo> InItem);
 };
 
 #endif

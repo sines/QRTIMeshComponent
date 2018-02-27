@@ -118,7 +118,7 @@ void SQuVRCatalogWidget::AddListViewLR()
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				[
-					SAssignNew(ListViewLeft, SListView<TWeakObjectPtr<UQuVRcatalogAssetInfo>>)
+					SAssignNew(ListViewLeft, SListView<TWeakObjectPtr<UQuVRCatalogAssetInfo>>)
 					.ListItemsSource(&ListViewFilteredLeftItems)
 					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
 					.ExternalScrollbar(ScrollBar)
@@ -127,7 +127,7 @@ void SQuVRCatalogWidget::AddListViewLR()
 				+ SHorizontalBox::Slot()
 					[
 
-						SAssignNew(ListViewRight, SListView<TWeakObjectPtr<UQuVRcatalogAssetInfo>>)
+						SAssignNew(ListViewRight, SListView<TWeakObjectPtr<UQuVRCatalogAssetInfo>>)
 						.ListItemsSource(&ListViewFilteredRightItems)
 					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
 					.ExternalScrollbar(ScrollBar)
@@ -246,15 +246,15 @@ void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	}
 }
 
-TSharedRef<ITableRow> SQuVRCatalogWidget::OnGenerateWidgetForItem(TWeakObjectPtr<UQuVRcatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SQuVRCatalogWidget::OnGenerateWidgetForItem(TWeakObjectPtr<UQuVRCatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
-	return SNew(STableRow<TWeakObjectPtr<UQuVRcatalogAssetInfo>>, OwnerTable)
+	return SNew(STableRow<TWeakObjectPtr<UQuVRCatalogAssetInfo>>, OwnerTable)
 			[
 				SNew(SQuVRCatalogEntry, InItem)
 			];
 }
 
-void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<class UQuVRcatalogAssetInfo> InItem)
+void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<class UQuVRCatalogAssetInfo> InItem)
 {
 /*
 

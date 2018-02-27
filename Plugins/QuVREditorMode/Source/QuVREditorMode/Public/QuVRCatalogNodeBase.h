@@ -46,15 +46,15 @@ struct QUVREDITORMODE_API FQuVRCatalogNodeInfo
 };
 
 /**
-* UQuVRcatalogAssetInfo
+* UQuVRCatalogAssetInfo
 */
 UCLASS()
-class QUVREDITORMODE_API UQuVRcatalogAssetInfo:public UObject
+class QUVREDITORMODE_API UQuVRCatalogAssetInfo:public UObject
 {
 public:
 
 	GENERATED_BODY()
-	UQuVRcatalogAssetInfo();
+		UQuVRCatalogAssetInfo();
 
 	// Json Data
 	FString Id;
@@ -104,7 +104,7 @@ public:
 	
 	TSharedPtr<class FQuVRCatalogNode> ParentNode;
 	TArray<TSharedPtr<class FQuVRCatalogNode>> ChildList;
-	TArray<class UQuVRcatalogAssetInfo*> AssetList;
+	TArray<class UQuVRCatalogAssetInfo*> AssetList;
 	// Asset Data
 	bool HasAssetList;
 

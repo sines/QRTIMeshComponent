@@ -11,7 +11,7 @@
 
 #if !UE_BUILD_SHIPPING
 
-#define LOCTEXT_NAMESPACE "SQuVRCatlogEntryWidget"
+//#define LOCTEXT_NAMESPACE "QuVRCatlogEntryWidget"
 
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
@@ -38,39 +38,45 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 };
 void SQuVRCatlogEntryWidget::RefreshWidget()
 {
-	if (AssetInfo->Texture2Dimage)
+	if (AssetInfo.IsValid())
 	{
-		Texture2Dimage = AssetInfo->Texture2Dimage;
-		brush->ImageSize.X = AssetInfo->Texture2Dimage->GetSurfaceWidth();
-		brush->ImageSize.Y = AssetInfo->Texture2Dimage->GetSurfaceHeight();
-		brush->DrawAs = ESlateBrushDrawType::Image;
-		brush->SetResourceObject(Texture2Dimage);
-		buttonstyle->SetNormal(*brush);
-		buttonstyle->SetPressed(*brush);
-		buttonstyle->SetHovered(*brush);
+		if (AssetInfo->Texture2Dimage)
+		{
+			Texture2Dimage = AssetInfo->Texture2Dimage;
+			brush->ImageSize.X = AssetInfo->Texture2Dimage->GetSurfaceWidth();
+			brush->ImageSize.Y = AssetInfo->Texture2Dimage->GetSurfaceHeight();
+			brush->DrawAs = ESlateBrushDrawType::Image;
+			brush->SetResourceObject(Texture2Dimage);
+			buttonstyle->SetNormal(*brush);
+			buttonstyle->SetPressed(*brush);
+			buttonstyle->SetHovered(*brush);
 
+		}
 	}
 }
 
 FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
 {
-	FString URL = AssetInfo->PackageUrl;
-	if (5 <URL.Len())
+	if (AssetInfo.IsValid())
 	{
-		if (AsyncTaskDownloadImage)
+		FString URL = AssetInfo->PackageUrl;
+		if (5 <URL.Len())
 		{
-			AsyncTaskDownloadImage->StartDownloadZipFile(URL);
-		}
-		else
-		{
-			AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadZipLoader(URL);
-		}
+			if (AsyncTaskDownloadImage)
+			{
+				AsyncTaskDownloadImage->StartDownloadZipFile(URL);
+			}
+			else
+			{
+				AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadZipLoader(URL);
+			}
 
+		}
 	}
 	return FReply::Handled();
 }
 
-TSharedRef<SWidget> MakeCatalogEntryWidget(TWeakObjectPtr<UQuVRcatalogAssetInfo> item)
+TSharedRef<SWidget> MakeCatalogEntryWidget(TWeakObjectPtr<UQuVRCatalogAssetInfo> item)
 {
 	return SNew(SQuVRCatlogEntryWidget).AssetInfo(item);
 }

@@ -28,7 +28,7 @@ void FQuVRCatalogNode::ClearChildNodelist()
 	ClearChildAssetlist();
 	ChildList.Reset();
 }
-static bool IsDataNull(const TSharedPtr<UQuVRcatalogAssetInfo> Dependency)
+static bool IsDataNull(const TSharedPtr<UQuVRCatalogAssetInfo> Dependency)
 {
 	return Dependency.IsValid();
 }
@@ -40,10 +40,10 @@ void FQuVRCatalogNode::ClearChildAssetlist()
 }
 
 /************************************************************************/
-/*  UQuVRcatalogAssetInfo							                    */
+/*  UQuVRCatalogAssetInfo							                    */
 /************************************************************************/
 
-UQuVRcatalogAssetInfo::UQuVRcatalogAssetInfo() :Texture2Dimage(NULL)
+UQuVRCatalogAssetInfo::UQuVRCatalogAssetInfo() :Texture2Dimage(NULL)
 {
 	Id = "0";
 	ObjectType = 0;
@@ -63,17 +63,17 @@ UQuVRcatalogAssetInfo::UQuVRcatalogAssetInfo() :Texture2Dimage(NULL)
 }
 
 
-void UQuVRcatalogAssetInfo::Initialise(TSharedPtr<FQuVRCatalogNode> node)
+void UQuVRCatalogAssetInfo::Initialise(TSharedPtr<FQuVRCatalogNode> node)
 {
 	if (node.IsValid())
 	{
 		UQuVRFileDownloader* AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
-		AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRcatalogAssetInfo::DownloadImage);
+		AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadImage);
 	}
 
 }
 
-void UQuVRcatalogAssetInfo::DownloadImage(UTexture2DDynamic* texture2D)
+void UQuVRCatalogAssetInfo::DownloadImage(UTexture2DDynamic* texture2D)
 {
 	Texture2Dimage = texture2D;
 	Texture2Dimage->AddToRoot();

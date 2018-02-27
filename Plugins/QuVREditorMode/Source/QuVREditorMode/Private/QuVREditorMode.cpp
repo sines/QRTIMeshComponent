@@ -5,6 +5,7 @@
 #include "IPlacementModeModule.h"
 #include "ActorFactories/ActorFactory.h"
 #include "ActorFactories/ActorFactoryDirectionalLight.h"
+#include "QuVRAssetFactory.h"
 
 
 #define LOCTEXT_NAMESPACE "FQuVREditorModeModule"
@@ -14,22 +15,14 @@ void FQuVREditorModeModule::StartupModule()
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 	FEditorModeRegistry::Get().RegisterMode<FQuVREditorModeEdMode>(FQuVREditorModeEdMode::EM_QuVREditorModeEdModeId, LOCTEXT("QuVREditorModeEdModeName", "QuVREditorModeEdMode"), FSlateIcon(), true);
 
-	// Add a new light for the mode
-	/*IPlacementModeModule& PlacementModeModule = IPlacementModeModule::Get();
 
-	FPlacementCategoryInfo Info(
-		LOCTEXT("QuVRCategoryName", "QuVR"),
-		"QuVR",
-		TEXT("QuVR Tools"),
-		25
-	);
+	FModuleManager::Get().OnModulesChanged().AddRaw(this, &FQuVREditorModeModule::OnModulesChanged);
 
-	PlacementModeModule.RegisterPlacementCategory(Info);
+	if (IPlacementModeModule::IsAvailable())
+	{
+		OnModulesChanged("PlacementMode", EModuleChangeReason::ModuleLoaded);
+	}
 
-	int32 SortOrder = 0;
-	PlacementModeModule.RegisterPlaceableItem("QuVR", 
-		MakeShareable(new FPlaceableItem(*UActorFactoryDirectionalLight::StaticClass(), SortOrder += 10)));
-	*/
 }
 
 void FQuVREditorModeModule::ShutdownModule()
@@ -38,6 +31,30 @@ void FQuVREditorModeModule::ShutdownModule()
 	// we call this function before unloading the module.
 	FEditorModeRegistry::Get().UnregisterMode(FQuVREditorModeEdMode::EM_QuVREditorModeEdModeId);
 }
+
+void FQuVREditorModeModule::OnModulesChanged(FName Module, EModuleChangeReason Reason)
+{
+	if (Module == TEXT("PlacementMode") && Reason == EModuleChangeReason::ModuleLoaded)
+	{
+		RegisterNewPlaceMode();
+	}
+}
+
+
+void FQuVREditorModeModule::RegisterNewPlaceMode()
+{
+	// Add a new light for the mode
+	IPlacementModeModule& PlacementModeModule = IPlacementModeModule::Get();
+
+	FPlacementCategoryInfo Info(LOCTEXT("QuVRCategoryName", "QuVRPanoKit"), "QuVRPanoKit", TEXT("QuVR Pano Tools"), 100);
+
+	PlacementModeModule.RegisterPlacementCategory(Info);
+
+	int32 SortOrder = 100;
+	PlacementModeModule.RegisterPlaceableItem(Info.UniqueHandle,
+		MakeShareable(new FPlaceableItem(*UQuVRAssetFactory::StaticClass(), SortOrder += 10)));
+}
+
 
 #undef LOCTEXT_NAMESPACE
 	

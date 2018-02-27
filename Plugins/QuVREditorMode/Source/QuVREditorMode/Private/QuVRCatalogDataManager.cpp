@@ -141,7 +141,7 @@ void UQuVRCatalogDataManager::ParseAssetItemData(TSharedPtr<FQuVRCatalogNode> no
 {
 	if (node.IsValid())
 	{
-		UQuVRcatalogAssetInfo* AssetItem =NewObject<UQuVRcatalogAssetInfo>();
+		UQuVRCatalogAssetInfo* AssetItem =NewObject<UQuVRCatalogAssetInfo>();
 		TSharedPtr<FJsonObject>TempJsonObject = JsonValue->AsObject();
 		AssetItem->Id = TempJsonObject->GetStringField(TEXT("ID"));
 

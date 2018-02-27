@@ -101,8 +101,10 @@ void UQuVRFileDownloader::StartDownloadZipFile(FString URL)
 {
 	FileURL = URL;
 #if !UE_SERVER
+	IsDownload = UQuVRUtils::CheckFileExists(URL);
 	if (false == IsDownload)
 	{
+
 		// Create the Http request and add to pending request list
 		HttpRequest->OnProcessRequestComplete().Unbind();
 		HttpRequest->OnRequestProgress().Unbind();
