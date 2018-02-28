@@ -138,7 +138,7 @@ bool UQuVRUtils::CheckFileExists(const FString& InPackageUrl)
 	FString FilePath;
 	FString FullPath;
 	GetObjectPath(InPackageUrl, FullPath, FilePath);
-	FString name = GetObjectName(FullPath);
+	FString name = GetObjectName(FullPath)+ FString(TEXT(".uasset"));
 	// Test File Exist!
 	FString file = FPaths::Combine(FilePath, name);
 	return FPaths::FileExists(*file);

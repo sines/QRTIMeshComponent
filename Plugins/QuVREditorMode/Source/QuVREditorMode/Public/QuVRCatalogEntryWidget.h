@@ -5,7 +5,7 @@
 #if !UE_BUILD_SHIPPING
 
 DECLARE_MULTICAST_DELEGATE(EntryWidgetDone);
-
+struct FPlaceableItem;
 struct FCatalogItem;
 
 class SQuVRCatlogEntryWidget
@@ -26,19 +26,34 @@ public:
 		*/
 	void Construct(const FArguments& InDelcaration);
 
+	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	virtual FReply OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+
 	// Void DownLoad Asset.zip
 	FReply OnDownloadAsset();
 
 	void RefreshWidget();
+
+private:
+	const FSlateBrush* GetSlateBrushState() const;
 	// 
 protected:
 	TSharedPtr<class SButton> button;
 
 	TWeakObjectPtr<class UQuVRCatalogAssetInfo> AssetInfo;
 	UTexture2DDynamic* Texture2Dimage;
-	FSlateBrush* brush;
 	FButtonStyle* buttonstyle;
 	class UQuVRFileDownloader* AsyncTaskDownloadImage;
+
+private:
+	bool bIsPressed;
+	
+	FSlateBrush* NormalImage;
+	FSlateBrush* HoverImage;
+	FSlateBrush* PressedImage;
+
+	FPlaceableItem* PlaceableItem;
 };
 
 TSharedRef<SWidget> MakeCatalogEntryWidget(TWeakObjectPtr<UQuVRCatalogAssetInfo> AssetInfo);

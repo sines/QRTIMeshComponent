@@ -329,7 +329,6 @@ ChildSlot
 						.WidthOverride(112)
 						.HeightOverride(112)
 						[
-							//SNew(SButton)
 							MakeCatalogEntryWidget(InItem)
 						]
 					]

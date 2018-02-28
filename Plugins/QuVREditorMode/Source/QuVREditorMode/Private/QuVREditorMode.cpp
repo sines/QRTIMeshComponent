@@ -5,7 +5,7 @@
 #include "IPlacementModeModule.h"
 #include "ActorFactories/ActorFactory.h"
 #include "ActorFactories/ActorFactoryDirectionalLight.h"
-#include "QuVRAssetFactory.h"
+#include "QuVRAssetFactoryModel.h"
 
 
 #define LOCTEXT_NAMESPACE "FQuVREditorModeModule"
@@ -52,7 +52,7 @@ void FQuVREditorModeModule::RegisterNewPlaceMode()
 
 	int32 SortOrder = 100;
 	PlacementModeModule.RegisterPlaceableItem(Info.UniqueHandle,
-		MakeShareable(new FPlaceableItem(*UQuVRAssetFactory::StaticClass(), SortOrder += 10)));
+		MakeShareable(new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), SortOrder += 10)));
 }
 
 

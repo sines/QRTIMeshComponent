@@ -5,9 +5,18 @@
 #include "Widgets/SUserWidget.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Runtime/Slate/Public/SlateOptMacros.h"
+#include "Runtime/AssetRegistry/Public/AssetData.h"
+#include "Editor/UnrealEd/Public/Editor.h"
+#include "Editor/UnrealEd/Public/DragAndDrop/AssetDragDropOp.h"
+#include "Editor/UnrealEd/Classes/ActorFactories/ActorFactoryBasicShape.h"
+#include "Editor/PlacementMode/Public/IPlacementModeModule.h"
+#include "Editor/UnrealEd/Classes/ActorFactories/ActorFactoryDirectionalLight.h"
+#include "Developer/AssetTools/Public/AssetToolsModule.h"
 #include "Core.h"
 #include "SlateBasics.h"
 #include "QuVRFileDownloader.h"
+#include "QuVRUtils.h"
+#include "QuVRAssetFactoryModel.h"
 
 #if !UE_BUILD_SHIPPING
 
@@ -15,9 +24,13 @@
 
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
-{		
+{	
+	bIsPressed = false;
+	NormalImage = new FSlateBrush();
+	HoverImage = new FSlateBrush();
+	PressedImage = new FSlateBrush();
+
 	AssetInfo = InDelcaration._AssetInfo;
-	brush = new FSlateBrush();
 	buttonstyle = new FButtonStyle();
 	if (AssetInfo.IsValid())
 	{
@@ -27,30 +40,56 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 	RefreshWidget();
 	ChildSlot
 		[
-//			SNew(SImage).Image(brush)
-
+		 // SNew(SImage).Image(NormalImage)
+		 SNew(SBorder).BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState)
+		 
+		 /*		
 			SAssignNew(button,SButton)
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Fill)
 			.ButtonStyle(buttonstyle)
 			.OnClicked(this, &SQuVRCatlogEntryWidget::OnDownloadAsset)
+		*/
 		];
+
+	//PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), 10);
+	//PlaceableItem = new FPlaceableItem(*UActorFactoryDirectionalLight::StaticClass(), 10);
+
+	static TOptional<FLinearColor> BasicShapeColorOverride;
+
+	if (!BasicShapeColorOverride.IsSet())
+	{
+		FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
+		TSharedPtr<IAssetTypeActions> AssetTypeActions;
+		AssetTypeActions = AssetToolsModule.Get().GetAssetTypeActionsForClass(UClass::StaticClass()).Pin();
+		if (AssetTypeActions.IsValid())
+		{
+			BasicShapeColorOverride = TOptional<FLinearColor>(AssetTypeActions->GetTypeColor());
+		}
+	}
+	//UActorFactoryBasicShape
+	PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), FAssetData(LoadObject<UStaticMesh>(nullptr, *UActorFactoryBasicShape::BasicCube.ToString())), FName("ClassThumbnail.Cube"), BasicShapeColorOverride, 10, NSLOCTEXT("PlacementMode", "Cube", "Cube"));
 };
+
 void SQuVRCatlogEntryWidget::RefreshWidget()
 {
 	if (AssetInfo.IsValid())
 	{
 		if (AssetInfo->Texture2Dimage)
 		{
+			FSlateBrush* AssetImage = new FSlateBrush();
 			Texture2Dimage = AssetInfo->Texture2Dimage;
-			brush->ImageSize.X = AssetInfo->Texture2Dimage->GetSurfaceWidth();
-			brush->ImageSize.Y = AssetInfo->Texture2Dimage->GetSurfaceHeight();
-			brush->DrawAs = ESlateBrushDrawType::Image;
-			brush->SetResourceObject(Texture2Dimage);
-			buttonstyle->SetNormal(*brush);
-			buttonstyle->SetPressed(*brush);
-			buttonstyle->SetHovered(*brush);
-
+			AssetImage->ImageSize.X = AssetInfo->Texture2Dimage->GetSurfaceWidth();
+			AssetImage->ImageSize.Y = AssetInfo->Texture2Dimage->GetSurfaceHeight();
+			AssetImage->DrawAs = ESlateBrushDrawType::Image;
+			AssetImage->SetResourceObject(Texture2Dimage);
+			buttonstyle->SetNormal(*AssetImage);
+			buttonstyle->SetPressed(*AssetImage);
+			buttonstyle->SetHovered(*AssetImage);
+			
+			NormalImage = AssetImage;
+			PressedImage = AssetImage;
+			HoverImage = AssetImage;
 		}
 	}
 }
@@ -62,18 +101,79 @@ FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
 		FString URL = AssetInfo->PackageUrl;
 		if (5 <URL.Len())
 		{
-			if (AsyncTaskDownloadImage)
+			if (!UQuVRUtils::CheckFileExists(URL))
 			{
-				AsyncTaskDownloadImage->StartDownloadZipFile(URL);
+				if (AsyncTaskDownloadImage)
+				{
+					AsyncTaskDownloadImage->StartDownloadZipFile(URL);
+				}
+				else
+				{
+					AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadZipLoader(URL);
+				}
 			}
-			else
-			{
-				AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadZipLoader(URL);
-			}
-
 		}
 	}
 	return FReply::Handled();
+}
+
+
+FReply SQuVRCatlogEntryWidget::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		bIsPressed = true;
+		OnDownloadAsset();
+		return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton());
+	}
+
+	return FReply::Unhandled();
+}
+
+FReply SQuVRCatlogEntryWidget::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		bIsPressed = false;
+	}
+
+	return FReply::Unhandled();
+}
+
+// GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("++++++++++OnDragDetected++++++++++"));
+
+FReply SQuVRCatlogEntryWidget::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	bIsPressed = false;
+	
+	/* Placement Actor */
+	TArray<FAssetData> DraggedAssetDatas;
+	DraggedAssetDatas.Add(PlaceableItem->AssetData);
+	FEditorDelegates::OnAssetDragStarted.Broadcast(DraggedAssetDatas, PlaceableItem->Factory);
+	if (MouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+	{
+		// BeginDragDrop
+		return FReply::Handled().BeginDragDrop(FAssetDragDropOp::New(DraggedAssetDatas, PlaceableItem->Factory));
+	}
+	else
+	{
+		return FReply::Handled();
+	}
+}
+
+const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushState() const
+{
+	if (bIsPressed)
+	{
+		return PressedImage;
+	}else if (IsHovered())
+	{
+		return HoverImage;
+	}
+	else
+	{
+		return NormalImage;
+	}
 }
 
 TSharedRef<SWidget> MakeCatalogEntryWidget(TWeakObjectPtr<UQuVRCatalogAssetInfo> item)
