@@ -5,7 +5,7 @@
 #include "IPlacementModeModule.h"
 #include "ActorFactories/ActorFactory.h"
 #include "ActorFactories/ActorFactoryDirectionalLight.h"
-#include "QuVRAssetFactoryModel.h"
+#include "QuVRAssetFactoryStaticMesh.h"
 
 
 #define LOCTEXT_NAMESPACE "FQuVREditorModeModule"
@@ -16,9 +16,9 @@ void FQuVREditorModeModule::StartupModule()
 	FEditorModeRegistry::Get().RegisterMode<FQuVREditorModeEdMode>(FQuVREditorModeEdMode::EM_QuVREditorModeEdModeId, LOCTEXT("QuVREditorModeEdModeName", "QuVREditorModeEdMode"), FSlateIcon(), true);
 
 
-	FModuleManager::Get().OnModulesChanged().AddRaw(this, &FQuVREditorModeModule::OnModulesChanged);
+	handle = FModuleManager::Get().OnModulesChanged().AddRaw(this, &FQuVREditorModeModule::OnModulesChanged);
 
-	if (IPlacementModeModule::IsAvailable())
+if (IPlacementModeModule::IsAvailable())
 	{
 		OnModulesChanged("PlacementMode", EModuleChangeReason::ModuleLoaded);
 	}
@@ -29,6 +29,7 @@ void FQuVREditorModeModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+	FModuleManager::Get().OnModulesChanged().Remove(handle);
 	FEditorModeRegistry::Get().UnregisterMode(FQuVREditorModeEdMode::EM_QuVREditorModeEdModeId);
 }
 
@@ -52,7 +53,7 @@ void FQuVREditorModeModule::RegisterNewPlaceMode()
 
 	int32 SortOrder = 100;
 	PlacementModeModule.RegisterPlaceableItem(Info.UniqueHandle,
-		MakeShareable(new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), SortOrder += 10)));
+		MakeShareable(new FPlaceableItem(*UQuVRAssetFactoryStaticMesh::StaticClass(), SortOrder += 10)));
 }
 
 

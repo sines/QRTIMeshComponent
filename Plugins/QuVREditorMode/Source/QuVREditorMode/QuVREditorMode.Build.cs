@@ -80,6 +80,7 @@ public class QuVREditorMode : ModuleRules
                 new string[] {
                     "ImageWrapper",
                     "SlateRHIRenderer",
+                    "AssetTools",
                 }
             );
         };

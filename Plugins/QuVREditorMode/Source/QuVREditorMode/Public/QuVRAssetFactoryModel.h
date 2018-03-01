@@ -5,33 +5,25 @@
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
 #include "ActorFactories/ActorFactory.h"
-#include "ActorFactories/ActorFactoryStaticMesh.h"
+#include "QuVRAssetFactoryStaticMesh.h"
 #include "QuVRAssetFactoryModel.generated.h"
 
 /************************************************************************/
-/*       UUQuVRAssetFactoryModel                                             */
+/*       UUQuVRAssetFactoryStaticMeshModel                                             */
 /************************************************************************/
+class AActor;
+struct FAssetData;
 
-//UCLASS(MinimalAPI, config = Editor, collapsecategories, hidecategories = Object)
-UCLASS(MinimalAPI, config = Editor)
-class UQuVRAssetFactoryModel : public UActorFactoryStaticMesh
+UCLASS(MinimalAPI, config = Editor, collapsecategories, hidecategories = Object)
+class UQuVRAssetFactoryModel : public UQuVRAssetFactoryStaticMesh
 {
 	GENERATED_UCLASS_BODY()
-public:
-	/** The Net Download Asset Path */
-	UPROPERTY()
-		FString CatalogAssetPath;
-
-protected:
-	/*-----------------------------------------------------------------------------
-	UActorFactoryStaticMesh override function
-	-----------------------------------------------------------------------------*/
-	virtual bool CanCreateActorFrom(const FAssetData& AssetData, FText& OutErrorMsg) override;
 
 	/*-----------------------------------------------------------------------------
 	UActorFactory override function
 	-----------------------------------------------------------------------------*/
 	//~ Begin UActorFactory Interface
 	virtual void PostSpawnActor(UObject* Asset, AActor* NewActor) override;
+	virtual bool CanCreateActorFrom(const FAssetData& AssetData, FText& OutErrorMsg) override;
 	//~ End UActorFactory Interface
 };

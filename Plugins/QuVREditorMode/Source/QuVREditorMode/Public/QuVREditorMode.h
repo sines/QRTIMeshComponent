@@ -16,4 +16,6 @@ public:
 private:
 	void OnModulesChanged(FName Module, EModuleChangeReason Reason);
 	void RegisterNewPlaceMode();
+
+	FDelegateHandle handle;
 };

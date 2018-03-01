@@ -42,12 +42,16 @@ public:
 	/************************************************************************/
 	/* Content Path Function                                                */
 	/************************************************************************/
-	static void GetObjectPath(const FString& InPackageUrl, FString& FullPath, FString& FilePath);
+	static void GetObjectPath(const FString& InPackageUrl, FString& ZipPath, FString& FilePath);
 
 	static FString GetObjectName(const FString& InFilePath);
 	static FString GetContentPath();
 	static const FString ResRootPath;
 
+	/************************************************************************/
+	/* StaticLoadObject Asset Path                                          */
+	/************************************************************************/
+	static FString GetAssetPath(const FString& InPackageUrl);
 
 	/************************************************************************/
 	/*                        Zip Folder                           */

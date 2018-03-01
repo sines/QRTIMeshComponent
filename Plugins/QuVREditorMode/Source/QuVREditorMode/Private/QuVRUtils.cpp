@@ -43,15 +43,22 @@ FString UQuVRUtils::GetContentPath()
 {
 	FString ContentDir = FPaths::GameContentDir();
 	FString GameFullDir = FPaths::Combine(ContentDir, ResRootPath);
-	FString FullDir = FPaths::ConvertRelativePathToFull(GameFullDir);
-	return FString(FullDir);
+	return FString(GameFullDir);
 }
 
-void UQuVRUtils::GetObjectPath(const FString& InPackageUrl, FString& FullPath, FString& FilePath)
+void UQuVRUtils::GetObjectPath(const FString& InPackageUrl, FString& ZipPath, FString& FilePath)
 {
+	if (InPackageUrl.IsEmpty())
+	{
+		return ;
+	}
+
 	FQuVRPackageModel model= GetPackageObject(InPackageUrl);
 	FilePath = FPaths::Combine(GetContentPath(), model.type, model.Name);
-	FullPath = FPaths::Combine(GetContentPath(), model.type, model.Name, model.FullName);
+	ZipPath = FPaths::Combine(GetContentPath(), model.type, model.Name, model.FullName);
+
+	FilePath = FPaths::ConvertRelativePathToFull(FilePath);
+	ZipPath = FPaths::ConvertRelativePathToFull(ZipPath);
 }
 
 FString UQuVRUtils::GetObjectName(const FString& InFilePath)
@@ -135,11 +142,32 @@ void UQuVRUtils::DeleteZipFile(const FString& InZipPath)
 
 bool UQuVRUtils::CheckFileExists(const FString& InPackageUrl)
 {
+
+	if (InPackageUrl.IsEmpty())
+	{
+		return false;
+	}
+	
 	FString FilePath;
 	FString FullPath;
 	GetObjectPath(InPackageUrl, FullPath, FilePath);
-	FString name = GetObjectName(FullPath)+ FString(TEXT(".uasset"));
+	FString name = GetObjectName(FilePath);
+	FilePath = FPaths::Combine(FilePath,name);
 	// Test File Exist!
-	FString file = FPaths::Combine(FilePath, name);
+	FString file = FilePath + FString(TEXT(".uasset"));
 	return FPaths::FileExists(*file);
 }
+
+/************************************************************************/
+/* StaticLoadObject Asset Path                                          */
+/************************************************************************/
+FString UQuVRUtils::GetAssetPath(const FString& InPackageUrl)
+{
+	
+	FString FilePath;
+	FQuVRPackageModel model = GetPackageObject(InPackageUrl);
+	FilePath = FPaths::Combine(FString(TEXT("/Game/QuVRResource")), model.type, model.Name, model.Name);
+	FilePath += FString(TEXT("."))+ model.Name;
+	return FilePath;
+}
+

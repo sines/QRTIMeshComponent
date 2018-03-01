@@ -11,6 +11,8 @@
 #include "Editor/UnrealEd/Classes/ActorFactories/ActorFactoryBasicShape.h"
 #include "Editor/PlacementMode/Public/IPlacementModeModule.h"
 #include "Editor/UnrealEd/Classes/ActorFactories/ActorFactoryDirectionalLight.h"
+#include "Developer/AssetTools/Public/IAssetTypeActions.h"
+#include "Developer/AssetTools/Public/IAssetTools.h"
 #include "Developer/AssetTools/Public/AssetToolsModule.h"
 #include "Core.h"
 #include "SlateBasics.h"
@@ -20,11 +22,9 @@
 
 #if !UE_BUILD_SHIPPING
 
-//#define LOCTEXT_NAMESPACE "QuVRCatlogEntryWidget"
-
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
-{	
+{
 	bIsPressed = false;
 	NormalImage = new FSlateBrush();
 	HoverImage = new FSlateBrush();
@@ -40,36 +40,49 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 	RefreshWidget();
 	ChildSlot
 		[
-		 // SNew(SImage).Image(NormalImage)
-		 SNew(SBorder).BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState)
-		 
-		 /*		
-			SAssignNew(button,SButton)
-			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Fill)
-			.ButtonStyle(buttonstyle)
-			.OnClicked(this, &SQuVRCatlogEntryWidget::OnDownloadAsset)
-		*/
+			// SNew(SImage).Image(NormalImage)
+			SNew(SBorder).BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState)
+
+			/*
+			   SAssignNew(button,SButton)
+			   .HAlign(HAlign_Fill)
+			   .VAlign(VAlign_Fill)
+			   .ButtonStyle(buttonstyle)
+			   .OnClicked(this, &SQuVRCatlogEntryWidget::OnDownloadAsset)
+		   */
 		];
 
-	//PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), 10);
-	//PlaceableItem = new FPlaceableItem(*UActorFactoryDirectionalLight::StaticClass(), 10);
+	InitPlaceableItem();
+	
 
-	static TOptional<FLinearColor> BasicShapeColorOverride;
+}
 
-	if (!BasicShapeColorOverride.IsSet())
+void SQuVRCatlogEntryWidget::InitPlaceableItem()
+{
+	if (AssetInfo.IsValid()&& NULL == PlaceableItem)
 	{
-		FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
-		TSharedPtr<IAssetTypeActions> AssetTypeActions;
-		AssetTypeActions = AssetToolsModule.Get().GetAssetTypeActionsForClass(UClass::StaticClass()).Pin();
-		if (AssetTypeActions.IsValid())
+		if (UQuVRUtils::CheckFileExists(AssetInfo->PackageUrl))
 		{
-			BasicShapeColorOverride = TOptional<FLinearColor>(AssetTypeActions->GetTypeColor());
-		}
-	}
-	//UActorFactoryBasicShape
-	PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), FAssetData(LoadObject<UStaticMesh>(nullptr, *UActorFactoryBasicShape::BasicCube.ToString())), FName("ClassThumbnail.Cube"), BasicShapeColorOverride, 10, NSLOCTEXT("PlacementMode", "Cube", "Cube"));
-};
+			static TOptional<FLinearColor> BasicShapeColorOverride;
+
+			if (!BasicShapeColorOverride.IsSet())
+			{
+				FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
+				TSharedPtr<IAssetTypeActions> AssetTypeActions;
+				AssetTypeActions = AssetToolsModule.Get().GetAssetTypeActionsForClass(UClass::StaticClass()).Pin();
+				if (AssetTypeActions.IsValid())
+				{
+					BasicShapeColorOverride = TOptional<FLinearColor>(AssetTypeActions->GetTypeColor());
+				}
+			}
+
+			//UQuVRAssetFactoryStaticMeshModel
+			FString filepath = UQuVRUtils::GetAssetPath(AssetInfo->PackageUrl);
+			int32 SortOrder = 0;
+			PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), FAssetData(LoadObject<UStaticMesh>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+		};
+	};
+}
 
 void SQuVRCatlogEntryWidget::RefreshWidget()
 {
@@ -124,6 +137,7 @@ FReply SQuVRCatlogEntryWidget::OnMouseButtonDown(const FGeometry& MyGeometry, co
 	{
 		bIsPressed = true;
 		OnDownloadAsset();
+		InitPlaceableItem();
 		return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton());
 	}
 
@@ -146,6 +160,12 @@ FReply SQuVRCatlogEntryWidget::OnDragDetected(const FGeometry& MyGeometry, const
 {
 	bIsPressed = false;
 	
+	// if PlaceableItem Null
+	if (NULL ==PlaceableItem)
+	{
+		return FReply::Handled();
+	}
+
 	/* Placement Actor */
 	TArray<FAssetData> DraggedAssetDatas;
 	DraggedAssetDatas.Add(PlaceableItem->AssetData);

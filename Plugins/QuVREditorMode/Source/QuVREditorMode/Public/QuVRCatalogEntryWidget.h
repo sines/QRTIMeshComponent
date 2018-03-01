@@ -37,6 +37,7 @@ public:
 
 private:
 	const FSlateBrush* GetSlateBrushState() const;
+	void InitPlaceableItem();
 	// 
 protected:
 	TSharedPtr<class SButton> button;
