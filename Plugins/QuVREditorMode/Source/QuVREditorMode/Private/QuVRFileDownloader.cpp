@@ -142,7 +142,10 @@ void UQuVRFileDownloader::HandleZipRequestComplete(FHttpRequestPtr HttpRequest, 
 		}
 	}
 
-	OnDownloadFileDone.Broadcast(HttpResponse->GetResponseCode());
+	if (HttpResponse.IsValid())
+	{
+		OnDownloadFileDone.Broadcast(HttpResponse->GetResponseCode());
+	}
 #endif
 }
 

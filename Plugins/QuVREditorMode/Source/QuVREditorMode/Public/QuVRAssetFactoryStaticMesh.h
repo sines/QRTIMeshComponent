@@ -18,10 +18,6 @@ UCLASS(MinimalAPI, config = Editor)
 class UQuVRAssetFactoryStaticMesh : public UActorFactory
 {
 	GENERATED_UCLASS_BODY()
-
-	/** The Net Download Asset Path */
-	UPROPERTY()
-	FString CatalogAssetPath;
 	
 	//~ Begin UActorFactory Interface
 	virtual bool CanCreateActorFrom(const FAssetData& AssetData, FText& OutErrorMsg) override;

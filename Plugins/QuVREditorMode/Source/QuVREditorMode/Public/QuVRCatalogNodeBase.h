@@ -58,6 +58,14 @@ public:
 
 	// Json Data
 	FString Id;
+	/*     
+	ObjectType =      
+	SK_ 骨骼模型 0
+	SM_  静态模型 1
+	M_  材质球 2
+	T_   贴图 3
+	P_   特效 4
+	*/
 	int32 ObjectType;
 	FString ObjectTypeDesc;
 	FString Name;

@@ -42,15 +42,23 @@ void FQuVRCatalogNode::ClearChildAssetlist()
 /************************************************************************/
 /*  UQuVRCatalogAssetInfo							                    */
 /************************************************************************/
+/* 
+ObjectType
+SK_ 骨骼模型 0
+SM_  静态模型 1
+M_  材质球 2
+T_   贴图 3
+P_   特效 4
+*/
 
 UQuVRCatalogAssetInfo::UQuVRCatalogAssetInfo() :Texture2Dimage(NULL)
 {
-	Id = "0";
-	ObjectType = 0;
-	ObjectTypeDesc = "0";
-	Name = "0";
-	DisplayName = "0";
-	Description = "0";
+	Id = "-1";
+	ObjectType = -1;
+	ObjectTypeDesc = "NULL";
+	Name = "-1";
+	DisplayName = "NULL";
+	Description = "NULL";
 	AssetRelativePath = "0";
 	MainCategoryID = "0";
 	SubCategoryID = "0";

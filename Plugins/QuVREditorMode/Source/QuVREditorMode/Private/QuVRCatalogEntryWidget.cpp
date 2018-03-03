@@ -1,6 +1,7 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 
 #include "QuVRCatalogEntryWidget.h"
+// Core System
 #include "Widgets/SWidget.h"
 #include "Widgets/SUserWidget.h"
 #include "Widgets/SCompoundWidget.h"
@@ -11,14 +12,18 @@
 #include "Editor/UnrealEd/Classes/ActorFactories/ActorFactoryBasicShape.h"
 #include "Editor/PlacementMode/Public/IPlacementModeModule.h"
 #include "Editor/UnrealEd/Classes/ActorFactories/ActorFactoryDirectionalLight.h"
+#include "Editor/UnrealEd/Classes/ActorFactories/ActorFactoryAnimationAsset.h"
+#include "Editor/UnrealEd/Public/EditorClassUtils.h"
 #include "Developer/AssetTools/Public/IAssetTypeActions.h"
 #include "Developer/AssetTools/Public/IAssetTools.h"
 #include "Developer/AssetTools/Public/AssetToolsModule.h"
 #include "Core.h"
 #include "SlateBasics.h"
+// Custom include
 #include "QuVRFileDownloader.h"
 #include "QuVRUtils.h"
 #include "QuVRAssetFactoryModel.h"
+#include "QuVRAssetFactoryMaterial.h"
 
 #if !UE_BUILD_SHIPPING
 
@@ -38,10 +43,38 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 	}
 
 	RefreshWidget();
+	TSharedPtr<IToolTip> AssetEntryToolTip;
+
+	InitPlaceableItem();
+	if (PlaceableItem)
+	{
+		const bool bIsClass = PlaceableItem->AssetData.GetClass() == UClass::StaticClass();
+		const bool bIsActor = bIsClass ? CastChecked<UClass>(PlaceableItem->AssetData.GetAsset())->IsChildOf(AActor::StaticClass()) : false;
+
+		AActor* DefaultActor = nullptr;
+		if (PlaceableItem->Factory != nullptr)
+		{
+			DefaultActor = PlaceableItem->Factory->GetDefaultActor(PlaceableItem->AssetData);
+		}
+		else if (bIsActor)
+		{
+			DefaultActor = CastChecked<AActor>(CastChecked<UClass>(PlaceableItem->AssetData.GetAsset())->ClassDefaultObject);
+		}
+
+		if (DefaultActor != nullptr)
+		{
+			AssetEntryToolTip = FEditorClassUtils::GetTooltip(DefaultActor->GetClass());
+		}
+		if (!AssetEntryToolTip.IsValid())
+		{
+			AssetEntryToolTip = FSlateApplicationBase::Get().MakeToolTip(PlaceableItem->DisplayName);
+		}
+	}
+
 	ChildSlot
 		[
 			// SNew(SImage).Image(NormalImage)
-			SNew(SBorder).BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState)
+			SNew(SBorder).BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState).ToolTip(AssetEntryToolTip)
 
 			/*
 			   SAssignNew(button,SButton)
@@ -52,7 +85,7 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 		   */
 		];
 
-	InitPlaceableItem();
+
 	
 
 }
@@ -77,9 +110,25 @@ void SQuVRCatlogEntryWidget::InitPlaceableItem()
 			}
 
 			//UQuVRAssetFactoryStaticMeshModel
+	
 			FString filepath = UQuVRUtils::GetAssetPath(AssetInfo->PackageUrl);
 			int32 SortOrder = 0;
-			PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), FAssetData(LoadObject<UStaticMesh>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+			switch (AssetInfo->ObjectType)
+			{
+				/************************************************************************/
+				/*        SK_ 骨骼模型 0       SM_  静态模型 1        M_  材质球 2         */
+				/************************************************************************/
+			case 0:
+				PlaceableItem = new FPlaceableItem(*UActorFactoryAnimationAsset::StaticClass(), FAssetData(LoadObject<UAnimSequence>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+				break;
+			case 1:
+				PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), FAssetData(LoadObject<UStaticMesh>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+				break;
+			case 2:
+				UMaterialInterface* MA = LoadObject<UMaterialInterface>(nullptr, *filepath);
+				PlaceableItem = new FPlaceableItem(*UClass::StaticClass(), FAssetData(LoadObject<UMaterialInterface>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+				break;
+			}			
 		};
 	};
 }
