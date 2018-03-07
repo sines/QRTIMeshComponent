@@ -34,7 +34,7 @@ void UQuVRAssetFactoryModel::PostSpawnActor(UObject* Asset, AActor* NewActor)
 
 	AStaticMeshActor* StaticMeshActor = CastChecked<AStaticMeshActor>(NewActor);
 	UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
-
+	StaticMeshActor->AddActorLocalOffset(FVector(0,0,0.1));
 	if (StaticMeshComponent)
 	{
 		StaticMeshComponent->UnregisterComponent();
@@ -45,3 +45,5 @@ void UQuVRAssetFactoryModel::PostSpawnActor(UObject* Asset, AActor* NewActor)
 		StaticMeshComponent->RegisterComponent();
 	}
 }
+
+#undef LOCTEXT_NAMESPACE

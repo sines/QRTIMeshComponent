@@ -24,7 +24,7 @@ void UQuVRAssetFactoryStaticMesh::PostSpawnActor(UObject* Asset, AActor* NewActo
 
 	UStaticMesh* StaticMesh = CastChecked<UStaticMesh>(Asset);
 
-	UE_LOG(LogActorFactory, Log, TEXT("Actor Factory created %s"), *StaticMesh->GetName());
+//	UE_LOG(LogActorFactory, Log, TEXT("Actor Factory created %s"), *StaticMesh->GetName());
 
 	// Change properties
 	AStaticMeshActor* StaticMeshActor = CastChecked<AStaticMeshActor>(NewActor);
@@ -72,3 +72,4 @@ UObject* UQuVRAssetFactoryStaticMesh::GetAssetFromActorInstance(AActor* Instance
 	return SMA->GetStaticMeshComponent()->GetStaticMesh();
 };
 
+#undef LOCTEXT_NAMESPACE

@@ -23,7 +23,6 @@
 #include "QuVRFileDownloader.h"
 #include "QuVRUtils.h"
 #include "QuVRAssetFactoryModel.h"
-#include "QuVRAssetFactoryMaterial.h"
 
 #if !UE_BUILD_SHIPPING
 
@@ -119,7 +118,7 @@ void SQuVRCatlogEntryWidget::InitPlaceableItem()
 				/*        SK_ 骨骼模型 0       SM_  静态模型 1        M_  材质球 2         */
 				/************************************************************************/
 			case 0:
-				PlaceableItem = new FPlaceableItem(*UActorFactoryAnimationAsset::StaticClass(), FAssetData(LoadObject<UAnimSequence>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+				PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryAnimation::StaticClass(), FAssetData(LoadObject<UAnimSequence>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
 				break;
 			case 1:
 				PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), FAssetData(LoadObject<UStaticMesh>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);

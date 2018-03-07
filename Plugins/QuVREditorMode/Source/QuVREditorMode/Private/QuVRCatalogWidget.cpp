@@ -64,7 +64,7 @@ void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogN
 void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 {
 	
-	bNeedsUpdate = false;
+	bNeedsUpdate = true;
 	SAssignNew(HTB, SHorizontalBox);
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(1, 1));
 
@@ -99,6 +99,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	];
 #endif
 	UQuVRCatalogDataManager::GetInstance()->SetWidget(SharedThis(this));
+	bNeedsUpdate = true;
 }
 
 void SQuVRCatalogWidget::AddListViewLR()
@@ -141,6 +142,7 @@ void SQuVRCatalogWidget::AddListViewLR()
 			]
 		]
 	];
+	bNeedsUpdate = true;
 }
 
 void SQuVRCatalogWidget::CreateWidgetElement()
@@ -248,10 +250,18 @@ void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double In
 
 TSharedRef<ITableRow> SQuVRCatalogWidget::OnGenerateWidgetForItem(TWeakObjectPtr<UQuVRCatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
-	return SNew(STableRow<TWeakObjectPtr<UQuVRCatalogAssetInfo>>, OwnerTable)
+	if (InItem.IsValid())
+	{
+		return SNew(STableRow<TWeakObjectPtr<UQuVRCatalogAssetInfo>>, OwnerTable)
 			[
 				SNew(SQuVRCatalogEntry, InItem)
 			];
+	}
+	else
+	{
+		return SNew(STableRow<TWeakObjectPtr<UQuVRCatalogAssetInfo>>, OwnerTable);
+	}
+
 }
 
 void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<class UQuVRCatalogAssetInfo> InItem)
