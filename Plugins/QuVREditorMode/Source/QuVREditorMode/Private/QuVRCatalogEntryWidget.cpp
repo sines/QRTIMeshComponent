@@ -26,6 +26,13 @@
 
 #if !UE_BUILD_SHIPPING
 
+SQuVRCatlogEntryWidget::~SQuVRCatlogEntryWidget()
+{
+	if (AsyncTaskDownloadImage)
+	{
+		AsyncTaskDownloadImage->ClearDownloadState();
+	}
+}
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 {

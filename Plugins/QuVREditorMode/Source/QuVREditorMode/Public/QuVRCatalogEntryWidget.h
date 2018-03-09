@@ -17,13 +17,14 @@ public:
 
 	/** Data for the collection this item represents */
 	SLATE_ARGUMENT(TWeakObjectPtr<UQuVRCatalogAssetInfo>, AssetInfo)
-	SLATE_END_ARGS()
+		SLATE_END_ARGS()
 
 		/**
 		* Construct the widget
 		*
 		* @param InArgs   Declaration from which to construct the widget.
 		*/
+	virtual ~SQuVRCatlogEntryWidget();
 	void Construct(const FArguments& InDelcaration);
 
 	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;

@@ -4,6 +4,7 @@
 #include "Modules/ModuleManager.h"
 #include "Engine/Texture2D.h"
 #include "Engine/Texture2DDynamic.h"
+#include "Runtime/Online/HTTP/Public/HttpManager.h"
 #include "Interfaces/IImageWrapperModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include "HttpModule.h"
@@ -187,6 +188,10 @@ void UQuVRFileDownloader::HandleImageRequestComplete(FHttpRequestPtr HttpRequest
 						OnDownloadImageRes.Broadcast(Texture);
 						OnDownloadImageSuccess.Broadcast(Texture);
 						IsDownload = true;
+						if (HttpResponse.IsValid())
+						{
+							OnDownloadFileDone.Broadcast(HttpResponse->GetResponseCode());
+						}
 						return;
 					}
 				}
@@ -212,4 +217,15 @@ void UQuVRFileDownloader::HandleRequestProgress(FHttpRequestPtr HttpRequest, int
 		OnUlpdataProegress.Broadcast(BytesReceived, HttpRequest->GetResponse()->GetContentLength(), ProgressEmptyData);
 	}
 #endif
+}
+
+void UQuVRFileDownloader::ClearDownloadState()
+{
+	HttpRequest->CancelRequest();
+	HttpRequest->OnProcessRequestComplete().Unbind();
+	HttpRequest->OnRequestProgress().Unbind();
+	OnUlpdataProegress.Clear();
+	OnDownloadImageSuccess.Clear();
+	OnDownloadImageFail.Clear();
+	OnDownloadImageRes.Clear();
 }

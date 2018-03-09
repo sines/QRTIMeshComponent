@@ -44,6 +44,10 @@ void FQuVREditorModeModule::OnModulesChanged(FName Module, EModuleChangeReason R
 
 void FQuVREditorModeModule::RegisterNewPlaceMode()
 {
+#if 0
+	/************************************************************************/
+	/* Test Add Placement                                                    */
+	/************************************************************************/
 	// Add a new light for the mode
 	IPlacementModeModule& PlacementModeModule = IPlacementModeModule::Get();
 
@@ -54,6 +58,8 @@ void FQuVREditorModeModule::RegisterNewPlaceMode()
 	int32 SortOrder = 100;
 	PlacementModeModule.RegisterPlaceableItem(Info.UniqueHandle,
 		MakeShareable(new FPlaceableItem(*UQuVRAssetFactoryStaticMesh::StaticClass(), SortOrder += 10)));
+#endif
+
 }
 
 

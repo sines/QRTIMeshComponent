@@ -11,6 +11,7 @@
 #include "QuVRCatalogNodeBase.generated.h"
 
 class UTexture2DDynamic;
+class UQuVRFileDownloader;
 
 DECLARE_MULTICAST_DELEGATE(FQuVRCatalogAssetInfoImageDownloadDone);
 
@@ -54,8 +55,9 @@ class QUVREDITORMODE_API UQuVRCatalogAssetInfo:public UObject
 public:
 
 	GENERATED_BODY()
-		UQuVRCatalogAssetInfo();
-
+public:
+	UQuVRCatalogAssetInfo();
+	virtual ~UQuVRCatalogAssetInfo();
 	// Json Data
 	FString Id;
 	/*     
@@ -83,9 +85,13 @@ public:
 
 	bool IsDownload;
 	FQuVRCatalogAssetInfoImageDownloadDone ImageDownloadDone;
+private:
+	UQuVRFileDownloader* AsyncTaskDownloadImage;
 public:
-	void Initialise(TSharedPtr<FQuVRCatalogNode> node);
+	void Initialise();
 	void DownloadImage(UTexture2DDynamic* texture2D);
+	void DownloadDone(int32 code);
+	void ClearDownloadState();
 
 public:
 };
@@ -97,8 +103,6 @@ public:
 	FQuVRCatalogNode():ParentNode(nullptr)
 	{
 		ChildList.Reset();
-
-		HasAssetList = false;
 		AssetList.Reset();
 	};
 
@@ -106,6 +110,7 @@ public:
 	void ClearAllData();
 	void ClearChildAssetlist();
 	void ClearChildNodelist();
+	bool HasChildAsset(const UQuVRCatalogAssetInfo& AssetInfo);
 
 public:
 	FQuVRCatalogNodeInfo NodeData;
@@ -114,7 +119,6 @@ public:
 	TArray<TSharedPtr<class FQuVRCatalogNode>> ChildList;
 	TArray<class UQuVRCatalogAssetInfo*> AssetList;
 	// Asset Data
-	bool HasAssetList;
 
 public:
 	virtual void AddReferencedObjects(FReferenceCollector& Collector)override {};

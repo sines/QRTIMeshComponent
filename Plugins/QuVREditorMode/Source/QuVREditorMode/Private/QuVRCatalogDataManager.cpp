@@ -15,6 +15,22 @@ UQuVRCatalogDataManager::UQuVRCatalogDataManager()
 {
 	RootNode = MakeShareable(new(FQuVRCatalogNode));
 }
+ 
+UQuVRCatalogDataManager::~UQuVRCatalogDataManager()
+{
+	if (HttpNodeListRequest->DoesSharedInstanceExist())
+	{
+		HttpNodeListRequest->OnProcessRequestComplete().Unbind();
+		HttpNodeListRequest->OnRequestProgress().Unbind();
+		HttpNodeListRequest->CancelRequest();
+	}
+	if (HttpAssetListRequest->DoesSharedInstanceExist())
+	{
+		HttpAssetListRequest->OnProcessRequestComplete().Unbind();
+		HttpAssetListRequest->OnRequestProgress().Unbind();
+		HttpAssetListRequest->CancelRequest();
+	}
+}
 
 
 void UQuVRCatalogDataManager::OnProcessAssetRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
@@ -127,7 +143,7 @@ void UQuVRCatalogDataManager::ParseAssetListData(TArray<TSharedPtr<FJsonValue>> 
 {
 	if (CurrentNode.IsValid())
 	{
-		CurrentNode->ClearChildAssetlist();
+	//	CurrentNode->ClearChildAssetlist();
 		for (auto Value : JsonValue)
 		{
 			ParseAssetItemData(CurrentNode,Value);
@@ -158,10 +174,11 @@ void UQuVRCatalogDataManager::ParseAssetItemData(TSharedPtr<FQuVRCatalogNode> no
 		AssetItem->SubCategory = TempJsonObject->GetStringField(TEXT("SubCategory"));
 		AssetItem->ImageUrl = TempJsonObject->GetStringField(TEXT("ImageUrl"));
 		AssetItem->PackageUrl = TempJsonObject->GetStringField(TEXT("PackageUrl"));
-		AssetItem->Initialise(node);
-		node->HasAssetList = true;
-
-		node->AssetList.AddUnique(AssetItem);
+		if (false == node->HasChildAsset(*AssetItem))
+		{
+			AssetItem->Initialise();
+			node->AssetList.AddUnique(AssetItem);
+		}
 	}
 
 }
@@ -282,7 +299,7 @@ void UQuVRCatalogDataManager::GenerateNodeCatalog(TSharedRef<FQuVRCatalogNode> n
 void UQuVRCatalogDataManager::GenerateAssetCatalog(TSharedRef<FQuVRCatalogNode> node)
 {
 	Catawidget->ClearAssetList();
-	if (Catawidget.IsValid() && node->HasAssetList)
+	if (Catawidget.IsValid())
 	{
 		Catawidget->CreateCatalogGroupTabAssetList(node);
 	}

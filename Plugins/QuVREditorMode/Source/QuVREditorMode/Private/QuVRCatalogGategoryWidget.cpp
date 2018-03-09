@@ -39,29 +39,35 @@ public:
 		.VAlign(VAlign_Fill)
 		[
 			SNew(SScrollBox).Orientation(Orient_Horizontal)
-			+ SScrollBox::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
-			[
-				SNew(SSpacer)
-				.Size(FVector2D(2, 2))
-			]
+ 			+ SScrollBox::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
+ 			[
+ 				SNew(SSpacer)
+ 				.Size(FVector2D(12, 64))
+ 			]
 			+ SScrollBox::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
 			[
 				SNew(SVerticalBox)
 				// Default settings example
-				+ SVerticalBox::Slot() .Padding(5)
+				+ SVerticalBox::Slot() .Padding(2)
 				[
 					SNew(STextBlock) .ShadowOffset(HeadingShadowOffset) .Font( LargeLayoutFont ) .Text( LOCTEXT("CatlogResGategory-DefaultSettingsLabel", "Catalog Type:") )
 				]
-				+ SVerticalBox::Slot() .Padding(5,5)
+				+ SVerticalBox::Slot() .Padding(2,2)
 				[
 					SNew(SHorizontalBox)
 					+SHorizontalBox::Slot()
-					.Padding(2)
+					.Padding(1)
 					.AutoWidth()
 					[
-						SNew(SButton).Text(LOCTEXT("CatlogResGategory-All", "All"))
-						.OnClicked(this,&QuVRCatalogGategoryWidget::RefreshAllButtonClicked)
+						SNew(SBox).HAlign(HAlign_Fill).VAlign(VAlign_Fill).HeightOverride(16)
+						[
+							SNew(SButton).Text(LOCTEXT("CatlogResGategory-All", "All-Asset")).VAlign(VAlign_Fill).HAlign(HAlign_Fill)
+							.OnClicked(this, &QuVRCatalogGategoryWidget::RefreshAllButtonClicked)
+						]
+
 					]
+					/*
+					// Add test button
 					+SHorizontalBox::Slot()
 					.Padding(2)
 					.AutoWidth()
@@ -75,6 +81,7 @@ public:
 						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-HD", "HDPJ") )
 						.OnClicked(this,&QuVRCatalogGategoryWidget::TestButtonClicked)
 					]
+					*/
 			
 				]
 			]

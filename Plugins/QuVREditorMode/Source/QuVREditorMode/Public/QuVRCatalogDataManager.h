@@ -27,6 +27,7 @@ class QUVREDITORMODE_API UQuVRCatalogDataManager : public UObject
 
 public:
 	UQuVRCatalogDataManager();
+	virtual ~UQuVRCatalogDataManager();
 	/** Request we're currently processing */
 	static UQuVRCatalogDataManager* GetInstance();
 	void GetAllCatalogNodeListFromUrl();

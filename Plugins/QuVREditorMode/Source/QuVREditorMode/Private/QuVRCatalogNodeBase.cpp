@@ -36,7 +36,21 @@ static bool IsDataNull(const TSharedPtr<UQuVRCatalogAssetInfo> Dependency)
 void FQuVRCatalogNode::ClearChildAssetlist()
 {
 	AssetList.Reset();
-	HasAssetList = false;
+}
+
+bool FQuVRCatalogNode::HasChildAsset(const UQuVRCatalogAssetInfo& AssetInfo)
+{
+	for (auto asset : AssetList)
+	{
+		if (asset)
+		{
+			if (asset->Name == AssetInfo.Name)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 /************************************************************************/
@@ -68,17 +82,18 @@ UQuVRCatalogAssetInfo::UQuVRCatalogAssetInfo() :Texture2Dimage(NULL)
 	PackageUrl = "0";
 	Size = 0;
 	IsDownload = false;
+	AsyncTaskDownloadImage = nullptr;
+}
+UQuVRCatalogAssetInfo::~UQuVRCatalogAssetInfo()
+{
 }
 
-
-void UQuVRCatalogAssetInfo::Initialise(TSharedPtr<FQuVRCatalogNode> node)
+void UQuVRCatalogAssetInfo::Initialise()
 {
-	if (node.IsValid())
-	{
-		UQuVRFileDownloader* AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
-		AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadImage);
-	}
-
+	
+	AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
+	AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadImage);
+	AsyncTaskDownloadImage->OnDownloadFileDone.AddUObject(this,&UQuVRCatalogAssetInfo::DownloadDone);
 }
 
 void UQuVRCatalogAssetInfo::DownloadImage(UTexture2DDynamic* texture2D)
@@ -86,4 +101,18 @@ void UQuVRCatalogAssetInfo::DownloadImage(UTexture2DDynamic* texture2D)
 	Texture2Dimage = texture2D;
 	Texture2Dimage->AddToRoot();
 	ImageDownloadDone.Broadcast();
+}
+
+void UQuVRCatalogAssetInfo::ClearDownloadState()
+{
+	if (AsyncTaskDownloadImage)
+	{
+		AsyncTaskDownloadImage->ClearDownloadState();
+	}
+	ImageDownloadDone.Clear();
+}
+
+void UQuVRCatalogAssetInfo::DownloadDone(int32 code)
+{
+	ClearDownloadState();
 }

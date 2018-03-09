@@ -29,6 +29,7 @@ public:
 	static UQuVRFileDownloader* DownloadZipLoader(FString URL);
 	void StartDownloadImageFile(FString URL);
 	void StartDownloadZipFile(FString URL);
+	void ClearDownloadState();
 private:
 	void HandleZipRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded);
 	void HandleImageRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded);
