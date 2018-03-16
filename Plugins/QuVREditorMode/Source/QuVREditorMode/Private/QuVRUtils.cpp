@@ -19,7 +19,11 @@ FQuVRPackageModel GetPackageObject(const FString& InPackageUrl)
 
 		TArray<FString>ParseName;
 		FullName.ParseIntoArray(ParseName, TEXT("_"));
-		if (ParseName[0] == FString(TEXT("SK")) || ParseName[0] == FString(TEXT("SM")))
+		if (ParseName[0] == FString(TEXT("SK")) || 
+			ParseName[0] == FString(TEXT("SM")) || 
+			ParseName[0] == FString(TEXT("QuVRSK")) ||
+			ParseName[0] == FString(TEXT("QuVRSM")) ||
+			ParseName[0] == FString(TEXT("QuVRTianQiu")))
 		{
 			model.type = FString(TEXT("Models"));//EQuVRObjectType::Model;
 		}

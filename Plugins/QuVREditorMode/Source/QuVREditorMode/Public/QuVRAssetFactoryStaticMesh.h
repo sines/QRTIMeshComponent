@@ -12,7 +12,7 @@
 /*       UUQuVRAssetFactoryStaticMesh                                             */
 /************************************************************************/
 class AActor;
-struct FAssetData;
+class FAssetData;
 
 UCLASS(MinimalAPI, config = Editor)
 class UQuVRAssetFactoryStaticMesh : public UActorFactory

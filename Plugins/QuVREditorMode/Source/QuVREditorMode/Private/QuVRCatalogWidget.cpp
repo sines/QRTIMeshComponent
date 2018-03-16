@@ -47,13 +47,14 @@ void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogN
 	bool NFlip = true;
 	for (auto asset : node->AssetList)
 	{
+		TWeakObjectPtr<UQuVRCatalogAssetInfo> assetinfo = asset;
 		if (NFlip)
 		{
-			ListViewFilteredLeftItems.AddUnique(asset);
+			ListViewFilteredLeftItems.AddUnique(assetinfo);
 		}
 		else
 		{
-			ListViewFilteredRightItems.AddUnique(asset);
+			ListViewFilteredRightItems.AddUnique(assetinfo);
 		}
 		NFlip = !NFlip;
 	}
@@ -118,13 +119,13 @@ void SQuVRCatalogWidget::AddListViewLR()
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
+				.FillWidth(1.0f)
 				[
 					SAssignNew(ListViewLeft, SListView<TWeakObjectPtr<UQuVRCatalogAssetInfo>>)
 					.ListItemsSource(&ListViewFilteredLeftItems)
 					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
 					.ExternalScrollbar(ScrollBar)
 				]
-
 				+ SHorizontalBox::Slot()
 					[
 
@@ -252,27 +253,31 @@ TSharedRef<ITableRow> SQuVRCatalogWidget::OnGenerateWidgetForItem(TWeakObjectPtr
 {
 	if (InItem.IsValid())
 	{
-		return SNew(STableRow<TWeakObjectPtr<UQuVRCatalogAssetInfo>>, OwnerTable)
+		return SNew(STableRow<TSharedPtr<FQuVRCatalogAssetBase>>, OwnerTable)
 			[
 				SNew(SQuVRCatalogEntry, InItem)
 			];
 	}
 	else
 	{
-		return SNew(STableRow<TWeakObjectPtr<UQuVRCatalogAssetInfo>>, OwnerTable);
+		return SNew(STableRow<TSharedPtr<FQuVRCatalogAssetBase>>, OwnerTable)
+			[
+				SNew(STextBlock)
+				.Text(FText::FromString(*InItem->DisplayName))
+			];
 	}
 
 }
 
-void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<class UQuVRCatalogAssetInfo> InItem)
+void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<UQuVRCatalogAssetInfo> InItem)
 {
-/*
-
+	CatalogEntryWidget = SNew(SQuVRCatlogEntryWidget).AssetInfo(InItem);
+#if false
 	ChildSlot
 		[
-			MakeCatalogEntryWidget()
+			MakeCatalogEntryWidget(InItem)
 		];
-*/
+#endif
 
 #if true
 		/** HorizontalScrollbar  Begin**/
@@ -295,6 +300,7 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<class
 					.Justification(ETextJustify::Center)
 					.TextStyle(FEditorStyle::Get(), "LargeText")
 					.Text(FText::FromString(InItem->DisplayName))
+					.HighlightColor(FLinearColor::Red)
 				]
 			]
 		];
@@ -306,65 +312,67 @@ void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<class
 	*/
 ChildSlot
 [
-	SNew(SBorder)
-			.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
+	SNew(SBorder).Padding(1)
+		.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
 		.Cursor(EMouseCursor::GrabHand)
 		[
-
+// 			SNew(SButton).ContentPadding(0.1)
+// 			[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
-		.Padding(0)
-		.HAlign(HAlign_Fill)
-		.VAlign(VAlign_Fill)
-		.AutoHeight()
-		[
-			// Drop shadow border
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-		[
-			SNew(SSpacer).Size(FVector2D(1, 1))
-		]
-			+ SHorizontalBox::Slot()
-				.AutoWidth()
-				[
-					SNew(SBorder)
-					.Padding(4)
-					.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
-					.HAlign(HAlign_Fill)
-					.VAlign(VAlign_Fill)
+			.Padding(0)
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.AutoHeight()
+			[
+				// Drop shadow border
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+			[
+				SNew(SSpacer).Size(FVector2D(2.0f, 2.0f))
+			]
+				+ SHorizontalBox::Slot()
+					.AutoWidth()
 					[
-						SNew(SBox)
+						SNew(SBorder)
+						.Padding(2)
+						.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
 						.HAlign(HAlign_Fill)
 						.VAlign(VAlign_Fill)
-						.WidthOverride(112)
-						.HeightOverride(112)
 						[
-							MakeCatalogEntryWidget(InItem)
+							SNew(SBox)
+							.HAlign(HAlign_Fill)
+							.VAlign(VAlign_Fill)
+							.WidthOverride(112)
+							.HeightOverride(112)
+							[
+								CatalogEntryWidget.ToSharedRef()
+							]
 						]
 					]
+				+ SHorizontalBox::Slot()
+					[
+						SNew(SSpacer).Size(FVector2D(2.0f, 2.0f))
+					]
 				]
-			+ SHorizontalBox::Slot()
-				[
-					SNew(SSpacer).Size(FVector2D(1.0f, 1.0f))
-				]
+				+ SVerticalBox::Slot()
+					.VAlign(VAlign_Fill)
+					.HAlign(HAlign_Fill)
+					.AutoHeight()
+					[
+						SNew(SSpacer)
+					]
+				+ SVerticalBox::Slot()
+					.VAlign(VAlign_Fill)
+					.HAlign(HAlign_Fill)
+					.AutoHeight()
+					.Padding(2, 0, 4, 0)
+					[
+						HorizontalScrollbar.ToSharedRef()
+					]
 			]
-			+ SVerticalBox::Slot()
-				.VAlign(VAlign_Fill)
-				.HAlign(HAlign_Fill)
-				.AutoHeight()
-				[
-					SNew(SSpacer)
-				]
-			+ SVerticalBox::Slot()
-				.VAlign(VAlign_Fill)
-				.HAlign(HAlign_Fill)
-				.AutoHeight()
-				.Padding(2, 0, 4, 0)
-				[
-					HorizontalScrollbar.ToSharedRef()
-				]
-		]
-];
+	//]
+	];
 #endif
 
 }

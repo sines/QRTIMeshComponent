@@ -11,6 +11,7 @@
 #if !UE_BUILD_SHIPPING
 
 class FQuVRCatalogNode;
+struct FQuVRCatalogAssetBase;
 /**
 * Structure defining a catalog item in the placement mode panel
 */
@@ -52,7 +53,7 @@ private:
 	bool bNeedsUpdate;
 
 	/* List_View */
-	/** List view that shows placeable items */\
+	/** List view that shows placeable items */
 	TArray<TWeakObjectPtr<class UQuVRCatalogAssetInfo>> ListViewFilteredLeftItems;
 	TSharedPtr<SListView<TWeakObjectPtr<class UQuVRCatalogAssetInfo>>> ListViewLeft;
 
@@ -88,6 +89,9 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, TWeakObjectPtr<class UQuVRCatalogAssetInfo> InItem);
+
+	TSharedPtr<class SQuVRCatlogEntryWidget>CatalogEntryWidget;
+	
 };
 
 #endif

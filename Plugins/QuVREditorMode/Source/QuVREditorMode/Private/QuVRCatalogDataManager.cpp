@@ -143,7 +143,7 @@ void UQuVRCatalogDataManager::ParseAssetListData(TArray<TSharedPtr<FJsonValue>> 
 {
 	if (CurrentNode.IsValid())
 	{
-	//	CurrentNode->ClearChildAssetlist();
+		//CurrentNode->ClearChildAssetlist();
 		for (auto Value : JsonValue)
 		{
 			ParseAssetItemData(CurrentNode,Value);
@@ -158,6 +158,7 @@ void UQuVRCatalogDataManager::ParseAssetItemData(TSharedPtr<FQuVRCatalogNode> no
 	if (node.IsValid())
 	{
 		UQuVRCatalogAssetInfo* AssetItem =NewObject<UQuVRCatalogAssetInfo>();
+		AssetItem->AddToRoot();
 		TSharedPtr<FJsonObject>TempJsonObject = JsonValue->AsObject();
 		AssetItem->Id = TempJsonObject->GetStringField(TEXT("ID"));
 

@@ -44,7 +44,7 @@ public:
 
 	FQuVRFileDownloadDoneDelegate OnDownloadFileDone;
 protected:
-	TSharedRef<IHttpRequest> HttpRequest = FHttpModule::Get().CreateRequest();
+	TSharedPtr<IHttpRequest> HttpRequest;
 /** Http Response code */
 	int32 ResponseCode;
 	FString StatusInfo;

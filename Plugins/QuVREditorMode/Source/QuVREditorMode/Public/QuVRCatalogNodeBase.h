@@ -49,6 +49,7 @@ struct QUVREDITORMODE_API FQuVRCatalogNodeInfo
 /**
 * UQuVRCatalogAssetInfo
 */
+
 UCLASS()
 class QUVREDITORMODE_API UQuVRCatalogAssetInfo:public UObject
 {

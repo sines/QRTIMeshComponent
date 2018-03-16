@@ -83,6 +83,7 @@ UQuVRCatalogAssetInfo::UQuVRCatalogAssetInfo() :Texture2Dimage(NULL)
 	Size = 0;
 	IsDownload = false;
 	AsyncTaskDownloadImage = nullptr;
+	Texture2Dimage = NULL;
 }
 UQuVRCatalogAssetInfo::~UQuVRCatalogAssetInfo()
 {
@@ -90,8 +91,8 @@ UQuVRCatalogAssetInfo::~UQuVRCatalogAssetInfo()
 
 void UQuVRCatalogAssetInfo::Initialise()
 {
-	
 	AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
+
 	AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadImage);
 	AsyncTaskDownloadImage->OnDownloadFileDone.AddUObject(this,&UQuVRCatalogAssetInfo::DownloadDone);
 }

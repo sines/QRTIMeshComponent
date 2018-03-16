@@ -52,6 +52,7 @@ static void WriteRawToTexture_RenderThread(FTexture2DDynamicResource* TextureRes
 UQuVRFileDownloader::UQuVRFileDownloader(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	HttpRequest = FHttpModule::Get().CreateRequest();
 	IsDownload = false;
 	if (HasAnyFlags(RF_ClassDefaultObject) == false)
 	{
@@ -105,16 +106,18 @@ void UQuVRFileDownloader::StartDownloadZipFile(FString URL)
 	IsDownload = UQuVRUtils::CheckFileExists(URL);
 	if (false == IsDownload)
 	{
-
-		// Create the Http request and add to pending request list
-		HttpRequest->OnProcessRequestComplete().Unbind();
-		HttpRequest->OnRequestProgress().Unbind();
-		HttpRequest->CancelRequest();
-		HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleZipRequestComplete);
-		HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
-		HttpRequest->SetURL(URL);
-		HttpRequest->SetVerb(TEXT("GET"));
-		HttpRequest->ProcessRequest();
+		if (HttpRequest.IsValid())
+		{
+			// Create the Http request and add to pending request list
+			HttpRequest->OnProcessRequestComplete().Unbind();
+			HttpRequest->OnRequestProgress().Unbind();
+			HttpRequest->CancelRequest();
+			HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleZipRequestComplete);
+			HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
+			HttpRequest->SetURL(URL);
+			HttpRequest->SetVerb(TEXT("GET"));
+			HttpRequest->ProcessRequest();
+		}
 	}
 #else
 	// On the server we don't execute fail or success we just don't fire the request.
@@ -203,7 +206,6 @@ void UQuVRFileDownloader::HandleImageRequestComplete(FHttpRequestPtr HttpRequest
 	{
 		OnDownloadFileDone.Broadcast(HttpResponse->GetResponseCode());
 	}
-	OnDownloadImageFail.Broadcast(nullptr);
 
 #endif
 }
@@ -221,9 +223,12 @@ void UQuVRFileDownloader::HandleRequestProgress(FHttpRequestPtr HttpRequest, int
 
 void UQuVRFileDownloader::ClearDownloadState()
 {
-	HttpRequest->CancelRequest();
-	HttpRequest->OnProcessRequestComplete().Unbind();
-	HttpRequest->OnRequestProgress().Unbind();
+	if (HttpRequest.IsValid())
+	{
+		HttpRequest->CancelRequest();
+		HttpRequest->OnProcessRequestComplete().Unbind();
+		HttpRequest->OnRequestProgress().Unbind();
+	}
 	OnUlpdataProegress.Clear();
 	OnDownloadImageSuccess.Clear();
 	OnDownloadImageFail.Clear();

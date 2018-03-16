@@ -26,20 +26,17 @@
 
 #if !UE_BUILD_SHIPPING
 
-SQuVRCatlogEntryWidget::~SQuVRCatlogEntryWidget()
-{
-	if (AsyncTaskDownloadImage)
-	{
-		AsyncTaskDownloadImage->ClearDownloadState();
-	}
-}
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 {
 	bIsPressed = false;
+	IsDownload = false;
 	NormalImage = new FSlateBrush();
 	HoverImage = new FSlateBrush();
 	PressedImage = new FSlateBrush();
+	PlaceableItem = NULL;
+	AsyncTaskDownloadFile = NULL;
+	button = NULL;
 
 	AssetInfo = InDelcaration._AssetInfo;
 	buttonstyle = new FButtonStyle();
@@ -52,7 +49,7 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 	TSharedPtr<IToolTip> AssetEntryToolTip;
 
 	InitPlaceableItem();
-	if (PlaceableItem)
+	if (PlaceableItem.IsValid())
 	{
 		const bool bIsClass = PlaceableItem->AssetData.GetClass() == UClass::StaticClass();
 		const bool bIsActor = bIsClass ? CastChecked<UClass>(PlaceableItem->AssetData.GetAsset())->IsChildOf(AActor::StaticClass()) : false;
@@ -79,29 +76,38 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InDelcaration)
 
 	ChildSlot
 		[
-			// SNew(SImage).Image(NormalImage)
-			SNew(SBorder).BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState).ToolTip(AssetEntryToolTip)
-
-			/*
-			   SAssignNew(button,SButton)
-			   .HAlign(HAlign_Fill)
-			   .VAlign(VAlign_Fill)
-			   .ButtonStyle(buttonstyle)
-			   .OnClicked(this, &SQuVRCatlogEntryWidget::OnDownloadAsset)
-		   */
+		SNew(SBorder).BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState).ToolTip(AssetEntryToolTip)
+		[
+			SNew(SOverlay)
+			+SOverlay::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
+			[
+				SNew(SImage).ColorAndOpacity(this, &SQuVRCatlogEntryWidget::GetSlateColorState)
+			]
+			+ SOverlay::Slot().HAlign(HAlign_Center).VAlign(VAlign_Center)
+			[
+				SNew(STextBlock).Text(this, &SQuVRCatlogEntryWidget::GetIsDownloade).ColorAndOpacity(FSlateColor(FLinearColor(1.0f,0.3f,0.3f,1.0f)))
+			]
+			
+		]
+/*			
+		SAssignNew(button,SButton)
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.ButtonStyle(buttonstyle)
+		.OnClicked(this, &SQuVRCatlogEntryWidget::OnDownloadAsset)
+*/
+		   
 		];
-
-
-	
 
 }
 
 void SQuVRCatlogEntryWidget::InitPlaceableItem()
 {
-	if (AssetInfo.IsValid()&& NULL == PlaceableItem)
+	if (AssetInfo.IsValid()&& false == PlaceableItem.IsValid())
 	{
 		if (UQuVRUtils::CheckFileExists(AssetInfo->PackageUrl))
 		{
+			IsDownload = true;
 			static TOptional<FLinearColor> BasicShapeColorOverride;
 
 			if (!BasicShapeColorOverride.IsSet())
@@ -122,17 +128,19 @@ void SQuVRCatlogEntryWidget::InitPlaceableItem()
 			switch (AssetInfo->ObjectType)
 			{
 				/************************************************************************/
-				/*        SK_ 骨骼模型 0       SM_  静态模型 1        M_  材质球 2         */
+				/*		SK_ 骨骼模型 0       SM_  静态模型 1        M_  材质球 2  			*/
+				/*		QuVRTianQiu_ 天空球 5											*/
 				/************************************************************************/
 			case 0:
-				PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryAnimation::StaticClass(), FAssetData(LoadObject<UAnimSequence>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+				PlaceableItem = MakeShareable( new FPlaceableItem(*UQuVRAssetFactoryAnimation::StaticClass(), FAssetData(LoadObject<UAnimSequence>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10));
 				break;
 			case 1:
-				PlaceableItem = new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), FAssetData(LoadObject<UStaticMesh>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+			case 5:
+				PlaceableItem = MakeShareable(new FPlaceableItem(*UQuVRAssetFactoryModel::StaticClass(), FAssetData(LoadObject<UStaticMesh>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10));
 				break;
 			case 2:
 				UMaterialInterface* MA = LoadObject<UMaterialInterface>(nullptr, *filepath);
-				PlaceableItem = new FPlaceableItem(*UClass::StaticClass(), FAssetData(LoadObject<UMaterialInterface>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10);
+				PlaceableItem = MakeShareable(new FPlaceableItem(*UClass::StaticClass(), FAssetData(LoadObject<UMaterialInterface>(nullptr, *filepath)), NAME_None, BasicShapeColorOverride, SortOrder += 10));
 				break;
 			}			
 		};
@@ -171,13 +179,16 @@ FReply SQuVRCatlogEntryWidget::OnDownloadAsset()
 		{
 			if (!UQuVRUtils::CheckFileExists(URL))
 			{
-				if (AsyncTaskDownloadImage)
+				if (AsyncTaskDownloadFile.IsValid())
 				{
-					AsyncTaskDownloadImage->StartDownloadZipFile(URL);
+					AsyncTaskDownloadFile->StartDownloadZipFile(URL);
 				}
 				else
 				{
-					AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadZipLoader(URL);
+					
+					AsyncTaskDownloadFile = UQuVRFileDownloader::DownloadZipLoader(URL);
+					AsyncTaskDownloadFile->OnDownloadFileDone.AddSP(this, &SQuVRCatlogEntryWidget::DownloadDone);
+
 				}
 			}
 		}
@@ -213,10 +224,21 @@ FReply SQuVRCatlogEntryWidget::OnMouseButtonUp(const FGeometry& MyGeometry, cons
 
 FReply SQuVRCatlogEntryWidget::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
+	if (AssetInfo.IsValid())
+	{
+		FString URL = AssetInfo->PackageUrl;
+		if (5 < URL.Len())
+		{
+			if (!UQuVRUtils::CheckFileExists(URL))
+			{
+				return FReply::Handled();
+			}
+		}
+	}
 	bIsPressed = false;
 	
 	// if PlaceableItem Null
-	if (NULL ==PlaceableItem)
+	if (false == PlaceableItem.IsValid())
 	{
 		return FReply::Handled();
 	}
@@ -236,6 +258,11 @@ FReply SQuVRCatlogEntryWidget::OnDragDetected(const FGeometry& MyGeometry, const
 	}
 }
 
+FReply SQuVRCatlogEntryWidget::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+{
+	return FReply::Handled();
+}
+
 const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushState() const
 {
 	if (bIsPressed)
@@ -249,6 +276,64 @@ const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushState() const
 	{
 		return NormalImage;
 	}
+}
+
+FSlateColor SQuVRCatlogEntryWidget::GetSlateColorState() const
+{
+	if (IsDownload)
+	{
+		if (IsHovered())
+		{
+			return FSlateColor(FLinearColor(0.85f, 0.850f, 0.026f, 0.20f));
+		}
+		else
+		{
+			return FSlateColor(FLinearColor(1.00f, 1.00f, 1.00f, 0.05f));
+		}
+	}
+	else
+	{
+		return FSlateColor(FLinearColor(0.3f, 0.30f, 0.30f, 0.30f));
+	}
+}
+
+void SQuVRCatlogEntryWidget::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	bIsHovered = true;
+//	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetInfo->DisplayName);
+}
+
+void SQuVRCatlogEntryWidget::OnMouseLeave(const FPointerEvent& MouseEvent)
+{
+	bIsHovered = false;
+//	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, AssetInfo->DisplayName);
+}
+
+FText SQuVRCatlogEntryWidget::GetIsDownloade() const
+{
+	if (IsDownload)
+	{
+		return FText::FromString(TEXT(""));
+	}
+	else
+	{
+		return FText::FromString(TEXT("Please Download"));
+	}
+}
+
+void SQuVRCatlogEntryWidget::DownloadDone(int32 code)
+{
+	FString URL = AssetInfo->PackageUrl;
+	if (5 < URL.Len())
+	{
+		if (UQuVRUtils::CheckFileExists(URL))
+		{
+			IsDownload = true;
+		}
+	}
+
+	AsyncTaskDownloadFile->ConditionalBeginDestroy();
+	AsyncTaskDownloadFile = NULL;
 }
 
 TSharedRef<SWidget> MakeCatalogEntryWidget(TWeakObjectPtr<UQuVRCatalogAssetInfo> item)
