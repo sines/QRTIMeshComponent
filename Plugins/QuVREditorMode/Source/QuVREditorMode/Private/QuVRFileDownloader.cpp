@@ -48,6 +48,10 @@ static void WriteRawToTexture_RenderThread(FTexture2DDynamicResource* TextureRes
 
 #endif
 
+UQuVRFileDownloader::~UQuVRFileDownloader()
+{
+	ClearDownloadState();
+}
 
 UQuVRFileDownloader::UQuVRFileDownloader(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -59,6 +63,7 @@ UQuVRFileDownloader::UQuVRFileDownloader(const FObjectInitializer& ObjectInitial
 		AddToRoot();
 	}
 }
+
 UQuVRFileDownloader* UQuVRFileDownloader::DownloadZipLoader(FString URL)
 {
 
@@ -223,6 +228,7 @@ void UQuVRFileDownloader::HandleRequestProgress(FHttpRequestPtr HttpRequest, int
 
 void UQuVRFileDownloader::ClearDownloadState()
 {
+	RemoveFromRoot();
 	if (HttpRequest.IsValid())
 	{
 		HttpRequest->CancelRequest();

@@ -8,12 +8,13 @@
 #include "Json.h"
 #include "UObject/NoExportTypes.h"
 #include "QuVRCatalogWidget.h"
+#include "QuVRFileDownloader.h"
 #include "QuVRCatalogNodeBase.generated.h"
 
 class UTexture2DDynamic;
 class UQuVRFileDownloader;
 
-DECLARE_MULTICAST_DELEGATE(FQuVRCatalogAssetInfoImageDownloadDone);
+ DECLARE_MULTICAST_DELEGATE(FQuVRCatalogAssetInfoImageDownloadDone);
 
 USTRUCT()
 struct QUVREDITORMODE_API FQuVRCatalogNodeInfo
@@ -84,12 +85,15 @@ public:
 	FString	PackageUrl;
 	int32 Size;
 
-	bool IsDownload;
-	FQuVRCatalogAssetInfoImageDownloadDone ImageDownloadDone;
+	bool IsImageDownload;
+	FQuVRDownloadImageC2Delegate ImageDownloadDone;
 private:
 	UQuVRFileDownloader* AsyncTaskDownloadImage;
+	TArray<FDelegateHandle> ImageEventHandleList;
 public:
 	void Initialise();
+	void AddImageEventHandle(FDelegateHandle handle);
+	void ClearImageEventHandle();
 	void DownloadImage(UTexture2DDynamic* texture2D);
 	void DownloadDone(int32 code);
 	void ClearDownloadState();
@@ -112,7 +116,7 @@ public:
 	void ClearChildAssetlist();
 	void ClearChildNodelist();
 	bool HasChildAsset(const UQuVRCatalogAssetInfo& AssetInfo);
-
+	UQuVRCatalogAssetInfo* GetChildAsset(const UQuVRCatalogAssetInfo& AssetInfo);
 public:
 	FQuVRCatalogNodeInfo NodeData;
 	

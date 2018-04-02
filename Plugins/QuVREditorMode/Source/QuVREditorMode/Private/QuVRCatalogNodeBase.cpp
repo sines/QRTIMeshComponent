@@ -37,6 +37,20 @@ void FQuVRCatalogNode::ClearChildAssetlist()
 {
 	AssetList.Reset();
 }
+UQuVRCatalogAssetInfo* FQuVRCatalogNode::GetChildAsset(const UQuVRCatalogAssetInfo& AssetInfo)
+{
+	for (auto asset : AssetList)
+	{
+		if (asset)
+		{
+			if (asset->Name == AssetInfo.Name)
+			{
+				return asset;
+			}
+		}
+	}
+	return nullptr;
+}
 
 bool FQuVRCatalogNode::HasChildAsset(const UQuVRCatalogAssetInfo& AssetInfo)
 {
@@ -81,27 +95,49 @@ UQuVRCatalogAssetInfo::UQuVRCatalogAssetInfo() :Texture2Dimage(NULL)
 	ImageUrl = "0";
 	PackageUrl = "0";
 	Size = 0;
-	IsDownload = false;
+	IsImageDownload = false;
 	AsyncTaskDownloadImage = nullptr;
 	Texture2Dimage = NULL;
+	ImageEventHandleList.Empty();
 }
 UQuVRCatalogAssetInfo::~UQuVRCatalogAssetInfo()
 {
 }
 
+void UQuVRCatalogAssetInfo::AddImageEventHandle(FDelegateHandle handle)
+{
+	ImageEventHandleList.Add(handle);
+}
+
+void UQuVRCatalogAssetInfo::ClearImageEventHandle()
+{
+	for (auto handle : ImageEventHandleList)
+	{
+		ImageDownloadDone.Remove(handle);
+	}
+	ImageEventHandleList.Reset();
+}
+
 void UQuVRCatalogAssetInfo::Initialise()
 {
-	AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
-
-	AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadImage);
-	AsyncTaskDownloadImage->OnDownloadFileDone.AddUObject(this,&UQuVRCatalogAssetInfo::DownloadDone);
+	if (true == IsImageDownload)
+	{
+		ImageDownloadDone.Broadcast(Texture2Dimage);
+	}
+	else
+	{
+		AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
+		AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadImage);
+		AsyncTaskDownloadImage->OnDownloadFileDone.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadDone);
+	}
 }
 
 void UQuVRCatalogAssetInfo::DownloadImage(UTexture2DDynamic* texture2D)
 {
+	IsImageDownload = true;
 	Texture2Dimage = texture2D;
 	Texture2Dimage->AddToRoot();
-	ImageDownloadDone.Broadcast();
+	ImageDownloadDone.Broadcast(texture2D);
 }
 
 void UQuVRCatalogAssetInfo::ClearDownloadState()

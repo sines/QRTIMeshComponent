@@ -13,6 +13,7 @@
 #include "Widgets/Layout/SGridPanel.h"
 #include "Widgets/Layout/SScissorRectBox.h"
 #include "Widgets/Navigation/SBreadcrumbTrail.h"
+#include "Editor/ContentBrowser/Private/SAssetView.h"
 #include "LevelEditor.h"
 #include "EditorStyleSet.h"
 #include "QuVRCatalogGategoryWidget.h"
@@ -20,6 +21,7 @@
 #include "QuVRCatalogNodeButton.h"
 #include "QuVRCatalogDataManager.h"
 #include "QuVRCatalogPlaneWidget.h"
+#include "QuVRAssetViewWidget.h"
 
 void SQuVRCatalogWidget::CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > node)
 {
@@ -29,36 +31,32 @@ void SQuVRCatalogWidget::CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > n
 	[
 		SNew(SQuVRCatalogPlaneWidget).TreeItem(node).RootContent(HTB).RootWidget(SharedThis(this))
 	];
-	AddListViewLR();
+	AddAssetView();
 	ClearAssetList();
 }
 
 void SQuVRCatalogWidget::ClearAssetList()
 {
-	ListViewFilteredLeftItems.Empty();
-	ListViewFilteredRightItems.Empty();
-	RequestRefresh();
+	viewWidget->ClearSourceItems();
 }
 
 /* Group Tab Asset List*/
 void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogNode > node)
 {
 	ClearAssetList();
+
 	bool NFlip = true;
+	TArray< FName > ObjectPaths;
+	ObjectPaths.Reset();
+
 	for (auto asset : node->AssetList)
 	{
-		TWeakObjectPtr<UQuVRCatalogAssetInfo> assetinfo = asset;
-		if (NFlip)
-		{
-			ListViewFilteredLeftItems.AddUnique(assetinfo);
-		}
-		else
-		{
-			ListViewFilteredRightItems.AddUnique(assetinfo);
-		}
+		FString filepath = UQuVRUtils::GetAssetPath(asset->PackageUrl);
+		ObjectPaths.Add(*filepath);
 		NFlip = !NFlip;
 	}
-	RequestRefresh();
+
+	viewWidget->RefreshSourceItems(node.ToSharedRef());
 }
 
 
@@ -93,76 +91,23 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 				]
 			]
 		]
-		+ SVerticalBox::Slot()
-		[
-			HTB.ToSharedRef()
-		]
+ 		+ SVerticalBox::Slot()
+ 		[
+ 			HTB.ToSharedRef()
+ 		]
 	];
 #endif
 	UQuVRCatalogDataManager::GetInstance()->SetWidget(SharedThis(this));
 	bNeedsUpdate = true;
 }
 
-void SQuVRCatalogWidget::AddListViewLR()
+void SQuVRCatalogWidget::AddAssetView()
 {
-	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(1, 1));
 	HTB->AddSlot()
 		[
-			SNew(SBorder)
-			.Padding(FMargin(3))
-		.BorderImage(FEditorStyle::GetBrush("ToolPanel.DarkGroupBorder"))
-		[
-			SNew(SOverlay)
-			+ SOverlay::Slot()
-		[
-			SNew(SBox)
-			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.FillWidth(1.0f)
-				[
-					SAssignNew(ListViewLeft, SListView<TWeakObjectPtr<UQuVRCatalogAssetInfo>>)
-					.ListItemsSource(&ListViewFilteredLeftItems)
-					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
-					.ExternalScrollbar(ScrollBar)
-				]
-				+ SHorizontalBox::Slot()
-					[
-
-						SAssignNew(ListViewRight, SListView<TWeakObjectPtr<UQuVRCatalogAssetInfo>>)
-						.ListItemsSource(&ListViewFilteredRightItems)
-					.OnGenerateRow(this, &SQuVRCatalogWidget::OnGenerateWidgetForItem)
-					.ExternalScrollbar(ScrollBar)
-					]
-
-				+ SHorizontalBox::Slot().AutoWidth()
-					[
-						ScrollBar
-					]
-				]
-			]
-		]
-	];
+			SAssignNew(viewWidget, SQuVRAssetViewWidget)
+		];
 	bNeedsUpdate = true;
-}
-
-void SQuVRCatalogWidget::CreateWidgetElement()
-{
-
-}
-
-/** Request that both Tree and List refresh themselves on the next tick */
-FReply SQuVRCatalogWidget::RequestRefresh()
-{
-	if (ListViewRight.IsValid())
-	{
-		ListViewRight->RequestListRefresh();
-	}
-	if (ListViewLeft.IsValid())
-	{
-		ListViewLeft->RequestListRefresh();
-	}
-	return FReply::Handled();
 }
 
 FReply SQuVRCatalogWidget::HandleBreadcrumbTrailAddButtonClicked()
@@ -244,34 +189,14 @@ void SQuVRCatalogWidget::Tick(const FGeometry& AllottedGeometry, const double In
 {
 	if (bNeedsUpdate)
 	{
+		// void
 		bNeedsUpdate = false;
-		RequestRefresh();
 	}
-}
-
-TSharedRef<ITableRow> SQuVRCatalogWidget::OnGenerateWidgetForItem(TWeakObjectPtr<UQuVRCatalogAssetInfo> InItem, const TSharedRef<STableViewBase>& OwnerTable)
-{
-	if (InItem.IsValid())
-	{
-		return SNew(STableRow<TSharedPtr<FQuVRCatalogAssetBase>>, OwnerTable)
-			[
-				SNew(SQuVRCatalogEntry, InItem)
-			];
-	}
-	else
-	{
-		return SNew(STableRow<TSharedPtr<FQuVRCatalogAssetBase>>, OwnerTable)
-			[
-				SNew(STextBlock)
-				.Text(FText::FromString(*InItem->DisplayName))
-			];
-	}
-
 }
 
 void SQuVRCatalogEntry::Construct(const FArguments& InArgs, TWeakObjectPtr<UQuVRCatalogAssetInfo> InItem)
 {
-	CatalogEntryWidget = SNew(SQuVRCatlogEntryWidget).AssetInfo(InItem);
+//	CatalogEntryWidget = SNew(SQuVRCatlogEntryWidget).AssetInfo(InItem);
 #if false
 	ChildSlot
 		[
@@ -345,9 +270,9 @@ ChildSlot
 							.VAlign(VAlign_Fill)
 							.WidthOverride(112)
 							.HeightOverride(112)
-							[
-								CatalogEntryWidget.ToSharedRef()
-							]
+					//		[
+					//			CatalogEntryWidget.ToSharedRef()
+					//		]
 						]
 					]
 				+ SHorizontalBox::Slot()

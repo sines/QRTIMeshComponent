@@ -92,7 +92,7 @@ void SQuVRCatalogPlaneWidget::AddGroupTabPlane(TSharedPtr<FQuVRCatalogNode > nod
 	if (node.IsValid()&&0<node->ChildList.Num())
 	{
 		ChildWidget = SNew(SQuVRCatalogPlaneWidget).TreeItem(node).ParentWidget(SharedThis(this)).RootContent(RootContent).RootWidget(RootWidget);
-		RootContent->InsertSlot(RootContent->NumSlots() - 1).Padding(0)
+		RootContent->InsertSlot(RootContent->NumSlots()-1).Padding(0)
 			.AutoWidth()
 			[
 				ChildWidget.ToSharedRef()

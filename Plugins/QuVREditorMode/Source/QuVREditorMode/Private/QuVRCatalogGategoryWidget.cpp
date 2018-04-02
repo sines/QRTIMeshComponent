@@ -114,12 +114,8 @@ public:
 
 TSharedRef<SWidget> MakeGategoryWidget()
 {
-// 	extern TOptional<FSlateRenderTransform> GetTestRenderTransform();
-// 	extern FVector2D GetTestRenderTransformPivot();
 	return
 		SNew(QuVRCatalogGategoryWidget);
-//		.RenderTransform_Static(&GetTestRenderTransform)
-//		.RenderTransformPivot_Static(&GetTestRenderTransformPivot);
 }
 
 #undef LOCTEXT_NAMESPACE

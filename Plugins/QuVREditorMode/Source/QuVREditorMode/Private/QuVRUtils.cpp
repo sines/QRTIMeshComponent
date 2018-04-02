@@ -4,6 +4,80 @@
 
 const FString UQuVRUtils::ResRootPath = FString(TEXT("QuVRResource"));
 
+static IImageWrapperPtr GetImageWrapperByExtention(const FString InImagePath)
+{
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+	if (InImagePath.EndsWith(".png"))
+	{
+		return ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+	}
+	else if (InImagePath.EndsWith(".jpg") || InImagePath.EndsWith(".jpeg"))
+	{
+		return ImageWrapperModule.CreateImageWrapper(EImageFormat::JPEG);
+	}
+	else if (InImagePath.EndsWith(".bmp"))
+	{
+		return ImageWrapperModule.CreateImageWrapper(EImageFormat::BMP);
+	}
+	else if (InImagePath.EndsWith(".ico"))
+	{
+		return ImageWrapperModule.CreateImageWrapper(EImageFormat::ICO);
+	}
+	else if (InImagePath.EndsWith(".exr"))
+	{
+		return ImageWrapperModule.CreateImageWrapper(EImageFormat::EXR);
+	}
+	else if (InImagePath.EndsWith(".icns"))
+	{
+		return ImageWrapperModule.CreateImageWrapper(EImageFormat::ICNS);
+	}
+
+	return nullptr;
+}
+
+UTexture2D* UQuVRUtils::LoadTexture2DbyPath(const FString& ImagePath, bool& IsValid)
+{
+	UTexture2D* Texture = nullptr;
+	IsValid = false;
+
+	// To avoid log spam, make sure it exists before doing anything else.
+	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*ImagePath))
+	{
+		return nullptr;
+	}
+
+	TArray<uint8> CompressedData;
+	if (!FFileHelper::LoadFileToArray(CompressedData, *ImagePath))
+	{
+		return nullptr;
+	}
+
+	IImageWrapperPtr ImageWrapper = GetImageWrapperByExtention(ImagePath);
+
+	if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(CompressedData.GetData(), CompressedData.Num()))
+	{
+		const TArray<uint8>* UncompressedRGBA = nullptr;
+
+		if (ImageWrapper->GetRaw(ERGBFormat::RGBA, 8, UncompressedRGBA))
+		{
+			Texture = UTexture2D::CreateTransient(ImageWrapper->GetWidth(), ImageWrapper->GetHeight(), PF_B8G8R8A8);
+
+			if (Texture != nullptr)
+			{
+				IsValid = true;
+
+				void* TextureData = Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+				FMemory::Memcpy(TextureData, UncompressedRGBA->GetData(), UncompressedRGBA->Num());
+				Texture->PlatformData->Mips[0].BulkData.Unlock();
+				Texture->UpdateResource();
+			}
+		}
+	}
+
+	return Texture;
+}
+
+
 /************************************************************************/
 /*  Content Path Function												*/
 /************************************************************************/

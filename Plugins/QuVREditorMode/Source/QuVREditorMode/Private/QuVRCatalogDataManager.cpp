@@ -177,8 +177,12 @@ void UQuVRCatalogDataManager::ParseAssetItemData(TSharedPtr<FQuVRCatalogNode> no
 		AssetItem->PackageUrl = TempJsonObject->GetStringField(TEXT("PackageUrl"));
 		if (false == node->HasChildAsset(*AssetItem))
 		{
-			AssetItem->Initialise();
+		//	AssetItem->Initialise();
 			node->AssetList.AddUnique(AssetItem);
+		}
+		else
+		{
+		//	node->GetChildAsset(*AssetItem)->Initialise();
 		}
 	}
 

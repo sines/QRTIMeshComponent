@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+
 #include "QuVRUtils.generated.h"
 
 enum class EQuVRObjectType : uint8
@@ -35,7 +36,7 @@ struct QUVREDITORMODE_API FQuVRPackageModel
  * Utils Static Function
  */
 UCLASS()
-class QUVREDITORMODE_API UQuVRUtils : public UObject
+class   UQuVRUtils : public UObject
 {
 	GENERATED_BODY()
 public:
@@ -60,4 +61,9 @@ public:
 	static void UnzipFile(const FString& InZipPath, const FString& InTargetPath);
 	static void DeleteZipFile(const FString& InZipPath);
 	static bool  CheckFileExists(const FString& InPackageUrl);
+
+	/************************************************************************/
+	/*    Load Image                                                        */
+	/************************************************************************/
+	static UTexture2D* LoadTexture2DbyPath(const FString& ImagePath, bool& IsValid);
 };

@@ -53,7 +53,7 @@ public class QuVREditorMode : ModuleRules
 				"LevelEditor",
                 "EditorStyle",
                 "PlacementMode",
-
+                "ContentBrowser",
                 "HTTP",
                 "Json",
 				// ... add private dependencies that you statically link with here ...	

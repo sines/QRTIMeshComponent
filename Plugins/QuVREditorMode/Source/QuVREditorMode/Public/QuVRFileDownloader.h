@@ -11,11 +11,13 @@
 
 class UTexture2DDynamic;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FQuVRFileDownloadUpdateProgressDelegate, int32, ReceivedDataInBytes, int32, TotalDataInBytes, const TArray<uint8>&, BinaryData);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuVRDownloadImageDelegate, UTexture2DDynamic*, Texture);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FQuVRFileDownloadUpdateProgressBPDelegate, int32, ReceivedDataInBytes, int32, TotalDataInBytes, const TArray<uint8>&, BinaryData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuVRDownloadImageBPDelegate, UTexture2DDynamic*, Texture);
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRDownloadImageRes, class UTexture2DDynamic*);
-DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRFileDownloadDoneDelegate, int32);
+DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRDownloadImageC2Delegate, class UTexture2DDynamic*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRFileDownloadDoneC2Delegate, int32);
+DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRDownloadFileC2Delegate, FString);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FQuVRFileDownloadUpdateProgressC2Delegate, int32, int32, const TArray<uint8>&);
 /**
  * 
  */
@@ -25,6 +27,7 @@ class QUVREDITORMODE_API UQuVRFileDownloader : public UBlueprintAsyncActionBase
 	GENERATED_UCLASS_BODY()
 
 public:
+	~UQuVRFileDownloader();
 	static UQuVRFileDownloader* DownloadImageLoader(FString URL);
 	static UQuVRFileDownloader* DownloadZipLoader(FString URL);
 	void StartDownloadImageFile(FString URL);
@@ -35,14 +38,13 @@ private:
 	void HandleImageRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded);
 	void HandleRequestProgress(FHttpRequestPtr HttpRequest, int32 BytesSent, int32 BytesReceived);
 public:
-	FQuVRFileDownloadUpdateProgressDelegate OnUlpdataProegress;
+	FQuVRDownloadImageBPDelegate OnDownloadImageSuccess;
+	FQuVRDownloadImageBPDelegate OnDownloadImageFail;
 
-	FQuVRDownloadImageDelegate OnDownloadImageSuccess;
-	FQuVRDownloadImageDelegate OnDownloadImageFail;
-	FQuVRDownloadImageRes OnDownloadImageRes;
+	FQuVRDownloadImageC2Delegate OnDownloadImageRes;
+	FQuVRFileDownloadDoneC2Delegate OnDownloadFileDone;
+	FQuVRFileDownloadUpdateProgressC2Delegate OnUlpdataProegress;
 
-
-	FQuVRFileDownloadDoneDelegate OnDownloadFileDone;
 protected:
 	TSharedPtr<IHttpRequest> HttpRequest;
 /** Http Response code */
