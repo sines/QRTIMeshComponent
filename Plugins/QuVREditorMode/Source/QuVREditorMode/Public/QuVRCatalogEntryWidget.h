@@ -35,7 +35,7 @@ public:
 		*
 		* @param InArgs   Declaration from which to construct the widget.
 		*/
-	//virtual ~SQuVRCatlogEntryWidget();
+	virtual ~SQuVRCatlogEntryWidget();
 	void Construct(const FArguments& InDelcaration);
 
 	void CheckDownloadAsset();
@@ -52,8 +52,7 @@ public:
 
 private:
 	const FSlateBrush* GetSlateBrushState() const;
-
-	FSlateColor GetSlateColorState() const;
+	const FSlateBrush* GetSlateBrushTop()const;
 	EVisibility GetIsDownloadeVisible() const;
 	EVisibility GetIsProgressVisible() const;
 	TOptional< float > GetProgressBarState() const;
@@ -61,12 +60,16 @@ private:
 	void OnDownloadProegress(int32 ReceivedDataInBytes, int32 TotalDataInBytes, const TArray<uint8>& BinaryData);
 	void OnDownloadDone(int32 code);
 protected:
-	TSharedPtr<class SButton> button;
+	TSharedPtr<class SImage> downloadTopImage;
+	TSharedPtr<class SProgressBar> downloadProgressBar;
+
 	EntryDownLoadState DownloadFileState;
 	FQuVRAssetViewAsset AssetInfo;
 	UTexture2DDynamic* Texture2Dimage;
-
-	UTexture2D* d2Download;
+	
+	UTexture2D* UT2DBack;
+	UTexture2D* UT2DTop;
+	FSlateBrush* fSlbrushTopImage;
 	FButtonStyle* buttonstyle;
 	TWeakObjectPtr<class UQuVRFileDownloader> AsyncTaskDownloadFile;
 	float ProgressRate;

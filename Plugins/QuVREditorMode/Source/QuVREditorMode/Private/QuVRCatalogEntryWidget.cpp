@@ -28,6 +28,10 @@
 
 #if !UE_BUILD_SHIPPING
 
+const FString DownloadTopImagePath= FPaths::GamePluginsDir() + FString(TEXT("QuVREditorMode\\Resources\\DownLoad.png"));
+const FString DownloadBackImagePath = FPaths::GamePluginsDir() + FString(TEXT("QuVREditorMode\\Resources\\refresh.png"));
+bool ImageValid = true;
+
 float InverseLerp(float A, float B, float Value)
 {
 	if (FMath::IsNearlyEqual(A, B))
@@ -46,11 +50,17 @@ float InverseLerp(float A, float B, float Value)
 		return ((Value - A) / (B - A));
 	}
 }
+SQuVRCatlogEntryWidget::~SQuVRCatlogEntryWidget()
+{
+	UT2DBack->RemoveFromRoot();
+	UT2DTop->RemoveFromRoot();
+}
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 {
 	// const value
-	d2Download = nullptr;
+	UT2DBack = nullptr;
+	UT2DTop = nullptr;
 	Texture2Dimage = nullptr;
 	bIsPressed = false;
 	IsDownload = false;
@@ -58,10 +68,12 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 	NormalImage = new FSlateBrush();
 	HoverImage = new FSlateBrush();
 	PressedImage = new FSlateBrush();
+	fSlbrushTopImage = new FSlateBrush();
 	PlaceableItem = NULL;
 	AsyncTaskDownloadFile = NULL;
 	ProgressRate = 0;
-	button = NULL;
+	downloadProgressBar = NULL;
+	downloadTopImage = NULL;
 	ItemWidth = 100;
 	ThumbnailPadding = 5;
 	DownloadFileState = EntryDownLoadState::Start;
@@ -74,11 +86,10 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 	buttonstyle = new FButtonStyle();
 
 	// init image
-	const FString initimagepath = FPaths::GamePluginsDir() + FString(TEXT("QuVREditorMode\\Resources\\refresh.png"));
-	bool inivis = true;
-	d2Download = UQuVRUtils::LoadTexture2DbyPath(initimagepath, inivis);
+	UT2DBack = UQuVRUtils::LoadTexture2DbyPath(DownloadBackImagePath, ImageValid);
+	UT2DBack->AddToRoot();
 	FSlateBrush* initImage = new FSlateBrush();
-	initImage->SetResourceObject(d2Download);
+	initImage->SetResourceObject(UT2DBack);
 	initImage->ImageSize.X = 28;
 	initImage->ImageSize.Y = 28;
 	initImage->DrawAs = ESlateBrushDrawType::Image;
@@ -119,14 +130,13 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 			AssetEntryToolTip = FSlateApplicationBase::Get().MakeToolTip(PlaceableItem->DisplayName);
 		}
 	}
-	const FString imagepath = FPaths::GamePluginsDir()+ FString(TEXT("QuVREditorMode\\Resources\\DownLoad.png"));
-	bool visi = true;
-	d2Download = UQuVRUtils::LoadTexture2DbyPath(imagepath, visi);
-	FSlateBrush* downloadImage = new FSlateBrush();
-	downloadImage->SetResourceObject(d2Download);
-	downloadImage->ImageSize.X = 28;
-	downloadImage->ImageSize.Y = 28;
-	downloadImage->DrawAs = ESlateBrushDrawType::Image;
+
+	UT2DTop = UQuVRUtils::LoadTexture2DbyPath(DownloadTopImagePath, ImageValid);
+	UT2DTop->AddToRoot();
+	fSlbrushTopImage->SetResourceObject(UT2DTop);
+	fSlbrushTopImage->ImageSize.X = 28;
+	fSlbrushTopImage->ImageSize.Y = 28;
+	fSlbrushTopImage->DrawAs = ESlateBrushDrawType::Image;
 	ChildSlot
 		[
 			SNew(SBorder)
@@ -150,16 +160,14 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 						.BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState).ToolTip(AssetEntryToolTip).Padding(0)
 						[
 							SNew(SOverlay)
-							+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top)
-							[		
-								SNew(SImage).Image(downloadImage).Visibility(this, &SQuVRCatlogEntryWidget::GetIsDownloadeVisible)
-							]
+ 							+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top)
+ 							[		
+								SAssignNew(downloadTopImage,SImage).Image(this, &SQuVRCatlogEntryWidget::GetSlateBrushTop).Visibility(this, &SQuVRCatlogEntryWidget::GetIsDownloadeVisible)
+ 							]
 							+ SOverlay::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Center)
 							[
-									SNew(SProgressBar).Visibility(this, &SQuVRCatlogEntryWidget::GetIsProgressVisible).Percent(this, &SQuVRCatlogEntryWidget::GetProgressBarState)
+								SAssignNew(downloadProgressBar,SProgressBar).Visibility(this, &SQuVRCatlogEntryWidget::GetIsProgressVisible).Percent(this, &SQuVRCatlogEntryWidget::GetProgressBarState)
 							]
-
-							//SNew(STextBlock).Text(this, &SQuVRCatlogEntryWidget::GetIsDownloade).ColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.0f, 0.0f, 1.0f)))
 						]
 					]
 				]
@@ -303,46 +311,6 @@ FReply SQuVRCatlogEntryWidget::DownloadAsset()
 	return FReply::Handled();
 }
 
-#if 0
-// GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString("++++++++++OnDragDetected++++++++++"));
-
-FReply SQuVRCatlogEntryWidget::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
-{
-	if (AssetInfo.Data.IsValid())
-	{
-		FString URL = AssetInfo.PackageUrl;
-		if (5 < URL.Len())
-		{
-			if (!UQuVRUtils::CheckFileExists(URL))
-			{
-				return FReply::Handled();
-			}
-		}
-	}
-	bIsPressed = false;
-	
-	// if PlaceableItem Null
-	if (false == PlaceableItem.IsValid())
-	{
-		return FReply::Handled();
-	}
-
-	/* Placement Actor */
-	TArray<FAssetData> DraggedAssetDatas;
-	DraggedAssetDatas.Add(PlaceableItem->AssetData);
-	FEditorDelegates::OnAssetDragStarted.Broadcast(DraggedAssetDatas, PlaceableItem->Factory);
-	if (MouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
-	{
-		// BeginDragDrop
-		return FReply::Handled().BeginDragDrop(FAssetDragDropOp::New(DraggedAssetDatas, PlaceableItem->Factory));
-	}
-	else
-	{
-		return FReply::Handled();
-	}
-}
-#endif
-
 const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushState() const
 {
 	if (bIsPressed)
@@ -358,24 +326,9 @@ const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushState() const
 	}
 }
 
-
-FSlateColor SQuVRCatlogEntryWidget::GetSlateColorState() const
+const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushTop()const
 {
-	if (IsDownload)
-	{
-		if (IsHovered())
-		{
-			return FSlateColor(FLinearColor(0.85f, 0.850f, 0.026f, 0.20f));
-		}
-		else
-		{
-			return FSlateColor(FLinearColor(1.00f, 1.00f, 1.00f, 0.05f));
-		}
-	}
-	else
-	{
-		return FSlateColor(FLinearColor(0.3f, 0.30f, 0.30f, 0.30f));
-	}
+	return fSlbrushTopImage;
 }
 
 EVisibility SQuVRCatlogEntryWidget::GetIsProgressVisible() const

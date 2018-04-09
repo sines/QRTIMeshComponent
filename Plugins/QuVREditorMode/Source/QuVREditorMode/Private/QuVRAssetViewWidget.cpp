@@ -520,7 +520,7 @@ void SQuVRAssetViewWidget::OnListMouseButtonDoubleClick(TSharedPtr<FQuVRAssetVie
 {
 	if (AssetItem.IsValid())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetItem->DisplayName);
+		/*GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetItem->DisplayName);*/
 	}
 };
 
@@ -533,7 +533,7 @@ void SQuVRAssetViewWidget::OnListMouseButtonClick(TSharedPtr<FQuVRAssetViewAsset
 			AssetItem->EntryWidgetRef.Pin()->CheckDownloadAsset();
 		}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetItem->DisplayName);
+/*	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetItem->DisplayName);*/
 
 	}
 };
@@ -542,7 +542,7 @@ void SQuVRAssetViewWidget::AssetSelectionChanged(TSharedPtr<FQuVRAssetViewAsset 
 {
 	if (AssetItem.IsValid())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetItem->DisplayName);
+		/*GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetItem->DisplayName);*/
 	}
 }
 
