@@ -66,20 +66,19 @@ protected:
 	EntryDownLoadState DownloadFileState;
 	FQuVRAssetViewAsset AssetInfo;
 	UTexture2DDynamic* Texture2Dimage;
-	
-	UTexture2D* UT2DBack;
-	UTexture2D* UT2DTop;
-	FSlateBrush* fSlbrushTopImage;
+
+	FSlateIcon fSlateDownload;
+	FSlateIcon fSlateReference;
+
 	FButtonStyle* buttonstyle;
 	TWeakObjectPtr<class UQuVRFileDownloader> AsyncTaskDownloadFile;
 	float ProgressRate;
-	bool IsDownload;
+	bool bIsDownloadAsset;
+	bool bIsDownloadImage;
 private:
 	bool bIsPressed;
 	bool bDraggedOver;
 
-	FSlateBrush* NormalImage;
-	FSlateBrush* HoverImage;
 	FSlateBrush* PressedImage;
 	TSharedPtr<FPlaceableItem> PlaceableItem;
 

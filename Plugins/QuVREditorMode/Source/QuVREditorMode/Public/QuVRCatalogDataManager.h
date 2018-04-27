@@ -33,18 +33,21 @@ public:
 	void GetAllCatalogNodeListFromUrl();
 
 	void GetCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalogNode>& node);
+	void GetCatalogNodeChildNumFromUrl(TSharedPtr<class SQuVRCatalogPlaneWidget>& plane, TSharedPtr<FQuVRCatalogNode>& node);
 
 	TSharedPtr<FQuVRCatalogNode>& GetRootNode() { return RootNode; }
 	TArray<TSharedPtr<FQuVRCatalogNode>>& GetNodeList() { return RootNode->ChildList; }
-	void SetWidget(const TSharedPtr<SQuVRCatalogWidget> widget) { Catawidget = widget; }
+	void SetWidget(const TSharedPtr<SQuVRCatalogWidget> widget) { Catalogwidget = widget; }
 
 private:
 	static const FString CatalogNodeHttpURL;
 	static const FString CatalogAssetHttpURL;
+	static const FString CatalogChildNumHttpURL;
 
 	TSharedRef<IHttpRequest> HttpNodeListRequest = FHttpModule::Get().CreateRequest();
-
 	TSharedRef<IHttpRequest> HttpAssetListRequest = FHttpModule::Get().CreateRequest();
+	TSharedRef<IHttpRequest> HttpChildNumRequest = FHttpModule::Get().CreateRequest();
+
 	int32 ResponseCode;
 
 	FString ResponseContent;
@@ -57,6 +60,9 @@ private:
 	void OnProcessAssetRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	void GenerateAssetCatalog(TSharedRef<FQuVRCatalogNode> node);
 
+	// Process ChildNum Catalog
+	void OnProcessChildNumRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	void ParseNodeAssetChildNum(TSharedPtr<FQuVRCatalogNode> node, TArray<TSharedPtr<FJsonValue>> JsonValue);
 private:
 	void Initial();
 
@@ -73,9 +79,12 @@ public:
 private:
 	TSharedPtr<FQuVRCatalogNode>  RootNode;
 	TSharedPtr<FQuVRCatalogNode> CurrentNode;
+
+	TSharedPtr<FQuVRCatalogNode>  SeekNode;
 //	TArray<FQuVRCatalogNode> NodeList;
 	static UQuVRCatalogDataManager* StaticInstance;
-	TSharedPtr<SQuVRCatalogWidget> Catawidget;
+	TSharedPtr<SQuVRCatalogWidget> Catalogwidget;
+	TSharedPtr<SQuVRCatalogPlaneWidget> CatalogPlane;
 public:
 	FRequestAssetDataDoneDelegate OnRequestAssetDataDone;
 	FRequestNodeDataDoneDelegate OnRequestNodeDataDone;

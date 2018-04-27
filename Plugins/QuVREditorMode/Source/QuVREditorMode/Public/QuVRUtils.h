@@ -7,6 +7,8 @@
 
 #include "QuVRUtils.generated.h"
 
+class UTexture2DDynamic;
+
 enum class EQuVRObjectType : uint8
 {
 	Unknown,
@@ -50,6 +52,11 @@ public:
 	static const FString ResRootPath;
 
 	/************************************************************************/
+	/* Saved Path Function											        */
+	/************************************************************************/
+	static FString GetSavedTempTextureDir(const FString& InPackageUrl);
+	static bool CheckTempTextureExists(const FString& InPackageUrl);
+	/************************************************************************/
 	/* StaticLoadObject Asset Path                                          */
 	/************************************************************************/
 	static FString GetAssetPath(const FString& InPackageUrl);
@@ -66,4 +73,6 @@ public:
 	/*    Load Image                                                        */
 	/************************************************************************/
 	static UTexture2D* LoadTexture2DbyPath(const FString& ImagePath, bool& IsValid);
+	static UTexture2DDynamic* LoadDyna2DPath(const FString& ImagePath);
+	static UTexture2D* ConvertImage(UTexture2DDynamic * DynTex);
 };

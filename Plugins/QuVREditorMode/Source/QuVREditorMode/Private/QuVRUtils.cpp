@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
 #include "QuVRUtils.h"
+#include "Runtime/RHI/Public/RHIResources.h"
+
 
 const FString UQuVRUtils::ResRootPath = FString(TEXT("QuVRResource"));
 
@@ -34,6 +35,7 @@ static IImageWrapperPtr GetImageWrapperByExtention(const FString InImagePath)
 
 	return nullptr;
 }
+
 
 UTexture2D* UQuVRUtils::LoadTexture2DbyPath(const FString& ImagePath, bool& IsValid)
 {
@@ -77,6 +79,75 @@ UTexture2D* UQuVRUtils::LoadTexture2DbyPath(const FString& ImagePath, bool& IsVa
 	return Texture;
 }
 
+UTexture2DDynamic* UQuVRUtils::LoadDyna2DPath(const FString& ImagePath)
+{
+	// To avoid log spam, make sure it exists before doing anything else.
+	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*ImagePath))
+	{
+		return nullptr;
+	}
+
+	TArray<uint8> CompressedData;
+	if (!FFileHelper::LoadFileToArray(CompressedData, *ImagePath))
+	{
+		return nullptr;
+	}
+
+	IImageWrapperPtr ImageWrapper = GetImageWrapperByExtention(ImagePath);
+
+	if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(CompressedData.GetData(), CompressedData.Num()))
+	{
+		const TArray<uint8>* RawData = NULL;
+		if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData))
+		{
+			if (UTexture2DDynamic* Texture = UTexture2DDynamic::Create(ImageWrapper->GetWidth(), ImageWrapper->GetHeight()))
+			{
+				Texture->SRGB = true;
+				Texture->UpdateResource();
+
+				ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(
+					FWriteRawDataToTexture,
+					FTexture2DDynamicResource*, TextureResource, static_cast<FTexture2DDynamicResource*>(Texture->Resource),
+					TArray<uint8>, RawData, *RawData,
+					{
+						WriteRawToTexture_RenderThread(TextureResource, RawData);
+					});
+				return Texture;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+UTexture2D* UQuVRUtils::ConvertImage(UTexture2DDynamic * DynTex)
+{
+	int32 Width = DynTex->SizeX;
+	int32 Height = DynTex->SizeY;
+
+	UTexture2D* ResultTexture = UTexture2D::CreateTransient(Width, Height);
+
+	ENQUEUE_UNIQUE_RENDER_COMMAND_TWOPARAMETER(
+		FConvertTextures,
+		FTexture2DDynamicResource*, TextureResource, static_cast<FTexture2DDynamicResource*>(DynTex->Resource),
+		UTexture2D*, ResultTexture, ResultTexture,
+		{
+			FTexture2DRHIParamRef TextureRHI = TextureResource->GetTexture2DRHI();
+	int32 Width = TextureRHI->GetSizeX();
+	int32 Height = TextureRHI->GetSizeY();
+
+	uint32 DestStride = 0;
+	uint8* ReadData = reinterpret_cast<uint8*>(RHILockTexture2D(TextureRHI, 0, RLM_ReadOnly, DestStride, false, false));
+
+	FTexture2DMipMap& Mip = ResultTexture->PlatformData->Mips[0];
+	uint8* Data = (uint8*)Mip.BulkData.Lock(LOCK_READ_WRITE);
+	FMemory::Memcpy(Data, ReadData, Width * Height * 4);
+	Mip.BulkData.Unlock();
+	ResultTexture->UpdateResource();
+		});
+
+	return ResultTexture;
+}
 
 /************************************************************************/
 /*  Content Path Function												*/
@@ -249,3 +320,23 @@ FString UQuVRUtils::GetAssetPath(const FString& InPackageUrl)
 	return FilePath;
 }
 
+/************************************************************************/
+/* Saved Path Function											        */
+/************************************************************************/
+FString UQuVRUtils::GetSavedTempTextureDir(const FString& InPackageUrl)
+{
+	TArray<FString> File;
+	InPackageUrl.ParseIntoArray(File, TEXT("/"));
+	FString DirName = FPaths::Combine(File.Last(1), File.Last(0));
+	FString SrcFilePath = FPaths::GameSavedDir() / TEXT("Catalog") / DirName;
+	return SrcFilePath;
+}
+
+bool UQuVRUtils::CheckTempTextureExists(const FString& InPackageUrl)
+{
+	TArray<FString> File;
+	InPackageUrl.ParseIntoArray(File, TEXT("/"));
+	FString DirName = FPaths::Combine(File.Last(1), File.Last(0));
+	FString SrcFilePath = FPaths::GameSavedDir() / TEXT("Catalog") / DirName;
+	return FPaths::FileExists(*SrcFilePath);
+}

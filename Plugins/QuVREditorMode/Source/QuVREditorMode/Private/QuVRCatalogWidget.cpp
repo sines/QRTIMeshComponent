@@ -67,11 +67,12 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	SAssignNew(HTB, SHorizontalBox);
 	TSharedRef<SScrollBar> ScrollBar = SNew(SScrollBar).Thickness(FVector2D(1, 1));
 
-#if 1 // add ChildSlot Layout
+ // add ChildSlot Layout
 	ChildSlot
 	[
 		
 		SNew(SVerticalBox)
+		#if 1
 		// Create ResGategory
 		+SVerticalBox::Slot().AutoHeight()
 		[
@@ -80,6 +81,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 				MakeGategoryWidget()
 			]
 		]
+		#endif
 		// Create Download
 		+ SVerticalBox::Slot().AutoHeight()
 		[
@@ -96,8 +98,9 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
  			HTB.ToSharedRef()
  		]
 	];
-#endif
+
 	UQuVRCatalogDataManager::GetInstance()->SetWidget(SharedThis(this));
+	UQuVRCatalogDataManager::GetInstance()->GetAllCatalogNodeListFromUrl();
 	bNeedsUpdate = true;
 }
 
@@ -241,8 +244,6 @@ ChildSlot
 		.BorderImage(FCoreStyle::Get().GetBrush("Menu.Background"))
 		.Cursor(EMouseCursor::GrabHand)
 		[
-// 			SNew(SButton).ContentPadding(0.1)
-// 			[
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.Padding(0)
@@ -270,9 +271,6 @@ ChildSlot
 							.VAlign(VAlign_Fill)
 							.WidthOverride(112)
 							.HeightOverride(112)
-					//		[
-					//			CatalogEntryWidget.ToSharedRef()
-					//		]
 						]
 					]
 				+ SHorizontalBox::Slot()
@@ -296,7 +294,6 @@ ChildSlot
 						HorizontalScrollbar.ToSharedRef()
 					]
 			]
-	//]
 	];
 #endif
 

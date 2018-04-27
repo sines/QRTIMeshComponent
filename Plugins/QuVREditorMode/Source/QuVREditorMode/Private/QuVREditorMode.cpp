@@ -6,14 +6,22 @@
 #include "ActorFactories/ActorFactory.h"
 #include "ActorFactories/ActorFactoryDirectionalLight.h"
 #include "QuVRAssetFactoryStaticMesh.h"
-
+#include "QuVRCatalogStyleSettings.h"
 
 #define LOCTEXT_NAMESPACE "FQuVREditorModeModule"
 
 void FQuVREditorModeModule::StartupModule()
 {
+	FQuVRCatalogStyleSettings::Initialize();
+	FQuVRCatalogStyleSettings::ReloadTextures();
+
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	FEditorModeRegistry::Get().RegisterMode<FQuVREditorModeEdMode>(FQuVREditorModeEdMode::EM_QuVREditorModeEdModeId, LOCTEXT("QuVREditorModeEdModeName", "QuVREditorModeEdMode"), FSlateIcon(), true);
+	FEditorModeRegistry::Get().RegisterMode<FQuVREditorModeEdMode>(
+		FQuVREditorModeEdMode::EM_QuVREditorModeEdModeId,
+		LOCTEXT("QuVREditorModeEdModeName", "QuVREditorModeEdMode"),
+		FSlateIcon(FQuVRCatalogStyleSettings::Get().GetStyleSetName(), "QuVREditorMode.Icon128", "QuVREditorMode.Icon128"),
+		true,
+		1);
 
 
 	handle = FModuleManager::Get().OnModulesChanged().AddRaw(this, &FQuVREditorModeModule::OnModulesChanged);

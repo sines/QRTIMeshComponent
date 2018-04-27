@@ -201,7 +201,7 @@ void UQuVRAssetFactoryAnimation::PostSpawnActor(UObject* Asset, AActor* NewActor
 
 	UAnimationAsset* AnimationAsset = Cast<UAnimationAsset>(Asset);
 	USkeletalMeshComponent* NewSASComponent = (NewSMActor->GetSkeletalMeshComponent());
-
+	NewSMActor->AddActorLocalOffset(FVector(0, 0, 0.1));
 	if (NewSASComponent)
 	{
 		if (AnimationAsset)

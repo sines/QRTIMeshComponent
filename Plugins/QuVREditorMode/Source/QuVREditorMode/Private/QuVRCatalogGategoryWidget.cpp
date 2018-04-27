@@ -66,14 +66,17 @@ public:
 						]
 
 					]
-					/*
+					
 					// Add test button
 					+SHorizontalBox::Slot()
 					.Padding(2)
 					.AutoWidth()
 					[
 						SNew(SButton).Text( LOCTEXT("CatlogResGategory-Jtl4.0", "JTL4.0") )
+						.OnClicked(this, &QuVRCatalogGategoryWidget::TestButtonClicked)
 					]
+/*
+
 					+SHorizontalBox::Slot()
 					.Padding(2)
 					.AutoWidth()
@@ -81,8 +84,7 @@ public:
 						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-HD", "HDPJ") )
 						.OnClicked(this,&QuVRCatalogGategoryWidget::TestButtonClicked)
 					]
-					*/
-			
+				*/
 				]
 			]
 		];
@@ -98,8 +100,9 @@ public:
 
 	FReply TestButtonClicked()
 	{
-		TSharedPtr<class FQuVRCatalogNode> node = UQuVRCatalogDataManager::GetInstance()->GetRootNode().Get()->ChildList[0];
-		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeAssetFromUrl(node);
+		FString CurrentPath = FPaths::GameSavedDir();
+		FAssetToolsModule& AssetToolsModule = FModuleManager::Get().LoadModuleChecked<FAssetToolsModule>("AssetTools");
+		AssetToolsModule.Get().ImportAssets(CurrentPath);
 		return FReply::Handled();
 	}
 	//////////////////////////////////////////////////////////////////////////

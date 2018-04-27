@@ -56,6 +56,7 @@ public class QuVREditorMode : ModuleRules
                 "ContentBrowser",
                 "HTTP",
                 "Json",
+                "Projects",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

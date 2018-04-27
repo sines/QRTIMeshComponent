@@ -12,7 +12,7 @@
 #include "Widgets/Navigation/SBreadcrumbTrail.h"
 #include "Editor/UnrealEd/Public/DragAndDrop/ActorDragDropOp.h"
 #include "Editor/UnrealEd/Public/DragAndDrop/AssetDragDropOp.h"
-//#include "Editor/UnrealEd/Public/DragAndDrop/AssetPathDragDropOp.h"
+#include "Editor/UnrealEd/Public/DragAndDrop/AssetPathDragDropOp.h"
 #include "Editor/EditorWidgets/Public/EditorWidgetsModule.h"
 #include "Runtime/AssetRegistry/Public/AssetRegistryModule.h"
 #include "Runtime/AssetRegistry/Public/IAssetRegistry.h"
@@ -26,6 +26,11 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 ///////////////////////////////
 // FQuVRAssetViewAsset
 ///////////////////////////////
+void FQuVRAssetViewAsset::CreateEntryWidget()
+{
+
+
+}
 
 void FQuVRAssetViewAsset::SetAssetData(const FAssetData& NewData)
 {
@@ -38,7 +43,7 @@ void FQuVRAssetViewAsset::RefreshImage(UTexture2DDynamic* texture2D)
 	UITexture = texture2D;
 	if (EntryWidgetRef.IsValid())
 	{
-		EntryWidgetRef.Pin()->RefreshWidget(UITexture);
+		EntryWidgetRef->RefreshWidget(UITexture);
 	}
 }
 bool FQuVRAssetViewAsset::GetTagValue(FName Tag, FString& OutString) const
@@ -355,7 +360,7 @@ FReply SQuVRAssetViewWidget::OnDraggingAssetItem(const FGeometry& MyGeometry, co
 			TArray<FString> SelectedFolders = GetSelectedFolders();
 			if (SelectedFolders.Num() > 0 && !SourcesData.HasCollections())
 			{
-				return FReply::Handled().BeginDragDrop(FAssetDragDropOp::New(SelectedFolders));
+				return FReply::Handled().BeginDragDrop(FAssetPathDragDropOp::New(SelectedFolders));
 			}
 		}
 	}
@@ -364,8 +369,15 @@ FReply SQuVRAssetViewWidget::OnDraggingAssetItem(const FGeometry& MyGeometry, co
 }
 void SQuVRAssetViewWidget::ClearSourceItems()
 {
+	for (auto AssetItem : FilteredAssetItems)
+	{
+		AssetItem->EntryWidgetRef = nullptr;
+		AssetItem.Reset();
+	}
+
 	AssetItems.Empty();
 	AssetItems.Reset();
+	
 	FilteredAssetItems.Empty();
 	FilteredAssetItems.Reset();
 	RefreshList();
@@ -377,6 +389,7 @@ void SQuVRAssetViewWidget::RefreshSourceItems(const TSharedRef<FQuVRCatalogNode>
 	CurrentNode = node;
 	for (auto asset : node->AssetList)
 	{
+		// Create  FQuVRAssetViewAsset
 		FString filepath = UQuVRUtils::GetAssetPath(asset->PackageUrl);
 		const FAssetData& AssetData = FAssetData(LoadObject<UObject>(nullptr, *filepath));	
 		FQuVRAssetViewAsset* viewAsset = new FQuVRAssetViewAsset(
@@ -388,6 +401,15 @@ void SQuVRAssetViewWidget::RefreshSourceItems(const TSharedRef<FQuVRCatalogNode>
 		asset->ImageDownloadDone.Clear();
 		asset->ImageDownloadDone.AddRaw(viewAsset, &FQuVRAssetViewAsset::RefreshImage);
 		FilteredAssetItems.Add(MakeShareable(viewAsset));
+
+		// Create  SQuVRCatlogEntryWidget
+		viewAsset->EntryWidgetRef =
+			SNew(SQuVRCatlogEntryWidget)
+			.AssetInfo(*viewAsset)
+			.ItemWidth(this, &SQuVRAssetViewWidget::GetTileViewItemWidth)
+			.ThumbnailPadding(TileViewThumbnailPadding);
+		viewAsset->EntryWidgetRef->FileDownloadDone.AddSP(this, &SQuVRAssetViewWidget::UpdataAssetData);
+
 		asset->Initialise();
 	}
 
@@ -407,15 +429,8 @@ TSharedRef<ITableRow> SQuVRAssetViewWidget::MakeTileViewWidget(TSharedPtr<FQuVRA
 		.Cursor(bAllowDragging ? EMouseCursor::GrabHand : EMouseCursor::Default)
 		.OnDragDetected(this, &SQuVRAssetViewWidget::OnDraggingAssetItem);
 
-	TSharedRef<SQuVRCatlogEntryWidget> Item =
-		SNew(SQuVRCatlogEntryWidget)
-		.AssetInfo(*AssetItem)
-		.ItemWidth(this, &SQuVRAssetViewWidget::GetTileViewItemWidth)
-		.ThumbnailPadding(TileViewThumbnailPadding);
 
-	Item->FileDownloadDone.AddSP(this, &SQuVRAssetViewWidget::UpdataAssetData);
-	AssetItem->EntryWidgetRef = Item;
-	TableRowWidget->SetContent(Item);
+	TableRowWidget->SetContent(AssetItem->EntryWidgetRef.ToSharedRef());
 
 	return TableRowWidget.ToSharedRef();
 }
@@ -530,7 +545,7 @@ void SQuVRAssetViewWidget::OnListMouseButtonClick(TSharedPtr<FQuVRAssetViewAsset
 	{
 		if (AssetItem->EntryWidgetRef.IsValid())
 		{
-			AssetItem->EntryWidgetRef.Pin()->CheckDownloadAsset();
+			AssetItem->EntryWidgetRef->CheckDownloadAsset();
 		}
 	
 /*	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetItem->DisplayName);*/

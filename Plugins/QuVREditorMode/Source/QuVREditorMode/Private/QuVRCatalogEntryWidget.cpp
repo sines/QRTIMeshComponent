@@ -21,10 +21,11 @@
 #include "Runtime/Core/Public/Internationalization/BreakIterator.h"
 #include "Core.h"
 #include "SlateBasics.h"
-// Custom include
+// include
 #include "QuVRFileDownloader.h"
 #include "QuVRUtils.h"
 #include "QuVRAssetFactoryModel.h"
+#include "QuVRCatalogStyleSettings.h"
 
 #if !UE_BUILD_SHIPPING
 
@@ -52,23 +53,19 @@ float InverseLerp(float A, float B, float Value)
 }
 SQuVRCatlogEntryWidget::~SQuVRCatlogEntryWidget()
 {
-	UT2DBack->RemoveFromRoot();
-	UT2DTop->RemoveFromRoot();
+	AssetInfo.EntryWidgetRef.Reset();
+	AssetInfo.EntryWidgetRef = nullptr;
 }
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 {
 	// const value
-	UT2DBack = nullptr;
-	UT2DTop = nullptr;
 	Texture2Dimage = nullptr;
 	bIsPressed = false;
-	IsDownload = false;
+	bIsDownloadImage = false;
+	bIsDownloadAsset = false;
 	bDraggedOver = false;
-	NormalImage = new FSlateBrush();
-	HoverImage = new FSlateBrush();
 	PressedImage = new FSlateBrush();
-	fSlbrushTopImage = new FSlateBrush();
 	PlaceableItem = NULL;
 	AsyncTaskDownloadFile = NULL;
 	ProgressRate = 0;
@@ -86,16 +83,8 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 	buttonstyle = new FButtonStyle();
 
 	// init image
-	UT2DBack = UQuVRUtils::LoadTexture2DbyPath(DownloadBackImagePath, ImageValid);
-	UT2DBack->AddToRoot();
-	FSlateBrush* initImage = new FSlateBrush();
-	initImage->SetResourceObject(UT2DBack);
-	initImage->ImageSize.X = 28;
-	initImage->ImageSize.Y = 28;
-	initImage->DrawAs = ESlateBrushDrawType::Image;
-	NormalImage = initImage;
-	PressedImage = initImage;
-	HoverImage = initImage;
+	fSlateDownload = FSlateIcon(FQuVRCatalogStyleSettings::Get().GetStyleSetName(), "QuVREditorMode.DownLoad", "QuVREditorMode.DownLoad");
+	fSlateReference = FSlateIcon(FQuVRCatalogStyleSettings::Get().GetStyleSetName(), "QuVREditorMode.Refresh", "QuVREditorMode.Refresh");
 
 	// init tool tip
 	TSharedPtr<IToolTip> AssetEntryToolTip;
@@ -131,12 +120,6 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 		}
 	}
 
-	UT2DTop = UQuVRUtils::LoadTexture2DbyPath(DownloadTopImagePath, ImageValid);
-	UT2DTop->AddToRoot();
-	fSlbrushTopImage->SetResourceObject(UT2DTop);
-	fSlbrushTopImage->ImageSize.X = 28;
-	fSlbrushTopImage->ImageSize.Y = 28;
-	fSlbrushTopImage->DrawAs = ESlateBrushDrawType::Image;
 	ChildSlot
 		[
 			SNew(SBorder)
@@ -160,7 +143,7 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 						.BorderImage(this, &SQuVRCatlogEntryWidget::GetSlateBrushState).ToolTip(AssetEntryToolTip).Padding(0)
 						[
 							SNew(SOverlay)
- 							+ SOverlay::Slot().HAlign(HAlign_Left).VAlign(VAlign_Top)
+ 							+ SOverlay::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Bottom)
  							[		
 								SAssignNew(downloadTopImage,SImage).Image(this, &SQuVRCatlogEntryWidget::GetSlateBrushTop).Visibility(this, &SQuVRCatlogEntryWidget::GetIsDownloadeVisible)
  							]
@@ -203,7 +186,7 @@ const FSlateBrush* SQuVRCatlogEntryWidget::GetBorderImage() const
 
 void SQuVRCatlogEntryWidget::CheckDownloadAsset()
 {
-	if (false == IsDownload)
+	if (false == bIsDownloadAsset)
 	{
 		if (EntryDownLoadState::Start == DownloadFileState)
 		{
@@ -220,7 +203,7 @@ void SQuVRCatlogEntryWidget::InitPlaceableItem()
 	{
 		if (UQuVRUtils::CheckFileExists(AssetInfo.PackageUrl))
 		{
-			IsDownload = true;
+			bIsDownloadAsset = true;
 			DownloadFileState = EntryDownLoadState::Finish;
 			static TOptional<FLinearColor> BasicShapeColorOverride;
 
@@ -277,10 +260,8 @@ void SQuVRCatlogEntryWidget::RefreshWidget(UTexture2DDynamic* texture2D)
 		buttonstyle->SetNormal(*AssetImage);
 		buttonstyle->SetPressed(*AssetImage);
 		buttonstyle->SetHovered(*AssetImage);
-
-		NormalImage = AssetImage;
 		PressedImage = AssetImage;
-		HoverImage = AssetImage;
+		bIsDownloadImage = true;
 	}
 }
 
@@ -313,22 +294,16 @@ FReply SQuVRCatlogEntryWidget::DownloadAsset()
 
 const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushState() const
 {
-	if (bIsPressed)
+	if (false == bIsDownloadImage)
 	{
-		return PressedImage;
-	}else if (IsHovered())
-	{
-		return HoverImage;
+		return fSlateReference.GetIcon();
 	}
-	else
-	{
-		return NormalImage;
-	}
+	return PressedImage;
 }
 
 const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushTop()const
 {
-	return fSlbrushTopImage;
+	return fSlateDownload.GetIcon();
 }
 
 EVisibility SQuVRCatlogEntryWidget::GetIsProgressVisible() const
@@ -372,7 +347,7 @@ void SQuVRCatlogEntryWidget::OnDownloadDone(int32 code)
 	{
 		if (UQuVRUtils::CheckFileExists(URL))
 		{
-			IsDownload = true;
+			bIsDownloadAsset = true;
 			DownloadFileState = EntryDownLoadState::Finish;
 			FileDownloadDone.Broadcast(filename);
 		}

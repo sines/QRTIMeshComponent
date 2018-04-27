@@ -14,7 +14,7 @@
 /**
  * 
  */
-struct FAssetData;
+class FAssetData;
 
 struct FQuVRAssetViewAsset : public FAssetViewItem
 {
@@ -29,9 +29,15 @@ struct FQuVRAssetViewAsset : public FAssetViewItem
 	/** Show UI TEXTURE */
 	UTexture2DDynamic* UITexture;
 
-	TWeakPtr<class SQuVRCatlogEntryWidget> EntryWidgetRef= nullptr;
+	TSharedPtr<class SQuVRCatlogEntryWidget> EntryWidgetRef= nullptr;
 
 public:
+	~FQuVRAssetViewAsset()
+	{
+		EntryWidgetRef = nullptr;
+		UITexture = nullptr;
+	}
+
 	FQuVRAssetViewAsset(FQuVRAssetViewAsset& AssetData)
 	{
 		Data = AssetData.Data;
@@ -64,7 +70,8 @@ public:
 		EntryWidgetRef(nullptr)
 	{
 	}
-	
+
+	void CreateEntryWidget();
 	void RefreshImage(UTexture2DDynamic* texture2D);
 	void SetAssetData(const FAssetData& NewData);
 

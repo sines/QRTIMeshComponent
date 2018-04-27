@@ -95,7 +95,7 @@ UQuVRCatalogAssetInfo::UQuVRCatalogAssetInfo() :Texture2Dimage(NULL)
 	ImageUrl = "0";
 	PackageUrl = "0";
 	Size = 0;
-	IsImageDownload = false;
+	IsImageDownload = QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Start;
 	AsyncTaskDownloadImage = nullptr;
 	Texture2Dimage = NULL;
 	ImageEventHandleList.Empty();
@@ -120,21 +120,34 @@ void UQuVRCatalogAssetInfo::ClearImageEventHandle()
 
 void UQuVRCatalogAssetInfo::Initialise()
 {
-	if (true == IsImageDownload)
+	// init load texture
+	if (QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Start == IsImageDownload)
 	{
-		ImageDownloadDone.Broadcast(Texture2Dimage);
+		if (UQuVRUtils::CheckTempTextureExists(ImageUrl))
+		{
+			DownloadImage(UQuVRUtils::LoadDyna2DPath(UQuVRUtils::GetSavedTempTextureDir(ImageUrl)));
+		}
 	}
-	else
+
+	// else init download 
+	if (QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Finish == IsImageDownload)
+	{
+		if (ImageDownloadDone.IsBound())
+		{
+			ImageDownloadDone.Broadcast(Texture2Dimage);
+		}
+	}
+	else if (QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Start == IsImageDownload)
 	{
 		AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
 		AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadImage);
-		AsyncTaskDownloadImage->OnDownloadFileDone.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadDone);
+		IsImageDownload = QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Downloading;
 	}
 }
 
 void UQuVRCatalogAssetInfo::DownloadImage(UTexture2DDynamic* texture2D)
 {
-	IsImageDownload = true;
+	IsImageDownload = QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Finish;
 	Texture2Dimage = texture2D;
 	Texture2Dimage->AddToRoot();
 	ImageDownloadDone.Broadcast(texture2D);

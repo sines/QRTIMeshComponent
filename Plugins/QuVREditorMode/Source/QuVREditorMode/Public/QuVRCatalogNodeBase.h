@@ -16,6 +16,18 @@ class UQuVRFileDownloader;
 
  DECLARE_MULTICAST_DELEGATE(FQuVRCatalogAssetInfoImageDownloadDone);
 
+ namespace QuVREditorMode
+{
+	 /** Coordinate system identifiers. */
+	 enum class EQuVRCatalogDownloadState
+	 {
+		 QuVR_Catalog_None = -1,
+		 QuVR_Catalog_Start = 0,
+		 QuVR_Catalog_Downloading,
+		 QuVR_Catalog_Finish,
+	 };
+}
+
 USTRUCT()
 struct QUVREDITORMODE_API FQuVRCatalogNodeInfo
 {
@@ -31,6 +43,7 @@ struct QUVREDITORMODE_API FQuVRCatalogNodeInfo
 			CatalogType = FString(TEXT("-1"));
 			HasChilder = false;
 			ZOrder = 0;
+			ChildNum = 0;
 		}
 
 // Json Data
@@ -45,6 +58,7 @@ struct QUVREDITORMODE_API FQuVRCatalogNodeInfo
 
 // layer ZOrder
 	int32 ZOrder;
+	int32 ChildNum;
 };
 
 /**
@@ -85,7 +99,7 @@ public:
 	FString	PackageUrl;
 	int32 Size;
 
-	bool IsImageDownload;
+	QuVREditorMode::EQuVRCatalogDownloadState IsImageDownload;
 	FQuVRDownloadImageC2Delegate ImageDownloadDone;
 private:
 	UQuVRFileDownloader* AsyncTaskDownloadImage;
@@ -98,7 +112,6 @@ public:
 	void DownloadDone(int32 code);
 	void ClearDownloadState();
 
-public:
 };
 
 class QUVREDITORMODE_API FQuVRCatalogNode : public FGCObject

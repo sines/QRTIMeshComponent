@@ -13,7 +13,7 @@
  *  UActorFactoryAnimationAsset UActorFactorySkeletalMesh
  */
 class AActor;
-struct FAssetData;
+class FAssetData;
 class USkeletalMesh;
 
 UCLASS(MinimalAPI, config = Editor, collapsecategories, hidecategories = Object)

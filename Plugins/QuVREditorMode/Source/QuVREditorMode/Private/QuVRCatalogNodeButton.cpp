@@ -25,6 +25,13 @@ void SQuVRCatalogNodeButton::Construct(const SQuVRCatalogNodeButton::FArguments&
 	OnCheckStateChanged = InDelcaration._OnCheckStateChanged;
 	BkImage = InDelcaration._BkImage;
 	ParentWidget = InDelcaration._ParentWidget;
+	FString name = TreeItem->NodeData.DisplayName;
+	if (TreeItem->NodeData.ZOrder > 1)
+	{
+		name +=  FString(TEXT("(")) + FString::FromInt(TreeItem->NodeData.ChildNum) + FString(TEXT(")"));
+	}
+
+
 #if 1 // Create ChildSlot
 this->ChildSlot
 	[
@@ -47,7 +54,7 @@ this->ChildSlot
 
 			SNew(STextBlock)
 			.TextStyle(FEditorStyle::Get(), "PlacementBrowser.Tab.Text")
-			.Text(FText::FromString(TreeItem->NodeData.DisplayName))
+			.Text(FText::FromString(name))
 		]
 	+ SOverlay::Slot()
 		.VAlign(VAlign_Fill)
@@ -68,7 +75,6 @@ this->ChildSlot
 		]
 	];
 #endif
-
 };
 
 void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
@@ -85,7 +91,8 @@ void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
 	switch (ZOrder)
 	{
 	case PrimaryListPanel:
-		ParentWidget->AddGroupTabPlane(TreeItem);
+		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeChildNumFromUrl(ParentWidget,TreeItem);
+//		ParentWidget->AddGroupTabPlane(TreeItem);
 		break;
 	case SectionListPanel:
 		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeAssetFromUrl(TreeItem);
