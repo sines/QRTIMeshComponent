@@ -155,8 +155,8 @@ void ARuntimeQuVRTransformAxisActor::EndTracking()
 void ARuntimeQuVRTransformAxisActor::LeftButtonPressed()
 {
 	HitObject();
-//	StartTracking(TranslationGizmoHandleGroup);
-	StartTracking(RotationGizmoHandleGroup);
+	StartTracking(TranslationGizmoHandleGroup);
+//	StartTracking(RotationGizmoHandleGroup);
 	bIsMouseButtonDown = true;
 }
 
@@ -460,10 +460,10 @@ EQuVRMode ARuntimeQuVRTransformAxisActor::GetGizmoType() const
 void ARuntimeQuVRTransformAxisActor::UpdateGizmoAxis()
 {
 	// translation
-	//UpdateTranslation();
+	UpdateTranslation();
 
 	// Rotation
-	UpdateRotation();
+//	UpdateRotation();
 
 	// Scale
 //	UpdateScale();

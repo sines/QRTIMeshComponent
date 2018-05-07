@@ -192,7 +192,11 @@ void UQuVRFileDownloader::HandleImageRequestComplete(FHttpRequestPtr HttpRequest
 							{
 								WriteRawToTexture_RenderThread(TextureResource, RawData);
 							});
-						FFileHelper::SaveArrayToFile(ImageWrapper->GetCompressed(100), *UQuVRUtils::GetSavedTempTextureDir(FileURL));
+						FString tempDir = UQuVRUtils::GetSavedTempTextureDir(FileURL);
+						if (tempDir.Len() > 8)
+						{
+							FFileHelper::SaveArrayToFile(ImageWrapper->GetCompressed(100), *tempDir);
+						}
 						if (OnDownloadImageRes.IsBound())
 						{
 							OnDownloadImageRes.Broadcast(Texture);

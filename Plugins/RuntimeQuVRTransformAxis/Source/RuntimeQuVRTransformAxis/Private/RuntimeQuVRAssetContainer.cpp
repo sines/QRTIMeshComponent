@@ -3,7 +3,7 @@
 #include "RuntimeQuVRAssetContainer.h"
 
 
-const FString URuntimeQuVRAssetContainer::AssetContainerPath = FString("/Game/RMC_BP/QuVRAssetContainerData");
+const FString URuntimeQuVRAssetContainer::AssetContainerPath = FString("/Game/RMC_BP/QuVRAssetData");
 
 const class URuntimeQuVRAssetContainer& URuntimeQuVRAssetContainer::LoadAssetContainer()
 {

@@ -325,18 +325,27 @@ FString UQuVRUtils::GetAssetPath(const FString& InPackageUrl)
 /************************************************************************/
 FString UQuVRUtils::GetSavedTempTextureDir(const FString& InPackageUrl)
 {
-	TArray<FString> File;
-	InPackageUrl.ParseIntoArray(File, TEXT("/"));
-	FString DirName = FPaths::Combine(File.Last(1), File.Last(0));
-	FString SrcFilePath = FPaths::GameSavedDir() / TEXT("Catalog") / DirName;
-	return SrcFilePath;
+	TArray<FString> parseFile;
+	InPackageUrl.ParseIntoArray(parseFile, TEXT("/"));
+	if (parseFile.Num() > 2)
+	{
+		FString DirName = FPaths::Combine(parseFile.Last(1), parseFile.Last(0));
+		FString SrcFilePath = FPaths::GameSavedDir() / TEXT("Catalog") / DirName;
+		return SrcFilePath;
+	}
+	return FString(TEXT(""));
 }
 
 bool UQuVRUtils::CheckTempTextureExists(const FString& InPackageUrl)
 {
-	TArray<FString> File;
-	InPackageUrl.ParseIntoArray(File, TEXT("/"));
-	FString DirName = FPaths::Combine(File.Last(1), File.Last(0));
-	FString SrcFilePath = FPaths::GameSavedDir() / TEXT("Catalog") / DirName;
-	return FPaths::FileExists(*SrcFilePath);
+	TArray<FString> parseFile;
+	InPackageUrl.ParseIntoArray(parseFile, TEXT("/"));
+	if (parseFile.Num() > 2)
+	{
+		FString DirName = FPaths::Combine(parseFile.Last(1), parseFile.Last(0));
+		FString SrcFilePath = FPaths::GameSavedDir() / TEXT("Catalog") / DirName;
+		return FPaths::FileExists(*SrcFilePath);
+	}
+	return false;
+	
 }
