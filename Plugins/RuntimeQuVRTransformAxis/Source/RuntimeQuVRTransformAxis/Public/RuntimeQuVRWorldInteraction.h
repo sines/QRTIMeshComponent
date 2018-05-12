@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "RuntimeQuVRTransformType.h"
-
+#include "Runtime/Core/Public/GenericPlatform/ICursor.h"
 #include "RuntimeQuVRWorldInteraction.generated.h"
 
 /**

@@ -3,7 +3,6 @@
 #include "RuntimeQuVRWorldInteraction.h"
 #include "RuntimeQuVRTransformType.h"
 #include "InputCoreTypes.h"
-#include "ICursor.h"
 
 using namespace RuntimeQuVRtransformType;
 
