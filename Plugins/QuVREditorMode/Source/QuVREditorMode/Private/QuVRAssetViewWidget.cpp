@@ -17,7 +17,7 @@
 #include "Runtime/AssetRegistry/Public/AssetRegistryModule.h"
 #include "Runtime/AssetRegistry/Public/IAssetRegistry.h"
 #include "SlateOptMacros.h"
-
+#include "QuVRCatalogPageNavi.h"
 #include "QuVRCatalogEntryWidget.h"
 #include "QuVRCatalogNodeBase.h"
 #include "QuVRUtils.h"
@@ -41,9 +41,9 @@ void FQuVRAssetViewAsset::SetAssetData(const FAssetData& NewData)
 void FQuVRAssetViewAsset::RefreshImage(UTexture2DDynamic* texture2D)
 {
 	UITexture = texture2D;
-	if (EntryWidgetRef.IsValid())
+	if (EntryWidget.IsValid())
 	{
-		EntryWidgetRef->RefreshWidget(UITexture);
+		EntryWidget->RefreshWidget(UITexture);
 	}
 }
 bool FQuVRAssetViewAsset::GetTagValue(FName Tag, FString& OutString) const
@@ -158,7 +158,6 @@ void SQuVRAssetViewWidget::Construct(const FArguments& InArgs)
 		[
 			VerticalBox
 		];
-
 	// Assets area
 	VerticalBox->AddSlot()
 		.FillHeight(1.f)
@@ -203,6 +202,14 @@ void SQuVRAssetViewWidget::Construct(const FArguments& InArgs)
 					// Asset discovery indicator
 					AssetDiscoveryIndicator
 				]
+		]
+	+ SVerticalBox::Slot()
+		.AutoHeight()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Bottom)
+		.Padding(0, 0, 0, 0)
+		[
+			SAssignNew(CatalogPageNavi, SQuVRCatalogPageNavi)
 		]
 		];
 
@@ -371,7 +378,7 @@ void SQuVRAssetViewWidget::ClearSourceItems()
 {
 	for (auto AssetItem : FilteredAssetItems)
 	{
-		AssetItem->EntryWidgetRef = nullptr;
+		AssetItem->EntryWidget = nullptr;
 		AssetItem.Reset();
 	}
 
@@ -383,7 +390,12 @@ void SQuVRAssetViewWidget::ClearSourceItems()
 	RefreshList();
 }
 
-void SQuVRAssetViewWidget::RefreshSourceItems(const TSharedRef<FQuVRCatalogNode> node)
+void SQuVRAssetViewWidget::ClearPage()
+{
+	CatalogPageNavi->ClearPage();
+}
+
+void SQuVRAssetViewWidget::RefreshSourceItems(const TSharedRef<FQuVRCatalogNode> node, bool InHold)
 {
 	ClearSourceItems();
 	CurrentNode = node;
@@ -396,24 +408,26 @@ void SQuVRAssetViewWidget::RefreshSourceItems(const TSharedRef<FQuVRCatalogNode>
 												AssetData,
 												asset->ObjectType,
 												asset->PackageUrl,
+												asset->ImageUrl,
 												asset->DisplayName,
 												asset->Texture2Dimage);
-		asset->ImageDownloadDone.Clear();
-		asset->ImageDownloadDone.AddRaw(viewAsset, &FQuVRAssetViewAsset::RefreshImage);
 		FilteredAssetItems.Add(MakeShareable(viewAsset));
 
 		// Create  SQuVRCatlogEntryWidget
-		viewAsset->EntryWidgetRef =
+		viewAsset->EntryWidget =
 			SNew(SQuVRCatlogEntryWidget)
 			.AssetInfo(*viewAsset)
 			.ItemWidth(this, &SQuVRAssetViewWidget::GetTileViewItemWidth)
 			.ThumbnailPadding(TileViewThumbnailPadding);
-		viewAsset->EntryWidgetRef->FileDownloadDone.AddSP(this, &SQuVRAssetViewWidget::UpdataAssetData);
-
-		asset->Initialise();
+		viewAsset->EntryWidget->FileDownloadDone.AddSP(this, &SQuVRAssetViewWidget::UpdataAssetData);
 	}
 
 	RefreshList();
+	CatalogPageNavi->ActivationButton(true);
+	if (false == InHold)
+	{
+		CatalogPageNavi->CalcPageIndex(CurrentNode);
+	}
 }
 
 TSharedRef<ITableRow> SQuVRAssetViewWidget::MakeTileViewWidget(TSharedPtr<FQuVRAssetViewAsset> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
@@ -428,10 +442,10 @@ TSharedRef<ITableRow> SQuVRAssetViewWidget::MakeTileViewWidget(TSharedPtr<FQuVRA
 		.Style(FEditorStyle::Get(), "ContentBrowser.AssetListView.TableRow")
 		.Cursor(bAllowDragging ? EMouseCursor::GrabHand : EMouseCursor::Default)
 		.OnDragDetected(this, &SQuVRAssetViewWidget::OnDraggingAssetItem);
-
-
-	TableRowWidget->SetContent(AssetItem->EntryWidgetRef.ToSharedRef());
-
+	if (AssetItem->EntryWidget.IsValid())
+	{
+		TableRowWidget->SetContent(AssetItem->EntryWidget.ToSharedRef());
+	}
 	return TableRowWidget.ToSharedRef();
 }
 
@@ -543,13 +557,10 @@ void SQuVRAssetViewWidget::OnListMouseButtonClick(TSharedPtr<FQuVRAssetViewAsset
 {
 	if (AssetItem.IsValid())
 	{
-		if (AssetItem->EntryWidgetRef.IsValid())
+		if (AssetItem->EntryWidget.IsValid())
 		{
-			AssetItem->EntryWidgetRef->CheckDownloadAsset();
+			AssetItem->EntryWidget->CheckDownloadAsset();
 		}
-	
-/*	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, AssetItem->DisplayName);*/
-
 	}
 };
 

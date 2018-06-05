@@ -26,7 +26,7 @@ void FQuVRCatalogStyleSettings::Shutdown()
 
 FName FQuVRCatalogStyleSettings::GetStyleSetName()
 {
-	static FName StyleSetName(TEXT("QuVRGlobalSettingsStyle"));
+	static FName StyleSetName(TEXT("QuVRCatalogStyleSettings"));
 	return StyleSetName;
 }
 

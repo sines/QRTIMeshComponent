@@ -95,74 +95,9 @@ UQuVRCatalogAssetInfo::UQuVRCatalogAssetInfo() :Texture2Dimage(NULL)
 	ImageUrl = "0";
 	PackageUrl = "0";
 	Size = 0;
-	IsImageDownload = QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Start;
-	AsyncTaskDownloadImage = nullptr;
 	Texture2Dimage = NULL;
-	ImageEventHandleList.Empty();
 }
+
 UQuVRCatalogAssetInfo::~UQuVRCatalogAssetInfo()
 {
-}
-
-void UQuVRCatalogAssetInfo::AddImageEventHandle(FDelegateHandle handle)
-{
-	ImageEventHandleList.Add(handle);
-}
-
-void UQuVRCatalogAssetInfo::ClearImageEventHandle()
-{
-	for (auto handle : ImageEventHandleList)
-	{
-		ImageDownloadDone.Remove(handle);
-	}
-	ImageEventHandleList.Reset();
-}
-
-void UQuVRCatalogAssetInfo::Initialise()
-{
-	// init load texture
-	if (QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Start == IsImageDownload)
-	{
-		if (UQuVRUtils::CheckTempTextureExists(ImageUrl))
-		{
-			DownloadImage(UQuVRUtils::LoadDyna2DPath(UQuVRUtils::GetSavedTempTextureDir(ImageUrl)));
-		}
-	}
-
-	// else init download 
-	if (QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Finish == IsImageDownload)
-	{
-		if (ImageDownloadDone.IsBound())
-		{
-			ImageDownloadDone.Broadcast(Texture2Dimage);
-		}
-	}
-	else if (QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Start == IsImageDownload)
-	{
-		AsyncTaskDownloadImage = UQuVRFileDownloader::DownloadImageLoader(ImageUrl);
-		AsyncTaskDownloadImage->OnDownloadImageRes.AddUObject(this, &UQuVRCatalogAssetInfo::DownloadImage);
-		IsImageDownload = QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Downloading;
-	}
-}
-
-void UQuVRCatalogAssetInfo::DownloadImage(UTexture2DDynamic* texture2D)
-{
-	IsImageDownload = QuVREditorMode::EQuVRCatalogDownloadState::QuVR_Catalog_Finish;
-	Texture2Dimage = texture2D;
-	Texture2Dimage->AddToRoot();
-	ImageDownloadDone.Broadcast(texture2D);
-}
-
-void UQuVRCatalogAssetInfo::ClearDownloadState()
-{
-	if (AsyncTaskDownloadImage)
-	{
-		AsyncTaskDownloadImage->ClearDownloadState();
-	}
-	ImageDownloadDone.Clear();
-}
-
-void UQuVRCatalogAssetInfo::DownloadDone(int32 code)
-{
-	ClearDownloadState();
 }

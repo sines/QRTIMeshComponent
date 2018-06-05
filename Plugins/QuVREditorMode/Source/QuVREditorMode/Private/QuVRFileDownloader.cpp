@@ -56,12 +56,7 @@ UQuVRFileDownloader::~UQuVRFileDownloader()
 UQuVRFileDownloader::UQuVRFileDownloader(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer), HttpRequest(nullptr)
 {
-	HttpRequest = FHttpModule::Get().CreateRequest();
 	IsDownload = false;
-	if (HasAnyFlags(RF_ClassDefaultObject) == false)
-	{
-		AddToRoot();
-	}
 }
 
 UQuVRFileDownloader* UQuVRFileDownloader::DownloadZipLoader(FString URL)
@@ -88,9 +83,7 @@ void UQuVRFileDownloader::StartDownloadImageFile(FString URL)
 	if (false == IsDownload)
 	{
 		// Create the Http request and add to pending request list
-		HttpRequest->OnProcessRequestComplete().Unbind();
-		HttpRequest->OnRequestProgress().Unbind();
-		HttpRequest->CancelRequest();
+		HttpRequest = FHttpModule::Get().CreateRequest();
 		HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleImageRequestComplete);
 		HttpRequest->SetURL(URL);
 		HttpRequest->SetVerb(TEXT("GET"));
@@ -98,7 +91,7 @@ void UQuVRFileDownloader::StartDownloadImageFile(FString URL)
 	}
 	#else
 		// On the server we don't execute fail or success we just don't fire the request.
-		RemoveFromRoot();
+//		RemoveFromRoot();
 	#endif
 
 }
@@ -110,22 +103,17 @@ void UQuVRFileDownloader::StartDownloadZipFile(FString URL)
 	IsDownload = UQuVRUtils::CheckFileExists(URL);
 	if (false == IsDownload)
 	{
-		if (HttpRequest.IsValid())
-		{
-			// Create the Http request and add to pending request list
-			HttpRequest->OnProcessRequestComplete().Unbind();
-			HttpRequest->OnRequestProgress().Unbind();
-			HttpRequest->CancelRequest();
-			HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleZipRequestComplete);
-			HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
-			HttpRequest->SetURL(URL);
-			HttpRequest->SetVerb(TEXT("GET"));
-			HttpRequest->ProcessRequest();
-		}
+		// Create the Http request and add to pending request list
+		HttpRequest = FHttpModule::Get().CreateRequest();
+		HttpRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRFileDownloader::HandleZipRequestComplete);
+		HttpRequest->OnRequestProgress().BindUObject(this, &UQuVRFileDownloader::HandleRequestProgress);
+		HttpRequest->SetURL(URL);
+		HttpRequest->SetVerb(TEXT("GET"));
+		HttpRequest->ProcessRequest();
 	}
 #else
 	// On the server we don't execute fail or success we just don't fire the request.
-	RemoveFromRoot();
+//	RemoveFromRoot();
 #endif
 
 }
@@ -133,7 +121,7 @@ void UQuVRFileDownloader::StartDownloadZipFile(FString URL)
 void UQuVRFileDownloader::HandleZipRequestComplete(FHttpRequestPtr HttpRequest, FHttpResponsePtr HttpResponse, bool bSucceeded)
 {
 #if !UE_SERVER
-	RemoveFromRoot();
+//	RemoveFromRoot();
 
 	if (bSucceeded && HttpResponse.IsValid() && HttpResponse->GetContentLength() > 0)
 	{
@@ -161,7 +149,7 @@ void UQuVRFileDownloader::HandleImageRequestComplete(FHttpRequestPtr HttpRequest
 {
 #if !UE_SERVER
 
-	RemoveFromRoot();
+//	RemoveFromRoot();
 
 	if (bSucceeded && HttpResponse.IsValid() && HttpResponse->GetContentLength() > 0)
 	{
@@ -192,11 +180,6 @@ void UQuVRFileDownloader::HandleImageRequestComplete(FHttpRequestPtr HttpRequest
 							{
 								WriteRawToTexture_RenderThread(TextureResource, RawData);
 							});
-						FString tempDir = UQuVRUtils::GetSavedTempTextureDir(FileURL);
-						if (tempDir.Len() > 8)
-						{
-							FFileHelper::SaveArrayToFile(ImageWrapper->GetCompressed(100), *tempDir);
-						}
 						if (OnDownloadImageRes.IsBound())
 						{
 							OnDownloadImageRes.Broadcast(Texture);
@@ -205,11 +188,19 @@ void UQuVRFileDownloader::HandleImageRequestComplete(FHttpRequestPtr HttpRequest
 						{
 							OnDownloadImageSuccess.Broadcast(Texture);
 						}
-						IsDownload = true;
 						if (HttpResponse.IsValid() && OnDownloadFileDone.IsBound())
 						{
 							OnDownloadFileDone.Broadcast(HttpResponse->GetResponseCode());
 						}
+
+#if 1
+						FString tempDir = UQuVRUtils::GetSavedTempTextureDir(FileURL);
+						if (tempDir.Len() > 8)
+						{
+							FFileHelper::SaveArrayToFile(ImageWrapper->GetCompressed(100), *tempDir);
+						}
+#endif
+						IsDownload = true;
 						return;
 					}
 				}
@@ -243,14 +234,21 @@ void UQuVRFileDownloader::ClearDownloadState()
 {
 	if (HttpRequest.IsValid())
 	{
-		HttpRequest->OnProcessRequestComplete().Unbind();
-		HttpRequest->OnRequestProgress().Unbind();
 		HttpRequest->CancelRequest();
 	}
 	OnUlpdataProegress.Clear();
-	OnDownloadImageSuccess.Clear();
-	OnDownloadImageFail.Clear();
-	OnDownloadImageRes.Clear();
 
-	RemoveFromRoot();
+	if (OnDownloadImageSuccess.IsBound())
+	{
+		OnDownloadImageSuccess.Clear();
+	}
+
+	if (OnDownloadImageFail.IsBound())
+	{
+		OnDownloadImageFail.Clear();
+	}
+	if (OnDownloadImageRes.IsBound())
+	{
+		OnDownloadImageRes.Clear();
+	}
 }

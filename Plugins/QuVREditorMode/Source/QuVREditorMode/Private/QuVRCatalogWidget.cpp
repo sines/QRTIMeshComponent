@@ -40,8 +40,13 @@ void SQuVRCatalogWidget::ClearAssetList()
 	viewWidget->ClearSourceItems();
 }
 
+void SQuVRCatalogWidget::ClearPageTool()
+{
+	viewWidget->ClearPage();
+}
+
 /* Group Tab Asset List*/
-void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogNode > node)
+void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogNode > node,bool InHold)
 {
 	ClearAssetList();
 
@@ -56,7 +61,7 @@ void SQuVRCatalogWidget::CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogN
 		NFlip = !NFlip;
 	}
 
-	viewWidget->RefreshSourceItems(node.ToSharedRef());
+	viewWidget->RefreshSourceItems(node.ToSharedRef(), InHold);
 }
 
 
@@ -72,7 +77,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	[
 		
 		SNew(SVerticalBox)
-		#if 1
+		#if 0
 		// Create ResGategory
 		+SVerticalBox::Slot().AutoHeight()
 		[
@@ -100,7 +105,7 @@ void SQuVRCatalogWidget::Construct(const FArguments& InArgs)
 	];
 
 	UQuVRCatalogDataManager::GetInstance()->SetWidget(SharedThis(this));
-	UQuVRCatalogDataManager::GetInstance()->GetAllCatalogNodeListFromUrl();
+	UQuVRCatalogDataManager::GetInstance()->GetCatalogListACountFromUrl();
 	bNeedsUpdate = true;
 }
 

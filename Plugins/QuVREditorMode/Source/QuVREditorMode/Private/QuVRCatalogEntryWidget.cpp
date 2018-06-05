@@ -26,54 +26,74 @@
 #include "QuVRUtils.h"
 #include "QuVRAssetFactoryModel.h"
 #include "QuVRCatalogStyleSettings.h"
-
+#include "QuVRAssetDownloader.h"
+#include "QuVRImageDownloaderManager.h"
+#include "QuVRAssetDownloaderManager.h"
+#include "Runtime/Online/HTTP/Public/HttpManager.h"
 #if !UE_BUILD_SHIPPING
 
 const FString DownloadTopImagePath= FPaths::GamePluginsDir() + FString(TEXT("QuVREditorMode\\Resources\\DownLoad.png"));
 const FString DownloadBackImagePath = FPaths::GamePluginsDir() + FString(TEXT("QuVREditorMode\\Resources\\refresh.png"));
 bool ImageValid = true;
 
-float InverseLerp(float A, float B, float Value)
+//////////////////////////////////////////////////////////////////////////
+// Async Task
+
+class FDownloadAssetAsyncTask : public FNonAbandonableTask
 {
-	if (FMath::IsNearlyEqual(A, B))
+	friend class FAutoDeleteAsyncTask<FDownloadAssetAsyncTask>;
+	friend class FAsyncTask<FDownloadAssetAsyncTask>;
+
+	TSharedPtr<SQuVRCatlogEntryWidget> AssetAsyncTask;
+
+	FDownloadAssetAsyncTask(TSharedPtr<SQuVRCatlogEntryWidget> InCatlogEntryWidget)
+		: AssetAsyncTask(InCatlogEntryWidget)
 	{
-		if (Value < A)
+	}
+
+	void DoWork()
+	{
+		if (AssetAsyncTask.IsValid())
 		{
-			return 0;
-		}
-		else
-		{
-			return 1;
+			AssetAsyncTask->StartDownloadAsset();
 		}
 	}
-	else
+
+	FORCEINLINE TStatId GetStatId() const
 	{
-		return ((Value - A) / (B - A));
+		RETURN_QUICK_DECLARE_CYCLE_STAT(FDownloadAssetAsyncTask, STATGROUP_ThreadPoolAsyncTasks);
 	}
-}
+};
+
+
 SQuVRCatlogEntryWidget::~SQuVRCatlogEntryWidget()
 {
-	AssetInfo.EntryWidgetRef.Reset();
-	AssetInfo.EntryWidgetRef = nullptr;
+	if (Texture2Dimage)
+	{
+		Texture2Dimage->RemoveFromRoot();
+	}
+	
+	if (AssetInfo.EntryWidget.IsValid())
+	{
+		AssetInfo.EntryWidget.Reset();
+	}
 }
 
 void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 {
-	// const value
+	// Init value
+	AsyncImageDownloader = nullptr;
+	AsyncTaskDownloadFile = nullptr;
 	Texture2Dimage = nullptr;
 	bIsPressed = false;
-	bIsDownloadImage = false;
-	bIsDownloadAsset = false;
 	bDraggedOver = false;
 	PressedImage = new FSlateBrush();
 	PlaceableItem = NULL;
-	AsyncTaskDownloadFile = NULL;
 	ProgressRate = 0;
 	downloadProgressBar = NULL;
 	downloadTopImage = NULL;
 	ItemWidth = 100;
 	ThumbnailPadding = 5;
-	DownloadFileState = EntryDownLoadState::Start;
 
 	// init Value
 	AssetInfo = InArgs._AssetInfo;
@@ -172,6 +192,8 @@ void SQuVRCatlogEntryWidget::Construct(const FArguments& InArgs)
 			]
 		];
 
+	// init AsyncTask
+	DownloadImage(AssetInfo.ImageUrl);
 	// Refresh Texture
 	if (AssetInfo.UITexture)
 	{
@@ -186,14 +208,18 @@ const FSlateBrush* SQuVRCatlogEntryWidget::GetBorderImage() const
 
 void SQuVRCatlogEntryWidget::CheckDownloadAsset()
 {
-	if (false == bIsDownloadAsset)
+	CreateDownloadAsset(AssetInfo.PackageUrl);
+	if(AsyncTaskDownloadFile.IsValid())
 	{
-		if (EntryDownLoadState::Start == DownloadFileState)
+		if (false == AsyncTaskDownloadFile->GetIsDownloadAsset())
 		{
-			InitPlaceableItem();
-			DownloadAsset();
-		}
+			if (FileDownLoadState::Start == AsyncTaskDownloadFile->GetDownLoadState())
+			{
+				InitPlaceableItem();
+				StartDownloadAsset();
+			}
 
+		}
 	}
 }
 
@@ -203,8 +229,6 @@ void SQuVRCatlogEntryWidget::InitPlaceableItem()
 	{
 		if (UQuVRUtils::CheckFileExists(AssetInfo.PackageUrl))
 		{
-			bIsDownloadAsset = true;
-			DownloadFileState = EntryDownLoadState::Finish;
 			static TOptional<FLinearColor> BasicShapeColorOverride;
 
 			if (!BasicShapeColorOverride.IsSet())
@@ -252,6 +276,7 @@ void SQuVRCatlogEntryWidget::RefreshWidget(UTexture2DDynamic* texture2D)
 	if (texture2D)
 	{
 		Texture2Dimage = texture2D;
+		Texture2Dimage->AddToRoot();
 		FSlateBrush* AssetImage = new FSlateBrush();
 		AssetImage->ImageSize.X = texture2D->GetSurfaceWidth();
 		AssetImage->ImageSize.Y = texture2D->GetSurfaceHeight();
@@ -261,42 +286,64 @@ void SQuVRCatlogEntryWidget::RefreshWidget(UTexture2DDynamic* texture2D)
 		buttonstyle->SetPressed(*AssetImage);
 		buttonstyle->SetHovered(*AssetImage);
 		PressedImage = AssetImage;
-		bIsDownloadImage = true;
+	}
+	AsyncTaskDownloadFile = UQuVRAssetDownloaderManager::GetInstance()->GetAssetDownloader(AssetInfo.PackageUrl);
+	if (AsyncTaskDownloadFile.IsValid())
+	{
+		AsyncTaskDownloadFile->OnDownloadAssetDone.Clear();
+		AsyncTaskDownloadFile->OnDownloadAssetDone.AddSP(this, &SQuVRCatlogEntryWidget::OnDownloadDone);
 	}
 }
-
-FReply SQuVRCatlogEntryWidget::DownloadAsset()
+FReply SQuVRCatlogEntryWidget::StartDownloadAsset()
 {
-	if (false == AssetInfo.Data.IsValid())
+	if (AsyncTaskDownloadFile.IsValid())
 	{
-		FString URL = AssetInfo.PackageUrl;
-		if (5 <URL.Len())
+		if (AsyncTaskDownloadFile->GetDownLoadState()==FileDownLoadState::Start)
 		{
-			if (!UQuVRUtils::CheckFileExists(URL))
-			{
-				if (AsyncTaskDownloadFile.IsValid())
-				{
-					AsyncTaskDownloadFile->StartDownloadZipFile(URL);
-				}
-				else
-				{
-					
-					AsyncTaskDownloadFile = UQuVRFileDownloader::DownloadZipLoader(URL);
-					AsyncTaskDownloadFile->OnDownloadFileDone.AddSP(this, &SQuVRCatlogEntryWidget::OnDownloadDone);
-					AsyncTaskDownloadFile->OnUlpdataProegress.AddSP(this, &SQuVRCatlogEntryWidget::OnDownloadProegress);
+			AsyncTaskDownloadFile->DownloadAssetFile(AssetInfo.PackageUrl);
+		}
+	}
+	return FReply::Handled();
+}
 
-				}
+FReply SQuVRCatlogEntryWidget::CreateDownloadAsset(FString URL)
+{
+	if (false == AsyncTaskDownloadFile.IsValid())
+	{
+		AsyncTaskDownloadFile = UQuVRAssetDownloaderManager::GetInstance()->CreateAssetDownloader(URL);
+		AsyncTaskDownloadFile->OnDownloadAssetDone.Clear();
+		AsyncTaskDownloadFile->OnDownloadAssetDone.AddSP(this, &SQuVRCatlogEntryWidget::OnDownloadDone);
+	}
+	return FReply::Handled();
+}
+
+
+FReply SQuVRCatlogEntryWidget::DownloadImage(FString URL)
+{
+	if (URL.Len() > 8)
+	{
+		AsyncImageDownloader = UQuVRImageDownloaderManager::GetInstance()->CreateImageDownloader(URL);
+		AsyncImageDownloader->OnDownloadImageDone.AddSP(this, &SQuVRCatlogEntryWidget::RefreshWidget);
+
+		if (AsyncImageDownloader.IsValid())
+		{
+			if (AsyncImageDownloader->GetDownLoadState()==FileDownLoadState::Start)
+			{
+				AsyncImageDownloader->DownloadImage(URL);
 			}
 		}
 	}
 	return FReply::Handled();
 }
 
-const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushState() const
+const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushState() const 
 {
-	if (false == bIsDownloadImage)
+	if (AsyncImageDownloader.IsValid())
 	{
-		return fSlateReference.GetIcon();
+		if (false == AsyncImageDownloader->GetIsDownloadImage())
+		{
+			return fSlateReference.GetIcon();
+		}
 	}
 	return PressedImage;
 }
@@ -308,10 +355,14 @@ const FSlateBrush* SQuVRCatlogEntryWidget::GetSlateBrushTop()const
 
 EVisibility SQuVRCatlogEntryWidget::GetIsProgressVisible() const
 {
-	if (DownloadFileState == EntryDownLoadState::InProgress)
+	if (AsyncTaskDownloadFile.IsValid())
 	{
-		return	EVisibility::Visible;
+		if (AsyncTaskDownloadFile->GetDownLoadState() == FileDownLoadState::InProgress)
+		{
+			return	EVisibility::Visible;
+		}
 	}
+
 	return EVisibility::Hidden;
 }
 
@@ -328,14 +379,14 @@ EVisibility SQuVRCatlogEntryWidget::GetIsDownloadeVisible() const
 	return EVisibility::Visible;
 }
 
-void SQuVRCatlogEntryWidget::OnDownloadProegress(int32 ReceivedDataInBytes, int32 TotalDataInBytes, const TArray<uint8>& BinaryData)
-{
-	DownloadFileState = EntryDownLoadState::InProgress;
-	ProgressRate = InverseLerp(0.0f, (float)TotalDataInBytes, (float)ReceivedDataInBytes);
-}
 TOptional< float > SQuVRCatlogEntryWidget::GetProgressBarState() const
 {
+	if (AsyncTaskDownloadFile.IsValid())
+	{
+		return AsyncTaskDownloadFile->GetAssetProgressRate();
+	}
 	return ProgressRate;
+
 }
 
 void SQuVRCatlogEntryWidget::OnDownloadDone(int32 code)
@@ -346,15 +397,15 @@ void SQuVRCatlogEntryWidget::OnDownloadDone(int32 code)
 	if (5 < URL.Len())
 	{
 		if (UQuVRUtils::CheckFileExists(URL))
-		{
-			bIsDownloadAsset = true;
-			DownloadFileState = EntryDownLoadState::Finish;
+		{	
 			FileDownloadDone.Broadcast(filename);
 		}
 	}
-
-	AsyncTaskDownloadFile->ConditionalBeginDestroy();
-	AsyncTaskDownloadFile = NULL;
+	if (AsyncTaskDownloadFile.IsValid())
+	{
+		AsyncTaskDownloadFile->ConditionalBeginDestroy();
+	}
+	AsyncTaskDownloadFile = nullptr;
 }
 
 FOptionalSize SQuVRCatlogEntryWidget::GetThumbnailBoxSize() const

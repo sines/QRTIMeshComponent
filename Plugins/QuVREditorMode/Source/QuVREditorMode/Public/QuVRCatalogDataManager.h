@@ -31,9 +31,12 @@ public:
 	/** Request we're currently processing */
 	static UQuVRCatalogDataManager* GetInstance();
 	void GetAllCatalogNodeListFromUrl();
+	void GetCatalogListACountFromUrl();
 
-	void GetCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalogNode>& node);
+	void GetCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalogNode>& node, int32 skip=0,int32 limit=10);
 	void GetCatalogNodeChildNumFromUrl(TSharedPtr<class SQuVRCatalogPlaneWidget>& plane, TSharedPtr<FQuVRCatalogNode>& node);
+	
+	void HoldCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalogNode>& node, int32 skip = 0, int32 limit = 10);
 
 	TSharedPtr<FQuVRCatalogNode>& GetRootNode() { return RootNode; }
 	TArray<TSharedPtr<FQuVRCatalogNode>>& GetNodeList() { return RootNode->ChildList; }
@@ -43,26 +46,38 @@ private:
 	static const FString CatalogNodeHttpURL;
 	static const FString CatalogAssetHttpURL;
 	static const FString CatalogChildNumHttpURL;
+	static const FString CatalogObjectsCountURL;
 
 	TSharedRef<IHttpRequest> HttpNodeListRequest = FHttpModule::Get().CreateRequest();
 	TSharedRef<IHttpRequest> HttpAssetListRequest = FHttpModule::Get().CreateRequest();
 	TSharedRef<IHttpRequest> HttpChildNumRequest = FHttpModule::Get().CreateRequest();
+	TSharedRef<IHttpRequest> HttpObjectCountRequest = FHttpModule::Get().CreateRequest();
 
 	int32 ResponseCode;
 
 	FString ResponseContent;
 
+	// Clear http state
+	void ClearHttpNodeListRequest();
+	void ClearHttpAssetListRequest();
+	void ClearHttpChildNumRequest();
+
+	void ClearAssetListWidget();
 	// Process Node Catalog
 	void OnProcessNodeRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	void GenerateNodeCatalog(TSharedRef<FQuVRCatalogNode> node);
 	
 	// Process Asset Catalog
 	void OnProcessAssetRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-	void GenerateAssetCatalog(TSharedRef<FQuVRCatalogNode> node);
+	void GenerateAssetCatalog(TSharedRef<FQuVRCatalogNode> node, bool InHold=false);
 
+	void OnHoldAssetRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	// Process ChildNum Catalog
 	void OnProcessChildNumRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	void ParseNodeAssetChildNum(TSharedPtr<FQuVRCatalogNode> node, TArray<TSharedPtr<FJsonValue>> JsonValue);
+
+	//Process ObjectsCountURL Catalog
+	void OnProcessObjectsCountRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 private:
 	void Initial();
 
@@ -75,16 +90,18 @@ private:
 	void ParseAssetItemData(TSharedPtr<FQuVRCatalogNode> node, TSharedPtr<FJsonValue> JsonValue);
 	void ParseAssetListData(TArray<TSharedPtr<FJsonValue>> JsonValue);
 public:
-	
+	TSharedPtr<FQuVRCatalogNode> GetCurrentNode() { return CurrentNode; };
 private:
 	TSharedPtr<FQuVRCatalogNode>  RootNode;
 	TSharedPtr<FQuVRCatalogNode> CurrentNode;
 
 	TSharedPtr<FQuVRCatalogNode>  SeekNode;
-//	TArray<FQuVRCatalogNode> NodeList;
 	static UQuVRCatalogDataManager* StaticInstance;
 	TSharedPtr<SQuVRCatalogWidget> Catalogwidget;
 	TSharedPtr<SQuVRCatalogPlaneWidget> CatalogPlane;
+
+protected:
+	TMap<FString, int32> CatalogObjectsCount;
 public:
 	FRequestAssetDataDoneDelegate OnRequestAssetDataDone;
 	FRequestNodeDataDoneDelegate OnRequestNodeDataDone;

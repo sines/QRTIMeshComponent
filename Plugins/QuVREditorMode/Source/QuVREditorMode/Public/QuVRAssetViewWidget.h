@@ -20,6 +20,7 @@ struct FQuVRAssetViewAsset : public FAssetViewItem
 {
 	int32 ObjectType;
 	FString	PackageUrl;
+	FString	ImageUrl;
 	FString DisplayName;
 	bool IsAssetExists;
 	/** The asset registry data associated with this item */
@@ -29,12 +30,12 @@ struct FQuVRAssetViewAsset : public FAssetViewItem
 	/** Show UI TEXTURE */
 	UTexture2DDynamic* UITexture;
 
-	TSharedPtr<class SQuVRCatlogEntryWidget> EntryWidgetRef= nullptr;
+	TSharedPtr<class SQuVRCatlogEntryWidget> EntryWidget= nullptr;
 
 public:
 	~FQuVRAssetViewAsset()
 	{
-		EntryWidgetRef = nullptr;
+		EntryWidget = nullptr;
 		UITexture = nullptr;
 	}
 
@@ -43,31 +44,34 @@ public:
 		Data = AssetData.Data;
 		ObjectType = AssetData.ObjectType;
 		PackageUrl = AssetData.PackageUrl;
+		ImageUrl = AssetData.ImageUrl;
 		DisplayName = AssetData.DisplayName;
 		CustomColumnData = AssetData.CustomColumnData;
 		UITexture = AssetData.UITexture;
-		EntryWidgetRef = AssetData.EntryWidgetRef;
+		EntryWidget = AssetData.EntryWidget;
 		IsAssetExists = AssetData.IsAssetExists;
 	}
 
 	explicit FQuVRAssetViewAsset() :ObjectType(-1), 
 									PackageUrl(TEXT("0")),
+									ImageUrl(TEXT("0")),
 									DisplayName(TEXT("0")), 
 									Data(FAssetData()), 
 									UITexture(nullptr),
 									IsAssetExists(false),
-									EntryWidgetRef(nullptr)
+									EntryWidget(nullptr)
 	{
 	};
 
-	explicit FQuVRAssetViewAsset(const FAssetData& AssetData, int32 Objtype=-1, FString url = FString(TEXT("0")), FString name=FString(TEXT("0")), UTexture2DDynamic* texture = nullptr)
-		:ObjectType(Objtype), 
-		PackageUrl(url), 
-		Data(AssetData), 
-		DisplayName(name),
-		UITexture(texture), 
+	explicit FQuVRAssetViewAsset(const FAssetData& InAssetData, int32 InObjtype=-1, FString InPackageURL = FString(TEXT("0")), FString InImageURL = FString(TEXT("0")), FString InName=FString(TEXT("0")), UTexture2DDynamic* InTexture = nullptr)
+		:ObjectType(InObjtype),
+		PackageUrl(InPackageURL),
+		ImageUrl(InImageURL),
+		Data(InAssetData),
+		DisplayName(InName),
+		UITexture(InTexture), 
 		IsAssetExists(false),
-		EntryWidgetRef(nullptr)
+		EntryWidget(nullptr)
 	{
 	}
 
@@ -135,7 +139,8 @@ public:
 
 	/** Regenerates the FilteredAssetItems list from the AssetItems list */
 	void ClearSourceItems();
-	void RefreshSourceItems(const TSharedRef<class FQuVRCatalogNode> node);
+	void ClearPage();
+	void RefreshSourceItems(const TSharedRef<class FQuVRCatalogNode> node, bool InHold=false);
 	void RefreshList();
 	void UpdataAssetData(FString name);
 	/** Handler for when an asset was created or added to the asset registry */
@@ -195,7 +200,6 @@ public:
 	TSharedPtr<SBorder> ViewContainer;
 	/** The asset view widget */
 	TSharedPtr<SQuVRAssetTileView> TileView;
-	
 	/** Calculates a new filler scale used to adjust the thumbnails to fill empty space. */
 	void CalculateFillScale(const FGeometry& AllottedGeometry);
 	float GetTileViewItemBaseWidth() const;
@@ -226,5 +230,7 @@ public:
 
 	/*Current Node*/
 	TSharedPtr<FQuVRCatalogNode>	CurrentNode;
+
+	TSharedPtr<class SQuVRCatalogPageNavi> CatalogPageNavi;
 	
 };

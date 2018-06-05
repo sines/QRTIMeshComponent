@@ -10,6 +10,7 @@
 #include "SNotificationList.h"
 #include "QuVRCatalogPlaneWidget.h"
 #include "QuVRCatalogDataManager.h"
+#include "QuVRImageDownloaderManager.h"
 
 #if !UE_BUILD_SHIPPING
 
@@ -26,7 +27,7 @@ void SQuVRCatalogNodeButton::Construct(const SQuVRCatalogNodeButton::FArguments&
 	BkImage = InDelcaration._BkImage;
 	ParentWidget = InDelcaration._ParentWidget;
 	FString name = TreeItem->NodeData.DisplayName;
-	if (TreeItem->NodeData.ZOrder > 1)
+	if (true)//TreeItem->NodeData.ZOrder > 1)
 	{
 		name +=  FString(TEXT("(")) + FString::FromInt(TreeItem->NodeData.ChildNum) + FString(TEXT(")"));
 	}
@@ -80,6 +81,10 @@ this->ChildSlot
 void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
 {
 	OnCheckStateChanged.ExecuteIfBound(NewState);
+	if (ECheckBoxState::Unchecked == NewState)
+	{
+		return;
+	}
 #if 0 // SHOW DEBUG INFO
 	// The state of the check box changed.  Execute the delegate to notify users
 	FNotificationInfo Info(FText::FromString(TreeItem->NodeData.DisplayName+FString::FromInt(TreeItem->NodeData.ZOrder)));//LOCTEXT("TestNotification01", "OnMouseButtonDown"));
@@ -87,12 +92,11 @@ void SQuVRCatalogNodeButton::OnSectionButtonChanged(ECheckBoxState NewState)
 #endif
 
 	int32 ZOrder = TreeItem->NodeData.ZOrder;
-
 	switch (ZOrder)
 	{
 	case PrimaryListPanel:
-		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeChildNumFromUrl(ParentWidget,TreeItem);
-//		ParentWidget->AddGroupTabPlane(TreeItem);
+		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeChildNumFromUrl(ParentWidget, TreeItem);
+		//ParentWidget->AddGroupTabPlane(TreeItem);
 		break;
 	case SectionListPanel:
 		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeAssetFromUrl(TreeItem);

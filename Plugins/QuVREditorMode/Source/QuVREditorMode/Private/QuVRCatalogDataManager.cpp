@@ -9,7 +9,7 @@
 const FString UQuVRCatalogDataManager::CatalogNodeHttpURL = FString(TEXT("http://dev-vrservice.jtl3d.com/api/VRCatalog/GetCatalogsByType?type=modelCatalog"));
 const FString UQuVRCatalogDataManager::CatalogAssetHttpURL = FString(TEXT("http://dev-vrservice.jtl3d.com/api/VRCatalog/SearchVRObjects"));
 const FString UQuVRCatalogDataManager::CatalogChildNumHttpURL = FString(TEXT("http://dev-vrservice.jtl3d.com/api/VRCatalog/GetVRObjectsCount?id="));
-
+const FString UQuVRCatalogDataManager::CatalogObjectsCountURL = FString(TEXT("http://dev-vrservice.jtl3d.com/api/VRCatalog/GetVRObjectsCount"));
 //////////////////////////////////////////////////////////////////////////
 /**UQuVRCatalogDataManager*/
 //////////////////////////////////////////////////////////////////////////
@@ -20,20 +20,53 @@ UQuVRCatalogDataManager::UQuVRCatalogDataManager():CurrentNode(nullptr), SeekNod
  
 UQuVRCatalogDataManager::~UQuVRCatalogDataManager()
 {
-	if (HttpNodeListRequest->DoesSharedInstanceExist())
-	{
-		HttpNodeListRequest->OnProcessRequestComplete().Unbind();
-		HttpNodeListRequest->OnRequestProgress().Unbind();
-		HttpNodeListRequest->CancelRequest();
-	}
-	if (HttpAssetListRequest->DoesSharedInstanceExist())
-	{
-		HttpAssetListRequest->OnProcessRequestComplete().Unbind();
-		HttpAssetListRequest->OnRequestProgress().Unbind();
-		HttpAssetListRequest->CancelRequest();
-	}
+	ClearHttpNodeListRequest();
+	ClearHttpAssetListRequest();
+	ClearHttpChildNumRequest();
 }
 
+void UQuVRCatalogDataManager::OnHoldAssetRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	
+	// Check we have a response and save response code as int32
+	if (Response.IsValid())
+	{
+		ResponseCode = Response->GetResponseCode();
+	}
+
+	// Check we have result to process futher
+	if (!bWasSuccessful || !Response.IsValid())
+	{
+		return;
+	}
+
+	// Save response data as a string	
+	ResponseContent = Response->GetContentAsString();
+#if 0 // Read Local json
+	FString FileName = FPaths::GameDir() + FString(TEXT("uuu.Json"));
+	FFileHelper::SaveStringToFile(ResponseContent + FString(TEXT("{end}")), *(FileName));
+
+#endif
+	// Analyze Json Data
+	//Read Json Data
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<> > JsonReader = TJsonReaderFactory<>::Create(ResponseContent);
+	bool bResult = FJsonSerializer::Deserialize(JsonReader, JsonObject);
+	check(bResult);
+	bResult = JsonObject.IsValid();
+	check(bResult);
+
+	TArray<TSharedPtr<FJsonValue>>TypeData = JsonObject->GetArrayField(TEXT("items"));
+
+	ParseAssetListData(TypeData);
+	// holdon page
+	GenerateAssetCatalog(CurrentNode.ToSharedRef(),true);
+	// OnRequset Data Done
+	if (OnRequestAssetDataDone.IsBound())
+	{
+		OnRequestAssetDataDone.Broadcast(this);
+	}
+}
 
 void UQuVRCatalogDataManager::OnProcessAssetRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
@@ -68,8 +101,19 @@ void UQuVRCatalogDataManager::OnProcessAssetRequestComplete(FHttpRequestPtr Requ
 	TArray<TSharedPtr<FJsonValue>>TypeData = JsonObject->GetArrayField(TEXT("items"));
 
 	ParseAssetListData(TypeData);
+
+	// page tool
+	if (Catalogwidget.IsValid())
+	{
+		Catalogwidget->ClearPageTool();
+	}
+	GenerateAssetCatalog(CurrentNode.ToSharedRef());
 	// OnRequset Data Done
-	OnRequestAssetDataDone.Broadcast(this);
+	if (OnRequestAssetDataDone.IsBound())
+	{
+		OnRequestAssetDataDone.Broadcast(this);
+	}
+	
 }
 
 void UQuVRCatalogDataManager::OnProcessChildNumRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
@@ -98,7 +142,11 @@ void UQuVRCatalogDataManager::OnProcessChildNumRequestComplete(FHttpRequestPtr R
 	check(bResult);
 	TArray<TSharedPtr<FJsonValue>>TypeData = JsonObject->GetArrayField(TEXT("items"));
 	ParseNodeAssetChildNum(SeekNode, TypeData);
-
+	// page tool
+	if (Catalogwidget.IsValid())
+	{
+		Catalogwidget->ClearPageTool();
+	}
 	if (CatalogPlane.IsValid())
 	{
 		CatalogPlane->AddGroupTabPlane(SeekNode);
@@ -178,13 +226,11 @@ void UQuVRCatalogDataManager::ParseAssetListData(TArray<TSharedPtr<FJsonValue>> 
 {
 	if (CurrentNode.IsValid())
 	{
-		//CurrentNode->ClearChildAssetlist();
+		CurrentNode->ClearChildAssetlist();
 		for (auto Value : JsonValue)
 		{
 			ParseAssetItemData(CurrentNode,Value);
 		}
-
-		 GenerateAssetCatalog(CurrentNode.ToSharedRef());
 	}
 }
 
@@ -223,14 +269,46 @@ void UQuVRCatalogDataManager::ParseAssetItemData(TSharedPtr<FQuVRCatalogNode> no
 
 }
 
+void UQuVRCatalogDataManager::ClearHttpNodeListRequest()
+{
+	if (HttpNodeListRequest->DoesSharedInstanceExist())
+	{
+		HttpNodeListRequest->CancelRequest();
+		HttpNodeListRequest->OnProcessRequestComplete().Unbind();
+		HttpNodeListRequest->OnRequestProgress().Unbind();
+		HttpNodeListRequest->CancelRequest();
+	}
+}
+
+void UQuVRCatalogDataManager::ClearHttpAssetListRequest()
+{
+	if (HttpAssetListRequest->DoesSharedInstanceExist())
+	{
+		HttpAssetListRequest->OnProcessRequestComplete().Unbind();
+		HttpAssetListRequest->OnRequestProgress().Unbind();
+		HttpAssetListRequest->CancelRequest();
+		HttpAssetListRequest->CancelRequest();
+	}
+}
+
+void UQuVRCatalogDataManager::ClearHttpChildNumRequest()
+{
+	if (HttpChildNumRequest->DoesSharedInstanceExist())
+	{
+		HttpChildNumRequest->CancelRequest();
+		HttpChildNumRequest->OnProcessRequestComplete().Unbind();
+		HttpChildNumRequest->OnRequestProgress().Unbind();
+		HttpChildNumRequest->CancelRequest();
+	}
+}
 
 void UQuVRCatalogDataManager::GetAllCatalogNodeListFromUrl()
 {
 	FString TrimmedUrl = CatalogNodeHttpURL;
 	TrimmedUrl.Trim();
 	TrimmedUrl.TrimTrailing();
-	HttpNodeListRequest->OnProcessRequestComplete().Unbind();
-	HttpNodeListRequest->CancelRequest();
+	ClearHttpNodeListRequest();
+	ClearAssetListWidget();
 	HttpNodeListRequest->SetURL(TrimmedUrl);
 	HttpNodeListRequest->SetVerb(TEXT("GET"));
 	HttpNodeListRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
@@ -238,7 +316,6 @@ void UQuVRCatalogDataManager::GetAllCatalogNodeListFromUrl()
 	HttpNodeListRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRCatalogDataManager::OnProcessNodeRequestComplete);
 	// Execute the request
 	HttpNodeListRequest->ProcessRequest();
-
 	// Clear NodeData
 	RootNode->ClearAllData();
 }
@@ -257,8 +334,8 @@ void UQuVRCatalogDataManager::GetCatalogNodeChildNumFromUrl(TSharedPtr<SQuVRCata
 		FString TrimmedUrl = CatalogChildNumHttpURL + node->NodeData.Id;
 		TrimmedUrl.Trim();
 		TrimmedUrl.TrimTrailing();
-		HttpChildNumRequest->OnProcessRequestComplete().Unbind();
-		HttpChildNumRequest->CancelRequest();
+		ClearHttpChildNumRequest();
+		ClearAssetListWidget();
 		HttpChildNumRequest->SetURL(TrimmedUrl);
 		HttpChildNumRequest->SetVerb(TEXT("GET"));
 		HttpChildNumRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
@@ -269,22 +346,21 @@ void UQuVRCatalogDataManager::GetCatalogNodeChildNumFromUrl(TSharedPtr<SQuVRCata
 	}
 }
 
-void UQuVRCatalogDataManager::GetCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalogNode>& node)
+void UQuVRCatalogDataManager::GetCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalogNode>& node, int32 skip, int32 limit)
 {
-	if(node.IsValid()&& node->ParentNode.IsValid())
+	if (node.IsValid() && node->ParentNode.IsValid())
 	{
 		CurrentNode = node;
 		FString format_CatalogType(TEXT("ModelCatalog"));
 		FString format_MainCatalogID = node->ParentNode->NodeData.Id;
 		FString format_SubCatalogID = node->NodeData.Id;
-		int32 format_skip = 0;
-		int32 format_limit = 100;
-		FString TransientArchetypeString = FString::Printf(TEXT("{\"CatalogType\":\"%s\",\"MainCatalogID\":\"%s\",\"SubCatalogID\":\"%s\",\"skip\":%d,\"limit\":%d}"), *format_CatalogType, *format_MainCatalogID, *format_SubCatalogID, format_skip, format_limit);		
+		int32 format_skip = skip;
+		int32 format_limit = limit;
+		FString TransientArchetypeString = FString::Printf(TEXT("{\"CatalogType\":\"%s\",\"MainCatalogID\":\"%s\",\"SubCatalogID\":\"%s\",\"skip\":%d,\"limit\":%d}"), *format_CatalogType, *format_MainCatalogID, *format_SubCatalogID, format_skip, format_limit);
 		FString TrimmedUrl = CatalogAssetHttpURL;
 		TrimmedUrl.Trim();
 		TrimmedUrl.TrimTrailing();
-		HttpAssetListRequest->OnProcessRequestComplete().Unbind();
-		HttpAssetListRequest->CancelRequest();
+		ClearHttpAssetListRequest();
 		HttpAssetListRequest->SetURL(TrimmedUrl);
 		HttpAssetListRequest->SetVerb(TEXT("POST"));
 		HttpAssetListRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
@@ -294,9 +370,91 @@ void UQuVRCatalogDataManager::GetCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalog
 		// Execute the request
 		HttpAssetListRequest->ProcessRequest();
 	}
+}
+
+void UQuVRCatalogDataManager::HoldCatalogNodeAssetFromUrl(TSharedPtr<FQuVRCatalogNode>& node, int32 skip, int32 limit)
+{
+	if (node.IsValid() && node->ParentNode.IsValid())
+	{
+		CurrentNode = node;
+		FString format_CatalogType(TEXT("ModelCatalog"));
+		FString format_MainCatalogID = node->ParentNode->NodeData.Id;
+		FString format_SubCatalogID = node->NodeData.Id;
+		int32 format_skip = skip;
+		int32 format_limit = limit;
+		FString TransientArchetypeString = FString::Printf(TEXT("{\"CatalogType\":\"%s\",\"MainCatalogID\":\"%s\",\"SubCatalogID\":\"%s\",\"skip\":%d,\"limit\":%d}"), *format_CatalogType, *format_MainCatalogID, *format_SubCatalogID, format_skip, format_limit);
+		FString TrimmedUrl = CatalogAssetHttpURL;
+		TrimmedUrl.Trim();
+		TrimmedUrl.TrimTrailing();
+		ClearHttpAssetListRequest();
+		HttpAssetListRequest->SetURL(TrimmedUrl);
+		HttpAssetListRequest->SetVerb(TEXT("POST"));
+		HttpAssetListRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+		HttpAssetListRequest->SetContentAsString(TransientArchetypeString);
+		// Bind event
+		HttpAssetListRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRCatalogDataManager::OnHoldAssetRequestComplete);
+		// Execute the request
+		HttpAssetListRequest->ProcessRequest();
+	}
+}
+
+void UQuVRCatalogDataManager::GetCatalogListACountFromUrl()
+{
+
+	FString TrimmedUrl = CatalogObjectsCountURL;
+	TrimmedUrl.Trim();
+	TrimmedUrl.TrimTrailing();
+	HttpObjectCountRequest->SetURL(TrimmedUrl);
+	HttpObjectCountRequest->SetVerb(TEXT("GET"));
+	HttpObjectCountRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+	// Bind event
+	HttpObjectCountRequest->OnProcessRequestComplete().BindUObject(this, &UQuVRCatalogDataManager::OnProcessObjectsCountRequestComplete);
+	// Execute the request
+	HttpObjectCountRequest->ProcessRequest();
 
 }
 
+void UQuVRCatalogDataManager::OnProcessObjectsCountRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	// Check we have a response and save response code as int32
+	if (Response.IsValid())
+	{
+		ResponseCode = Response->GetResponseCode();
+	}
+
+	// Check we have result to process futher
+	if (!bWasSuccessful || !Response.IsValid())
+	{
+		return;
+	}
+	CatalogObjectsCount.Empty();
+	// Save response data as a string	
+	ResponseContent = Response->GetContentAsString();
+	// Analyze Json Data
+	//Read Json Data
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<> > JsonReader = TJsonReaderFactory<>::Create(ResponseContent);
+	bool bResult = FJsonSerializer::Deserialize(JsonReader, JsonObject);
+	check(bResult);
+	bResult = JsonObject.IsValid();
+	check(bResult);
+
+	TArray<TSharedPtr<FJsonValue>>JsonValue = JsonObject->GetArrayField(TEXT("items"));
+
+	if (0 < JsonValue.Num())
+	{
+		for (auto item : JsonValue)
+		{
+			TSharedPtr<FJsonObject>TempJsonObject = item->AsObject();
+			FString guid = TempJsonObject->GetStringField(TEXT("ID"));
+			int32 count = TempJsonObject->GetIntegerField(TEXT("Count"));
+			CatalogObjectsCount.Add(guid, count);
+		}
+		UQuVRCatalogDataManager::GetInstance()->GetAllCatalogNodeListFromUrl();
+	}
+
+
+}
 
 void UQuVRCatalogDataManager::ParseNodeItemData(TSharedPtr<FQuVRCatalogNode> node, TSharedPtr<FJsonValue> JsonValue)
 {
@@ -311,6 +469,13 @@ void UQuVRCatalogDataManager::ParseNodeItemData(TSharedPtr<FQuVRCatalogNode> nod
 		item.Description = TempJsonObject->GetStringField(TEXT("Description"));
 		item.OrderNo = TempJsonObject->GetStringField(TEXT("OrderNo"));
 		item.CatalogType = TempJsonObject->GetStringField(TEXT("CatalogType"));
+		
+		if (CatalogObjectsCount.Contains(item.Id))
+		{
+			int32* count = CatalogObjectsCount.Find(item.Id);
+			item.ChildNum = *count;
+		}
+		
 		node->NodeData = item;
 		if (node->ParentNode.IsValid())
 		{
@@ -348,7 +513,7 @@ void UQuVRCatalogDataManager::ParseNodeChildData(TSharedPtr<FQuVRCatalogNode> no
 					node->ChildList.Add(addNode);
 					ParseNodeChildData(addNode, Value);
 				}
-				node->NodeData.ChildNum = node->ChildList.Num();
+			//	node->NodeData.ChildNum = node->ChildList.Num();
 			}
 		}
 }
@@ -362,12 +527,12 @@ void UQuVRCatalogDataManager::GenerateNodeCatalog(TSharedRef<FQuVRCatalogNode> n
 }
 
 
-void UQuVRCatalogDataManager::GenerateAssetCatalog(TSharedRef<FQuVRCatalogNode> node)
+void UQuVRCatalogDataManager::GenerateAssetCatalog(TSharedRef<FQuVRCatalogNode> node, bool InHold)
 {
-	Catalogwidget->ClearAssetList();
 	if (Catalogwidget.IsValid())
 	{
-		Catalogwidget->CreateCatalogGroupTabAssetList(node);
+		Catalogwidget->ClearAssetList();
+		Catalogwidget->CreateCatalogGroupTabAssetList(node,InHold);
 	}
 }
 
@@ -389,5 +554,15 @@ void UQuVRCatalogDataManager::ParseNodeAssetChildNum(TSharedPtr<FQuVRCatalogNode
 			}
 	
 		}
+	}
+}
+
+void UQuVRCatalogDataManager::ClearAssetListWidget()
+{
+	ClearHttpAssetListRequest();
+	if (CurrentNode.IsValid())
+	{
+		CurrentNode->ClearChildAssetlist();
+		GenerateAssetCatalog(CurrentNode.ToSharedRef());
 	}
 }

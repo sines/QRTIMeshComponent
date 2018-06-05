@@ -98,20 +98,6 @@ public:
 	UTexture2DDynamic* Texture2Dimage;
 	FString	PackageUrl;
 	int32 Size;
-
-	QuVREditorMode::EQuVRCatalogDownloadState IsImageDownload;
-	FQuVRDownloadImageC2Delegate ImageDownloadDone;
-private:
-	UQuVRFileDownloader* AsyncTaskDownloadImage;
-	TArray<FDelegateHandle> ImageEventHandleList;
-public:
-	void Initialise();
-	void AddImageEventHandle(FDelegateHandle handle);
-	void ClearImageEventHandle();
-	void DownloadImage(UTexture2DDynamic* texture2D);
-	void DownloadDone(int32 code);
-	void ClearDownloadState();
-
 };
 
 class QUVREDITORMODE_API FQuVRCatalogNode : public FGCObject

@@ -18,11 +18,23 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRDownloadImageC2Delegate, class UTexture
 DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRFileDownloadDoneC2Delegate, int32);
 DECLARE_MULTICAST_DELEGATE_OneParam(FQuVRDownloadFileC2Delegate, FString);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FQuVRFileDownloadUpdateProgressC2Delegate, int32, int32, const TArray<uint8>&);
+
+// Asset Down Load State
+enum class FileDownLoadState : uint8
+{
+	Unknown,
+	Start,
+	Post,
+	InProgress,
+	Finish,
+};
+
 /**
- * 
- */
+*	QuVR File Downloader
+*/
+
 UCLASS()
-class QUVREDITORMODE_API UQuVRFileDownloader : public UBlueprintAsyncActionBase
+class QUVREDITORMODE_API UQuVRFileDownloader :public UObject
 {
 	GENERATED_UCLASS_BODY()
 

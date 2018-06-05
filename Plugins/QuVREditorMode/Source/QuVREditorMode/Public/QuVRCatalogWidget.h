@@ -26,8 +26,9 @@ public:
 	void Construct(const FArguments& InArgs);
 
 public:
-	void CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogNode > node);
+	void CreateCatalogGroupTabAssetList(TSharedPtr<FQuVRCatalogNode > node, bool InHold=false);
 	void ClearAssetList();
+	void ClearPageTool();
 	void CreateGroupGroupTabRoot(TSharedPtr<FQuVRCatalogNode > node);
 private:
 	/** Flag to indicate that we need to update the filtered items array */

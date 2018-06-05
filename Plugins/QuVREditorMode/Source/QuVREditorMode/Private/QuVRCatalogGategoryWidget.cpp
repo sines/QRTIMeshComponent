@@ -66,17 +66,14 @@ public:
 						]
 
 					]
-					
+					/*
 					// Add test button
 					+SHorizontalBox::Slot()
 					.Padding(2)
 					.AutoWidth()
 					[
 						SNew(SButton).Text( LOCTEXT("CatlogResGategory-Jtl4.0", "JTL4.0") )
-						.OnClicked(this, &QuVRCatalogGategoryWidget::TestButtonClicked)
 					]
-/*
-
 					+SHorizontalBox::Slot()
 					.Padding(2)
 					.AutoWidth()
@@ -84,7 +81,8 @@ public:
 						SNew(SButton) .Text( LOCTEXT("CatlogResGategory-HD", "HDPJ") )
 						.OnClicked(this,&QuVRCatalogGategoryWidget::TestButtonClicked)
 					]
-				*/
+					*/
+			
 				]
 			]
 		];
@@ -94,15 +92,14 @@ public:
 //  Attribute
 	FReply RefreshAllButtonClicked()
 	{
-		UQuVRCatalogDataManager::GetInstance()->GetAllCatalogNodeListFromUrl();
+		UQuVRCatalogDataManager::GetInstance()->GetCatalogListACountFromUrl();
 		return FReply::Handled();
 	}
 
 	FReply TestButtonClicked()
 	{
-		FString CurrentPath = FPaths::GameSavedDir();
-		FAssetToolsModule& AssetToolsModule = FModuleManager::Get().LoadModuleChecked<FAssetToolsModule>("AssetTools");
-		AssetToolsModule.Get().ImportAssets(CurrentPath);
+		TSharedPtr<class FQuVRCatalogNode> node = UQuVRCatalogDataManager::GetInstance()->GetRootNode().Get()->ChildList[0];
+		UQuVRCatalogDataManager::GetInstance()->GetCatalogNodeAssetFromUrl(node);
 		return FReply::Handled();
 	}
 	//////////////////////////////////////////////////////////////////////////

@@ -8,14 +8,7 @@ DECLARE_MULTICAST_DELEGATE(EntryWidgetDone);
 struct FPlaceableItem;
 struct FCatalogItem;
 struct FQuVRAssetViewAsset;
-
-enum class EntryDownLoadState : uint8
-{
-	Unknown,
-	Start,
-	InProgress,
-	Finish,
-};
+class UQuVRAssetDownloader;
 
 class SQuVRCatlogEntryWidget
 	: public SCompoundWidget
@@ -40,8 +33,10 @@ public:
 
 	void CheckDownloadAsset();
 	// Void DownLoad Asset.zip
-	FReply DownloadAsset();
+	FReply DownloadImage(FString URL);
 
+	FReply StartDownloadAsset();
+	FReply CreateDownloadAsset(FString URL);
 	/** Show UI TEXTURE */
 	FQuVRDownloadImageC2Delegate ImageDownloadDone;
 	FQuVRDownloadFileC2Delegate FileDownloadDone;
@@ -57,24 +52,21 @@ private:
 	EVisibility GetIsProgressVisible() const;
 	TOptional< float > GetProgressBarState() const;
 	void InitPlaceableItem();
-	void OnDownloadProegress(int32 ReceivedDataInBytes, int32 TotalDataInBytes, const TArray<uint8>& BinaryData);
+
 	void OnDownloadDone(int32 code);
 protected:
 	TSharedPtr<class SImage> downloadTopImage;
 	TSharedPtr<class SProgressBar> downloadProgressBar;
 
-	EntryDownLoadState DownloadFileState;
 	FQuVRAssetViewAsset AssetInfo;
 	UTexture2DDynamic* Texture2Dimage;
-
+	TSharedPtr<class UQuVRAssetDownloader> AsyncTaskDownloadFile;
+	TSharedPtr<class UQuVRImageDownloader> AsyncImageDownloader;
 	FSlateIcon fSlateDownload;
 	FSlateIcon fSlateReference;
 
 	FButtonStyle* buttonstyle;
-	TWeakObjectPtr<class UQuVRFileDownloader> AsyncTaskDownloadFile;
 	float ProgressRate;
-	bool bIsDownloadAsset;
-	bool bIsDownloadImage;
 private:
 	bool bIsPressed;
 	bool bDraggedOver;
